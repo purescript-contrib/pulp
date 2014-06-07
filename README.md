@@ -2,6 +2,8 @@
 
 A very rudimentary build tool for PureScript.
 
+![Jarvis Cocker dancing](http://24.media.tumblr.com/77b76c557515a801a7e99ca5507b6548/tumblr_n5cx52oT831r4ba6to1_400.gif)
+
 ## Installation
 
 ```sh

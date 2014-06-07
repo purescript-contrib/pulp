@@ -1,0 +1,27 @@
+{
+  "name": "pulp",
+  "version": "0.0.0",
+  "description": "A build system and package manager for PureScript projects",
+  "keywords": [
+    "purescript",
+    "make",
+    "build",
+    "cabal"
+  ],
+  "author": "Bodil Stokke",
+  "license": "LGPL-3.0+",
+  "homepage": "https://github.com/bodil/pulp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bodil/pulp.git"
+  },
+  "bin": {
+    "pulp": "./index.js"
+  },
+  "dependencies": {
+    "bower": "^1.3.4",
+    "glob": "^4.0.2",
+    "underscore": "^1.6.0",
+    "yargs": "^1.2.2"
+  }
+}

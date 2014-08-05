@@ -1,13 +1,22 @@
 var child = require("child_process");
 var glob = require("glob");
+var q = require("q");
 
 function exec(cmd, quiet, args, env, callback) {
-  child.spawn(cmd, args, {
-    stdio: [process.stdin, quiet ? "ignore" : process.stdout, process.stderr],
+  var output = q.defer();
+  var c = child.spawn(cmd, args, {
+    stdio: [process.stdin, quiet ? "pipe" : process.stdout, process.stderr],
     env: env
   }).on("exit", function(code, signal) {
     if (code > 0) {
-      callback(new Error("Subcommand terminated with error code " + code), code);
+      if (quiet) {
+        output.promise.then(function(buf) {
+          console.error(buf.toString("utf-8"));
+          callback(new Error("Subcommand terminated with error code " + code), code);
+        });
+      } else {
+        callback(new Error("Subcommand terminated with error code " + code), code);
+      }
     } else {
       callback(null, 0);
     }
@@ -16,6 +25,11 @@ function exec(cmd, quiet, args, env, callback) {
       callback(new Error("Node executable not found."));
     }
   });
+  if (quiet) {
+    c.stdout.pipe(require("concat-stream")(function(data) {
+      output.resolve(data);
+    }));
+  }
 }
 
 function invokeCompiler(cmd, quiet, match, args, env, callback) {

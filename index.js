@@ -2,6 +2,7 @@
 
 var path = require("path");
 var fs = require("fs");
+var log = require("./log");
 
 var commands = {
   "install": {
@@ -69,12 +70,12 @@ if (!args.buildPath) args.buildPath = "./build";
 
 require("./project")(args, function(err, pro) {
   if (err) {
-    console.error("ERROR:", err);
+    log.error("ERROR:", err.message);
     process.exit(1);
   } else {
     args.command.action(pro, args, function(err) {
       if (err) {
-        console.error("ERROR:", err);
+        log.error("ERROR:", err.message);
         process.exit(1);
       } else {
         process.exit(0);

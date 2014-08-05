@@ -11,7 +11,7 @@ function exec(cmd, quiet, args, env, callback) {
     if (code > 0) {
       if (quiet) {
         output.promise.then(function(buf) {
-          console.error(buf.toString("utf-8"));
+          process.stderr.write(buf.toString("utf-8"));
           callback(new Error("Subcommand terminated with error code " + code), code);
         });
       } else {

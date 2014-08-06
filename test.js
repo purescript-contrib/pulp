@@ -9,7 +9,7 @@ module.exports = function(pro, args, callback) {
     log("Build successful. Running tests...");
     var buildPath = path.resolve(args.buildPath);
     var mainPath = path.resolve(args, buildPath, "Main", "index.js");
-    exec.exec("node", false, ["-e", "require('Main').main()"], {
+    exec.exec("node", false, ["-e", "require('Test.Main').main()"], {
       PATH: process.env.PATH,
       NODE_PATH: buildPath + ":" + process.env.NODE_PATH
     }, function(err, rv) {

@@ -1,6 +1,6 @@
 # Pulp
 
-A very rudimentary build tool for PureScript.
+A build tool for PureScript.
 
 ![Jarvis Cocker dancing](http://24.media.tumblr.com/77b76c557515a801a7e99ca5507b6548/tumblr_n5cx52oT831r4ba6to1_400.gif)
 
@@ -35,13 +35,13 @@ from the root directory of your project, and it will need to find the
 * `pulp install` will install dependencies as given in the
   `bower.json` file. It essentially just invokes `bower install`.
 * `pulp build` invokes the PureScript compiler. Currently, it just
-  compiles all `.purs` files in your `src` and dependencies, and
-  outputs it as `out.js`.
-* `pulp test` runs your test suite, which right now means it compiles
-  your project, including files in the `test` directory, into a file
-  called `test.js`, then invokes that file using Node.
-
-You were warned that it was rudimentary.
+  compiles all `.purs` files in your `src` and dependencies into the
+  target directory, which defaults to `output`.
+* `pulp test` runs your test suite: it expects a `Test.Main` package
+  in the `test` directory, containing a `main` function, which is
+  required and run using Node. It's expected that failing tests will
+  cause the program to terminate with an error. `Test.QuickCheck`
+  works well for this purpose.
 
 ## License
 

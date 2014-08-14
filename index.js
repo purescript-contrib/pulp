@@ -25,10 +25,6 @@ var commands = {
     description: "Compile and run the project",
     action: require("./run")
   }
-  // "watch": {
-  //   description: "Watch project for changes and rebuild as appropriate",
-  //   action: require("./watch")
-  // }
 };
 
 function printCommands() {
@@ -65,6 +61,10 @@ var args = require("raptor-args").createParser({
   "--transform": {
     type: "string",
     description: "Apply a Browserify transform"
+  },
+  "--watch -w": {
+    type: "boolean",
+    description: "Watch source directories and re-run command if something changes"
   }
 }).validate(function(result) {
   if (result.help) {
@@ -95,13 +95,17 @@ require("./project")(args, function(err, pro) {
     log.error("ERROR:", err.message);
     process.exit(1);
   } else {
-    args.command.action(pro, args, function(err) {
-      if (err) {
-        log.error("ERROR:", err.message);
-        process.exit(1);
-      } else {
-        process.exit(0);
-      }
-    });
+    if (args.watch) {
+      require("./watch")();
+    } else {
+      args.command.action(pro, args, function(err) {
+        if (err) {
+          log.error("ERROR:", err.message);
+          process.exit(1);
+        } else {
+          process.exit(0);
+        }
+      });
+    }
   }
 });

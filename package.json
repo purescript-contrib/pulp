@@ -26,6 +26,7 @@
     "glob": "^4.0.2",
     "q": "^1.0.1",
     "raptor-args": "^0.1.14-beta",
-    "underscore": "^1.6.0"
+    "underscore": "^1.6.0",
+    "watch": "^0.11.0"
   }
 }

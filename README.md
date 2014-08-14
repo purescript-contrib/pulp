@@ -11,7 +11,7 @@ $ cabal install purescript
 $ npm install -g pulp
 ```
 
-## Usage
+## Project Structure
 
 The structure of a `pulp` project should look like this:
 
@@ -26,11 +26,15 @@ Put your `.purs` source files in the `src` directory, and any tests
 you might have in the `test` directory.
 
 Also, create a `bower.json` file (see
-<http://bower.io/#defining-a-package>). `pulp` will need to be run
-from the root directory of your project, and it will need to find the
-`bower.json` file there.
+<http://bower.io/#defining-a-package>). `pulp` expects to find this
+file in the root of your project. You can invoke `pulp` from a
+subdirectory; if there is no `bower.json` to be found in the current
+directory, `pulp` will look through parent directories until it finds
+it.
 
-`pulp` currently does three things:
+## Commands
+
+`pulp` supports the following commands:
 
 * `pulp install` will install dependencies as given in the
   `bower.json` file. It essentially just invokes `bower install`.
@@ -42,6 +46,23 @@ from the root directory of your project, and it will need to find the
   required and run using Node. It's expected that failing tests will
   cause the program to terminate with an error. `Test.QuickCheck`
   works well for this purpose.
+* `pulp run` will first run `pulp build`, then launch the compiled
+  project code in a Node process. The entry point will be the `main`
+  function in the module specified with the `--main` option, or, by
+  default, the module `Main`.
+* `pulp browserify` also runs `pulp build`, then runs the project code
+  through [Browserify](http://browserify.org/). The entry point is
+  decided in the same way as with `pulp run`. You can specify an
+  output file using `--to`; the default is to output the bundle to
+  stdout, which is convenient for doing things like `pulp browserify |
+  uglifyjs -c`.
+
+## Watch and restart
+
+You can launch any of the above commands with the `--watch` or `-w`
+option, which will cause `pulp` to run indefinitely, watching your
+`src` and `test` folders for changes, and re-running the command
+whenever something changes.
 
 ## License
 

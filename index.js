@@ -86,7 +86,7 @@ var args = require("raptor-args").createParser({
   process.exit(1);
 }).usage("Usage: cyan <command> [options]").parse();
 
-if (!args.buildPath) args.buildPath = "./build";
+if (!args.buildPath) args.buildPath = "./output";
 
 if (!args.main) args.main = "Main";
 

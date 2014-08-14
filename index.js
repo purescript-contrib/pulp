@@ -16,6 +16,14 @@ var commands = {
   "test": {
     description: "Run project tests",
     action: require("./test")
+  },
+  "browserify": {
+    description: "Produce a deployable bundle using Browserify",
+    action: require("./browserify")
+  },
+  "run": {
+    description: "Compile and run the project",
+    action: require("./run")
   }
   // "watch": {
   //   description: "Watch project for changes and rebuild as appropriate",
@@ -45,6 +53,18 @@ var args = require("raptor-args").createParser({
   "--build-path -o": {
     type: "string",
     description: "Path for compiler output (default './build')"
+  },
+  "--main -m": {
+    type: "string",
+    description: "Application's entry point"
+  },
+  "--to -t": {
+    type: "string",
+    description: "Output file name for bundle (default stdout)"
+  },
+  "--transform": {
+    type: "string",
+    description: "Apply a Browserify transform"
   }
 }).validate(function(result) {
   if (result.help) {
@@ -67,6 +87,8 @@ var args = require("raptor-args").createParser({
 }).usage("Usage: cyan <command> [options]").parse();
 
 if (!args.buildPath) args.buildPath = "./build";
+
+if (!args.main) args.main = "Main";
 
 require("./project")(args, function(err, pro) {
   if (err) {

@@ -8,10 +8,11 @@ function stripWatchArg(arg) {
 }
 
 function watch(p, act) {
-  require("watch").createMonitor(p, {interval: 1000}, function(mon) {
-    mon.on("changed", act);
-    mon.on("created", act);
-    mon.on("removed", act);
+  require("gaze")(p, function(err, watcher) {
+    if (err) {
+
+    }
+    watcher.on("all", act);
   });
 }
 
@@ -24,6 +25,5 @@ module.exports = function() {
     log("Source tree changed; restarting:");
     p = child.fork(mod, args);
   };
-  fs.existsSync("src") && watch("src", change);
-  fs.existsSync("test") && watch("test", change);
+  watch(["src/**/*", "test/**/*", "bower_components/**/*"], change);
 };

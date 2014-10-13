@@ -24,6 +24,10 @@ var commands = {
   "run": {
     description: "Compile and run the project",
     action: require("./run")
+  },
+  "docgen": {
+    description: "Generate project documentation",
+    action: require("./docgen")
   }
 };
 

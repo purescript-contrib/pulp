@@ -2,17 +2,24 @@ var fs = require("fs");
 var path = require("path");
 var child = require("child_process");
 var log = require("./log");
+var Minimatch = require("minimatch").Minimatch;
 
 function stripWatchArg(arg) {
   return arg !== "-w" && arg !== "--watch";
 }
 
-function watch(p, act) {
-  require("gaze")(p, function(err, watcher) {
-    if (err) {
+var match = new Minimatch("{src,test,bower_components}/**/*");
 
+function watch(p, act) {
+  require("watch").watchTree(".", {
+    interval: 1337,
+    ignoreDotFiles: true
+  }, function(f, curr, prev) {
+    if (!(typeof f === "object" && prev === null && curr === null)) {
+      if (match.match(f)) {
+        act();
+      }
     }
-    watcher.on("all", act);
   });
 }
 

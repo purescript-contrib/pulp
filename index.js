@@ -66,6 +66,10 @@ var args = require("raptor-args").createParser({
     type: "string",
     description: "Apply a Browserify transform"
   },
+  "--source-map": {
+    type: "string",
+    description: "Tell Browserify to generate source maps"
+  },
   "--watch -w": {
     type: "boolean",
     description: "Watch source directories and re-run command if something changes"

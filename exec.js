@@ -18,7 +18,13 @@ function exec(cmd, quiet, args, env, callback) {
         callback(new Error("Subcommand terminated with error code " + code), code);
       }
     } else {
-      callback(null, 0);
+      if (quiet) {
+        output.promise.then(function(r) {
+          callback(null, r.toString("utf-8"));
+        });
+      } else {
+        callback(null);
+      }
     }
   }).on("error", function(err) {
     if (err.code === "ENOENT") {

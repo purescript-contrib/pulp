@@ -28,6 +28,10 @@ var commands = {
   "docgen": {
     description: "Generate project documentation",
     action: require("./docgen")
+  },
+  "psci": {
+    description: "Create or update the .psci file",
+    action: require("./psci")
   }
 };
 

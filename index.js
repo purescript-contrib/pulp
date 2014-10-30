@@ -5,6 +5,11 @@ var fs = require("fs");
 var log = require("./log");
 
 var commands = {
+  "init": {
+    description: "Generate an example PureScript project",
+    action: require("./init"),
+    noProject: true
+  },
   "install": {
     description: "Download and install project dependencies",
     action: require("./install")
@@ -77,6 +82,10 @@ var args = require("raptor-args").createParser({
   "--watch -w": {
     type: "boolean",
     description: "Watch source directories and re-run command if something changes"
+  },
+  "--force": {
+    type: "boolean",
+    description: "For 'pulp init', overwrite any project found in the current directory"
   }
 }).validate(function(result) {
   if (result.help) {
@@ -102,22 +111,28 @@ if (!args.buildPath) args.buildPath = "./output";
 
 if (!args.main) args.main = "Main";
 
-require("./project")(args, function(err, pro) {
+function done(err) {
   if (err) {
     log.error("ERROR:", err.message);
     process.exit(1);
   } else {
-    if (args.watch) {
-      require("./watch")();
-    } else {
-      args.command.action(pro, args, function(err) {
-        if (err) {
-          log.error("ERROR:", err.message);
-          process.exit(1);
-        } else {
-          process.exit(0);
-        }
-      });
-    }
+    process.exit(0);
   }
-});
+}
+
+if (args.command.noProject) {
+  args.command.action(args, done);
+} else {
+  require("./project")(args, function(err, pro) {
+    if (err) {
+      log.error("ERROR:", err.message);
+      process.exit(1);
+    } else {
+      if (args.watch) {
+        require("./watch")();
+      } else {
+        args.command.action(pro, args, done);
+      }
+    }
+  });
+}

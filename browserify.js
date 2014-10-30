@@ -1,5 +1,6 @@
 var exec = require("./exec");
 var log = require("./log");
+var files = require("./files");
 var browserify = require("browserify");
 var path = require("path");
 var fs = require("fs");
@@ -7,7 +8,7 @@ var stringStream = require("string-stream");
 
 module.exports = function(pro, args, callback) {
   log("Browserifying project in", process.cwd());
-  exec.psc("{src,bower_components}/**/*.purs", [
+  exec.psc([files.src, files.deps], [
     "--module", args.main, "--main", args.main
   ], null, function(err, src) {
     if (err) return callback(err);

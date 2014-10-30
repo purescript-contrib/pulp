@@ -1,11 +1,12 @@
 var log = require("./log");
+var files = require("./files");
 var child = require("child_process");
 var glob = require("glob");
 var fs = require("fs");
 
 module.exports = function(pro, args, callback) {
   log("Generating documentation in", process.cwd());
-  glob("src/**/*.purs", {}, function(err, files) {
+  files.src(function(err, files) {
     var c = child.spawn("docgen", files, {
       stdio: [process.stdin, "pipe", process.stderr]
     }).on("exit", function(code, signal) {

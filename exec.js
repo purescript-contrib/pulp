@@ -1,3 +1,4 @@
+var files = require("./files");
 var child = require("child_process");
 var glob = require("glob");
 var q = require("q");
@@ -38,12 +39,12 @@ function exec(cmd, quiet, args, env, callback) {
   }
 }
 
-function invokeCompiler(cmd, quiet, match, args, env, callback) {
-  glob(match, {}, function(err, files) {
+function invokeCompiler(cmd, quiet, deps, args, env, callback) {
+  files.resolve(deps, function(err, deps) {
     if (err) {
       callback(err);
     } else {
-      exec(cmd, quiet, args.concat(files), env, callback);
+      exec(cmd, quiet, args.concat(deps), env, callback);
     }
   });
 }

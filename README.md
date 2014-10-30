@@ -36,6 +36,8 @@ it.
 
 `pulp` supports the following commands:
 
+* `pulp init` generates a project skeleton with a `bower.json` file
+  and a simple example program.
 * `pulp install` will install dependencies as given in the
   `bower.json` file. It essentially just invokes `bower install`.
 * `pulp build` invokes the PureScript compiler. Currently, it just
@@ -56,6 +58,10 @@ it.
   output file using `--to`; the default is to output the bundle to
   stdout, which is convenient for doing things like `pulp browserify |
   uglifyjs -c`.
+* `pulp docgen` generates a project documentation file using
+  PureScript's `docgen` command.
+* `pulp psci` generates a `.psci` file containing all your project
+  dependencies, for use with the `psci` command.
 
 ## Watch and restart
 

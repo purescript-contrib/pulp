@@ -86,6 +86,10 @@ var args = require("raptor-args").createParser({
   "--force": {
     type: "boolean",
     description: "For 'pulp init', overwrite any project found in the current directory"
+  },
+  "--optimise -O": {
+    type: "boolean",
+    description: "Perform dead code elimination when browserifying"
   }
 }).validate(function(result) {
   if (result.help) {

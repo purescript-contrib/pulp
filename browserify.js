@@ -1,17 +1,20 @@
 var exec = require("./exec");
 var log = require("./log");
 var files = require("./files");
+var build = require("./build");
 var browserify = require("browserify");
 var path = require("path");
 var fs = require("fs");
 var stringStream = require("string-stream");
 
-module.exports = function(pro, args, callback) {
-  log("Browserifying project in", process.cwd());
+function optimising(pro, args, callback) {
+  log("Compiling...");
   exec.psc([files.src, files.deps], [
     "--module", args.main, "--main", args.main
   ], null, function(err, src) {
     if (err) return callback(err);
+    log("Compilation successful.");
+    log("Browserifying...");
     var nodePath = process.env.NODE_PATH;
     var buildPath = path.resolve(args.buildPath);
     process.env["NODE_PATH"] = nodePath ? (buildPath + ":" + nodePath) : buildPath;
@@ -21,9 +24,39 @@ module.exports = function(pro, args, callback) {
     });
     if (args.transform) b.transform(args.transform);
     b.bundle().pipe(args.to ? fs.createWriteStream(args.to) : process.stdout)
-      .on("close", function() {
-        log("Browserified.");
-        callback();
-      });
+      .on("close", callback);
+  });
+}
+
+function incremental(pro, args, callback) {
+  build(pro, args, function(err) {
+    if (err) return callback(err);
+    log("Browserifying...");
+    var nodePath = process.env.NODE_PATH;
+    var buildPath = path.resolve(args.buildPath);
+    process.env["NODE_PATH"] = nodePath ? (buildPath + ":" + nodePath) : buildPath;
+    var b = browserify({
+      basedir: buildPath
+    });
+    var entryPoint = args.main.replace("\\", "\\\\").replace("'", "\\'");
+    var src = "require('" + entryPoint + "').main();\n"
+    var entryPath = path.join(buildPath, "browserify.js");
+    fs.writeFileSync(entryPath, src, "utf-8");
+    b.add(entryPath);
+    if (args.transform) b.transform(args.transform);
+    b.bundle().pipe(args.to ? fs.createWriteStream(args.to) : process.stdout)
+      .on("close", callback);
+  });
+}
+
+module.exports = function(pro, args, callback) {
+  log("Browserifying project in", process.cwd());
+  (args.optimise ? optimising : incremental)(pro, args, function(err) {
+    if (err) {
+      callback(err);
+    } else {
+      log("Browserified.");
+      callback();
+    }
   });
 }

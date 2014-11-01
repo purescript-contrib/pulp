@@ -35,7 +35,7 @@ var commands = {
     action: require("./docgen")
   },
   "psci": {
-    description: "Create or update the .psci file",
+    description: "Launch a PureScript REPL configured for the project",
     action: require("./psci")
   }
 };

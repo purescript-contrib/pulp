@@ -60,8 +60,8 @@ it.
   uglifyjs -c`.
 * `pulp docgen` generates a project documentation file using
   PureScript's `docgen` command.
-* `pulp psci` generates a `.psci` file containing all your project
-  dependencies, for use with the `psci` command.
+* `pulp psci` launches a PureScript REPL using `psci` with the
+  project's modules and dependencies installed.
 
 ## Watch and restart
 

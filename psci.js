@@ -1,34 +1,34 @@
 var log = require("./log");
-var glob = require("glob");
+var files = require("./files");
 var fs = require("fs");
+var child = require("child_process");
+
+function updateConfig(callback) {
+  fs.readFile(".psci", function(err, data) {
+    if (err && err.code !== "ENOENT") {
+      return callback(err);
+    }
+    var entries = err ? []
+          : data.toString().split("\n").filter(function(e) { return e.indexOf(":m ") !== 0 &&
+                                                      e.trim().length; });
+    files.resolve([files.src, files.test, files.deps], function(err, deps) {
+      var psci = entries.concat(deps.map(function(i) { return ":m " + i; }));
+      fs.writeFile(".psci", psci.join("\n") + "\n", "utf-8", function(err) {
+        callback(err);
+      });
+    });
+  });
+}
 
 module.exports = function(pro, args, callback) {
-  "use strict";
-
-  var entries = [];
-  var isNew = true;
-
-  var pushEntry = function(entry) {
-    entries.push(":m " + entry);
-  };
-
-  try {
-    entries = fs.readFileSync(".psci").toString().split("\n");
-    isNew = false;
-  } catch (err) {
-      if (err.code !== "ENOENT") {
-        log(err);
-        return;
-      }
-  }
-
-  entries = entries.filter(function (entry) {
-      return entry.indexOf(":m") !== 0;
+  updateConfig(function(err) {
+    if (err) {
+      return callback(err);
+    }
+    child.spawn("psci", [], {
+      stdio: "inherit"
+    }).on("exit", function(code, signal) {
+      callback();
+    });
   });
-
-  glob.sync("src/**/*.purs").map(pushEntry);
-  glob.sync("bower_components/purescript-*/src/**/*.purs").map(pushEntry);
-  glob.sync("bower_components/purescript-*/src/**/*.purs.hs").map(pushEntry);
-  fs.writeFileSync(".psci", entries.join("\n"), "utf8");
-  log((isNew ? "Created" : "Updated") + " .psci file");
 };

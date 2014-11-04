@@ -6,21 +6,32 @@ var fs = require("fs");
 
 module.exports = function(pro, args, callback) {
   log("Generating documentation in", process.cwd());
-  files.src(function(err, files) {
-    var c = child.spawn("docgen", files, {
+  var input = args.to ? fs.createWriteStream(args.to) : process.stdout;
+  
+  function next(code, signal) {
+    if (code) {
+      callback(new Error("Subcommand terminated with error code " + code), code);
+    } else {
+      log("Documentation generated.");
+      callback(null, 0);
+    }
+  }
+  
+  function go(binaryName, success, failure) {
+    var c = child.spawn("psc-docs", files, {
       stdio: [process.stdin, "pipe", process.stderr]
-    }).on("exit", function(code, signal) {
-      if (code) {
-        callback(new Error("Subcommand terminated with error code " + code), code);
-      } else {
-        log("Documentation generated.");
-        callback(null, 0);
-      }
-    }).on("error", function(err) {
-      if (err.code === "ENOENT") {
-        callback(new Error("docgen executable not found."));
-      }
+    }).on("exit", success).on("error", failure);
+    c.stdout.pipe(input);
+  }
+  
+  files.src(function(err, files) {
+    if (err) return callback(err);
+    go("psc-docs", next, function(err) {
+      if (err.code !== "ENOENT") return callback(err);
+      go("docgen", next, function(err) {
+        if (err.code !== "ENOENT") return callback(err);
+        callback(new Error("psc-docs (formerly docgen) executable not found."));
+      });
     });
-    c.stdout.pipe(args.to ? fs.createWriteStream(args.to) : process.stdout);
   });
 };

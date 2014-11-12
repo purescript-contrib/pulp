@@ -109,7 +109,7 @@ var args = require("raptor-args").createParser({
   this.printUsage();
   console.error(err);
   process.exit(1);
-}).usage("Usage: cyan <command> [options]").parse();
+}).usage("Usage: pulp <command> [options]").parse();
 
 if (!args.buildPath) args.buildPath = "./output";
 

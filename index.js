@@ -90,12 +90,19 @@ var args = require("raptor-args").createParser({
   "--optimise -O": {
     type: "boolean",
     description: "Perform dead code elimination when browserifying"
+  },
+  "--monochrome": {
+    type: "boolean",
+    description: "Don't colourise log output"
   }
 }).validate(function(result) {
   if (result.help) {
     this.printUsage();
     printCommands();
     process.exit(0);
+  }
+  if (result.monochrome) {
+    log.mono(true);
   }
   var command = result.command;
   result.command = commands[command];

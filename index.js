@@ -115,6 +115,10 @@ if (!runNoParseCmd()) {
     "--monochrome": {
       type: "boolean",
       description: "Don't colourise log output"
+    },
+    "--skip-entry-point": {
+      type: "boolean",
+      description: "Don't add code to automatically invoke Main when browserifying."
     }
   }).validate(function(result) {
     if (result.help) {

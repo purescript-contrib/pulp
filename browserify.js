@@ -38,11 +38,15 @@ function incremental(pro, args, callback) {
     var b = browserify({
       basedir: buildPath
     });
-    var entryPoint = args.main.replace("\\", "\\\\").replace("'", "\\'");
-    var src = "require('" + entryPoint + "').main();\n"
-    var entryPath = path.join(buildPath, "browserify.js");
-    fs.writeFileSync(entryPath, src, "utf-8");
-    b.add(entryPath);
+    if (args.skipEntryPoint) {
+      b.add(path.join(buildPath, args.main));
+    } else {
+      var entryPoint = args.main.replace("\\", "\\\\").replace("'", "\\'");
+      var src = "require('" + entryPoint + "').main();\n"
+      var entryPath = path.join(buildPath, "browserify.js");
+      fs.writeFileSync(entryPath, src, "utf-8");
+      b.add(entryPath);
+    }
     if (args.transform) b.transform(args.transform);
     b.bundle().pipe(args.to ? fs.createWriteStream(args.to) : process.stdout)
       .on("close", callback);

@@ -1,7 +1,11 @@
 var files = require("./files");
 var child = require("child_process");
 var glob = require("glob");
+var fs = require("fs");
+var path = require("path");
 var q = require("q");
+
+var bin = path.join('node_modules', '.bin');
 
 function exec(cmd, quiet, args, env, callback) {
   var output = q.defer();
@@ -44,11 +48,15 @@ function invokeCompiler(cmd, quiet, deps, args, env, callback) {
     if (err) {
       callback(err);
     } else {
-      exec(cmd, quiet, args.concat(deps), env, callback);
+      var local = path.join(bin, cmd);
+      fs.exists(local, function(exists) {
+        exec(exists ? local : cmd, quiet, args.concat(deps), env, callback);
+      });
     }
   });
 }
 
+module.exports.bin = bin;
 module.exports.exec = exec;
 module.exports.invokeCompiler = invokeCompiler;
 module.exports.psc = invokeCompiler.bind(null, "psc", true);

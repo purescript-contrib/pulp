@@ -25,6 +25,7 @@
     "concat-stream": "^1.4.6",
     "glob": "^4.0.2",
     "minimatch": "^1.0.0",
+    "mkdirp": "^0.5.0",
     "psc-release": "0.0.2",
     "q": "^1.0.1",
     "raptor-args": "^0.1.14-beta",

@@ -10,9 +10,10 @@ var commands = {
     action: require("./init"),
     noProject: true
   },
-  "install": {
-    description: "Download and install project dependencies",
-    action: require("./install")
+  "dep": {
+    description: "Invoke Bower for package management",
+    action: require("./bower"),
+    noParse: true
   },
   "build": {
     description: "Build the project",
@@ -48,80 +49,6 @@ function printCommands() {
   console.error("");
 }
 
-var args = require("raptor-args").createParser({
-  "--help -h": {
-    description: "Show this help message"
-  },
-  "--command *": {
-    type: "string"
-  },
-  "--bower-file -b": {
-    type: "string",
-    description: "Read this bower.json file instead of autodetecting it"
-  },
-  "--build-path -o": {
-    type: "string",
-    description: "Path for compiler output (default './build')"
-  },
-  "--main -m": {
-    type: "string",
-    description: "Application's entry point"
-  },
-  "--to -t": {
-    type: "string",
-    description: "Output file name for bundle (default stdout)"
-  },
-  "--transform": {
-    type: "string",
-    description: "Apply a Browserify transform"
-  },
-  "--source-map": {
-    type: "string",
-    description: "Tell Browserify to generate source maps"
-  },
-  "--watch -w": {
-    type: "boolean",
-    description: "Watch source directories and re-run command if something changes"
-  },
-  "--force": {
-    type: "boolean",
-    description: "For 'pulp init', overwrite any project found in the current directory"
-  },
-  "--optimise -O": {
-    type: "boolean",
-    description: "Perform dead code elimination when browserifying"
-  },
-  "--monochrome": {
-    type: "boolean",
-    description: "Don't colourise log output"
-  }
-}).validate(function(result) {
-  if (result.help) {
-    this.printUsage();
-    printCommands();
-    process.exit(0);
-  }
-  if (result.monochrome) {
-    log.mono(true);
-  }
-  var command = result.command;
-  result.command = commands[command];
-  if (!result.command) {
-    console.error(command ? ("Unknown command '" + command + "'.")
-                  : "No command specified.");
-    printCommands();
-    process.exit(1);
-  }
-}).onError(function(err) {
-  this.printUsage();
-  console.error(err);
-  process.exit(1);
-}).usage("Usage: cyan <command> [options]").parse();
-
-if (!args.buildPath) args.buildPath = "./output";
-
-if (!args.main) args.main = "Main";
-
 function done(err) {
   if (err) {
     log.error("ERROR:", err.message);
@@ -131,19 +58,105 @@ function done(err) {
   }
 }
 
-if (args.command.noProject) {
-  args.command.action(args, done);
-} else {
-  require("./project")(args, function(err, pro) {
-    if (err) {
-      log.error("ERROR:", err.message);
-      process.exit(1);
-    } else {
-      if (args.watch) {
-        require("./watch")();
-      } else {
-        args.command.action(pro, args, done);
-      }
+function runNoParseCmd() {
+  var cmd = commands[process.argv[2]];
+  if (cmd && cmd.noParse) {
+    cmd.action(done);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+if (!runNoParseCmd()) {
+  var args = require("raptor-args").createParser({
+    "--help -h": {
+      description: "Show this help message"
+    },
+    "--command *": {
+      type: "string"
+    },
+    "--bower-file -b": {
+      type: "string",
+      description: "Read this bower.json file instead of autodetecting it"
+    },
+    "--build-path -o": {
+      type: "string",
+      description: "Path for compiler output (default './build')"
+    },
+    "--main -m": {
+      type: "string",
+      description: "Application's entry point"
+    },
+    "--to -t": {
+      type: "string",
+      description: "Output file name for bundle (default stdout)"
+    },
+    "--transform": {
+      type: "string",
+      description: "Apply a Browserify transform"
+    },
+    "--source-map": {
+      type: "string",
+      description: "Tell Browserify to generate source maps"
+    },
+    "--watch -w": {
+      type: "boolean",
+      description: "Watch source directories and re-run command if something changes"
+    },
+    "--force": {
+      type: "boolean",
+      description: "For 'pulp init', overwrite any project found in the current directory"
+    },
+    "--optimise -O": {
+      type: "boolean",
+      description: "Perform dead code elimination when browserifying"
+    },
+    "--monochrome": {
+      type: "boolean",
+      description: "Don't colourise log output"
     }
-  });
+  }).validate(function(result) {
+    if (result.help) {
+      this.printUsage();
+      printCommands();
+      process.exit(0);
+    }
+    if (result.monochrome) {
+      log.mono(true);
+    }
+    var command = result.command;
+    result.command = commands[command];
+    if (!result.command) {
+      console.error(command ? ("Unknown command '" + command + "'.")
+                    : "No command specified.");
+      printCommands();
+      process.exit(1);
+    }
+  }).onError(function(err) {
+    this.printUsage();
+    console.error(err);
+    process.exit(1);
+  }).usage("Usage: cyan <command> [options]").parse();
+
+  if (!args.buildPath) args.buildPath = "./output";
+
+  if (!args.main) args.main = "Main";
+
+  if (args.command.noProject) {
+    args.command.action(args, done);
+  } else {
+    require("./project")(args, function(err, pro) {
+      if (err) {
+        log.error("ERROR:", err.message);
+        process.exit(1);
+      } else {
+        if (args.watch) {
+          require("./watch")();
+        } else {
+          args.command.action(pro, args, done);
+        }
+      }
+    });
+  }
 }

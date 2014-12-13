@@ -38,8 +38,10 @@ it.
 
 * `pulp init` generates a project skeleton with a `bower.json` file
   and a simple example program.
-* `pulp install` will install dependencies as given in the
-  `bower.json` file. It essentially just invokes `bower install`.
+* `pulp dep` does dependency management through Bower; essentially, it
+  just passes you on to a locally installed version of `bower`. Thus,
+  `pulp dep install foo --save` is the equivalent of `bower install
+  foo --save` except you don't need to install Bower globally.
 * `pulp build` invokes the PureScript compiler. Currently, it just
   compiles all `.purs` files in your `src` and dependencies into the
   target directory, which defaults to `output`.
@@ -58,8 +60,8 @@ it.
   output file using `--to`; the default is to output the bundle to
   stdout, which is convenient for doing things like `pulp browserify |
   uglifyjs -c`.
-* `pulp docgen` generates a project documentation file using
-  PureScript's `docgen` command.
+* `pulp docs` generates a project documentation file using
+  PureScript's `psc-docs` command.
 * `pulp psci` launches a PureScript REPL using `psci` with the
   project's modules and dependencies installed.
 

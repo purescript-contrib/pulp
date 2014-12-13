@@ -10,6 +10,11 @@ var commands = {
     action: require("./init"),
     noProject: true
   },
+  "install": {
+    description: "Install PureScript binary release",
+    action: require("./install"),
+    noProject: true
+  },
   "dep": {
     description: "Invoke Bower for package management",
     action: require("./bower"),
@@ -119,6 +124,10 @@ if (!runNoParseCmd()) {
     "--skip-entry-point": {
       type: "boolean",
       description: "Don't add code to automatically invoke Main when browserifying."
+    },
+    "--tag": {
+      type: "string",
+      description: "For 'pulp install', specifies release tag for install."
     }
   }).validate(function(result) {
     if (result.help) {

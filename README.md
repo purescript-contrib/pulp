@@ -7,6 +7,14 @@ A build tool for PureScript.
 ## Installation
 
 ```sh
+$ npm install -g pulp
+$ pulp install --tag v0.6.2
+```
+
+Alternatively, if you would like to manually install PureScript, the
+following may be used.
+
+```sh
 $ cabal install purescript
 $ npm install -g pulp
 ```
@@ -38,6 +46,10 @@ it.
 
 * `pulp init` generates a project skeleton with a `bower.json` file
   and a simple example program.
+* `pulp install` installs a Purescript binary release into your
+  project's `node_modules/.bin`. The version to install must be
+  specified by the `--tag` option. The option's value is the Github tag
+  of the release.
 * `pulp dep` does dependency management through Bower; essentially, it
   just passes you on to a locally installed version of `bower`. Thus,
   `pulp dep install foo --save` is the equivalent of `bower install

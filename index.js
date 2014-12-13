@@ -31,9 +31,9 @@ var commands = {
     description: "Compile and run the project",
     action: require("./run")
   },
-  "docgen": {
+  "docs": {
     description: "Generate project documentation",
-    action: require("./docgen")
+    action: require("./docs")
   },
   "psci": {
     description: "Launch a PureScript REPL configured for the project",

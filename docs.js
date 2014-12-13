@@ -7,7 +7,7 @@ var fs = require("fs");
 module.exports = function(pro, args, callback) {
   log("Generating documentation in", process.cwd());
   files.src(function(err, files) {
-    var c = child.spawn("docgen", files, {
+    var c = child.spawn("psc-docs", files, {
       stdio: [process.stdin, "pipe", process.stderr]
     }).on("exit", function(code, signal) {
       if (code) {
@@ -18,7 +18,7 @@ module.exports = function(pro, args, callback) {
       }
     }).on("error", function(err) {
       if (err.code === "ENOENT") {
-        callback(new Error("docgen executable not found."));
+        callback(new Error("`psc-docs` executable not found."));
       }
     });
     c.stdout.pipe(args.to ? fs.createWriteStream(args.to) : process.stdout);

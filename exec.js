@@ -29,7 +29,7 @@ function exec(cmd, quiet, args, env, callback) {
     }
   }).on("error", function(err) {
     if (err.code === "ENOENT") {
-      callback(new Error("Node executable not found."));
+      callback(new Error("`" + cmd + "` executable not found."));
     }
   });
   if (quiet) {

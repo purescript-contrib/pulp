@@ -13,7 +13,7 @@ module.exports = function(pro, args, callback) {
     var mainPath = path.resolve(args, buildPath, "Main", "index.js");
     var entryPoint = args.main.replace("\\", "\\\\").replace("'", "\\'");
     var env = extend({}, process.env);
-    env.NODE_PATH = buildPath + ":" + process.env.NODE_PATH;
+    env.NODE_PATH = buildPath + path.delimiter + process.env.NODE_PATH;
     exec.exec("node", false, ["-e", "require('" + entryPoint + "').main()"], env, callback);
   });
 };

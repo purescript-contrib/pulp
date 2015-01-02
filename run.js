@@ -2,6 +2,7 @@ var exec = require("./exec");
 var path = require("path");
 var log = require("./log");
 var files = require("./files");
+var extend = require('util')._extend;
 
 module.exports = function(pro, args, callback) {
   log("Building project in", process.cwd());
@@ -11,9 +12,8 @@ module.exports = function(pro, args, callback) {
     var buildPath = path.resolve(args.buildPath);
     var mainPath = path.resolve(args, buildPath, "Main", "index.js");
     var entryPoint = args.main.replace("\\", "\\\\").replace("'", "\\'");
-    exec.exec("node", false, ["-e", "require('" + entryPoint + "').main()"], {
-      PATH: process.env.PATH,
-      NODE_PATH: buildPath + ":" + process.env.NODE_PATH
-    }, callback);
+    var env = extend({}, process.env);
+    env.NODE_PATH = buildPath + ":" + process.env.NODE_PATH;
+    exec.exec("node", false, ["-e", "require('" + entryPoint + "').main()"], env, callback);
   });
 };

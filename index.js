@@ -114,7 +114,19 @@ if (!runNoParseCmd()) {
     },
     "--monochrome": {
       type: "boolean",
-      description: "Don't colourise log output"
+      description: "Don't colourise log output.  Overrides all color options."
+    },
+    "--message-color": {
+      type: "string",
+      description: "Set hex code of status message color."
+    },
+    "--error-color": {
+      type: "string",
+      description: "Set hex code of error message color."
+    },
+    "--color-line": {
+      type: "boolean",
+      description: "Color entire message line instead of just the leading asterisk."
     },
     "--skip-entry-point": {
       type: "boolean",
@@ -125,6 +137,15 @@ if (!runNoParseCmd()) {
       this.printUsage();
       printCommands();
       process.exit(0);
+    }
+    if (result.colorLine) {
+      log.fullLine(true);
+    }
+    if (result.messageColor) {
+      log.msgColor(result.messageColor);
+    }
+    if (result.errorColor) {
+      log.errColor(result.errorColor);
     }
     if (result.monochrome) {
       log.mono(true);

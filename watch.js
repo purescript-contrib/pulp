@@ -29,7 +29,7 @@ module.exports = function() {
   var p = child.fork(mod, args);
   var change = function() {
     p.kill("SIGTERM");
-    log("Source tree changed; restarting:");
+    log.message("Source tree changed; restarting:");
     p = child.fork(mod, args);
   };
   watch(["src/**/*", "test/**/*", "bower_components/**/*"], change);

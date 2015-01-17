@@ -8,13 +8,13 @@ var fs = require("fs");
 var stringStream = require("string-stream");
 
 function optimising(pro, args, callback) {
-  log("Compiling...");
+  log.message("Compiling...");
   exec.psc([files.src, files.deps], [
     "--module", args.main, "--main", args.main
   ], null, function(err, src) {
     if (err) return callback(err);
-    log("Compilation successful.");
-    log("Browserifying...");
+    log.message("Compilation successful.");
+    log.message("Browserifying...");
     var nodePath = process.env.NODE_PATH;
     var buildPath = path.resolve(args.buildPath);
     process.env["NODE_PATH"] = nodePath ? (buildPath + ":" + nodePath) : buildPath;
@@ -31,7 +31,7 @@ function optimising(pro, args, callback) {
 function incremental(pro, args, callback) {
   build(pro, args, function(err) {
     if (err) return callback(err);
-    log("Browserifying...");
+    log.message("Browserifying...");
     var nodePath = process.env.NODE_PATH;
     var buildPath = path.resolve(args.buildPath);
     process.env["NODE_PATH"] = nodePath ? (buildPath + ":" + nodePath) : buildPath;
@@ -54,12 +54,12 @@ function incremental(pro, args, callback) {
 }
 
 module.exports = function(pro, args, callback) {
-  log("Browserifying project in", process.cwd());
+  log.message("Browserifying project in", process.cwd());
   (args.optimise ? optimising : incremental)(pro, args, function(err) {
     if (err) {
       callback(err);
     } else {
-      log("Browserified.");
+      log.message("Browserified.");
       callback();
     }
   });

@@ -36,7 +36,7 @@ var testFile = [
 
 function init(callback) {
   var name = path.basename(process.cwd());
-  log("Generating project skeleton in", process.cwd());
+  log.message("Generating project skeleton in", process.cwd());
   fs.writeFileSync(path.join(process.cwd(), "bower.json"), bowerFile(name), "utf-8");
   if (!fs.existsSync("src")) {
     fs.mkdirSync("src");

@@ -49,19 +49,25 @@ function printCommands() {
   console.error("");
 }
 
-function done(err) {
-  if (err) {
-    log.error("ERROR:", err.message);
-    process.exit(1);
-  } else {
-    process.exit(0);
+function done(args) {
+  return function doneFunc(err) {
+    if (err) {
+      log.error("ERROR:", err.message);
+      process.exit(1);
+    } else {
+      if (args.then) {
+        require("./shell")(args.then, done({}));
+      } else {
+        process.exit(0);
+      }
+    }
   }
 }
 
 function runNoParseCmd() {
   var cmd = commands[process.argv[2]];
   if (cmd && cmd.noParse) {
-    cmd.action(done);
+    cmd.action(done({}));
     return true;
   } else {
     return false;
@@ -119,6 +125,10 @@ if (!runNoParseCmd()) {
     "--skip-entry-point": {
       type: "boolean",
       description: "Don't add code to automatically invoke Main when browserifying."
+    },
+    "--then": {
+      type: "string",
+      description: "Run a shell command after the operation finishes. Useful with `--watch`."
     }
   }).validate(function(result) {
     if (result.help) {
@@ -148,7 +158,7 @@ if (!runNoParseCmd()) {
   if (!args.main) args.main = "Main";
 
   if (args.command.noProject) {
-    args.command.action(args, done);
+    args.command.action(args, done(args));
   } else {
     require("./project")(args, function(err, pro) {
       if (err) {
@@ -158,7 +168,7 @@ if (!runNoParseCmd()) {
         if (args.watch) {
           require("./watch")();
         } else {
-          args.command.action(pro, args, done);
+          args.command.action(pro, args, done(args));
         }
       }
     });

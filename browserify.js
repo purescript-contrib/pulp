@@ -29,7 +29,7 @@ function optimising(pro, args, callback) {
 }
 
 function incremental(pro, args, callback) {
-  build(pro, args, function(err) {
+  var fn = function(err) {
     if (err) return callback(err);
     log("Browserifying...");
     var nodePath = process.env.NODE_PATH;
@@ -50,7 +50,12 @@ function incremental(pro, args, callback) {
     if (args.transform) b.transform(args.transform);
     b.bundle().pipe(args.to ? fs.createWriteStream(args.to) : process.stdout)
       .on("close", callback);
-  });
+  };
+  if (args.skipCompile) {
+    fn(null);
+  } else {
+    build(pro, args, fn);
+  }
 }
 
 module.exports = function(pro, args, callback) {

@@ -129,6 +129,10 @@ if (!runNoParseCmd()) {
     "--then": {
       type: "string",
       description: "Run a shell command after the operation finishes. Useful with `--watch`."
+    },
+    "--skip-compile": {
+      type: "boolean",
+      description: "Skip compilation step when browserifying."
     }
   }).validate(function(result) {
     if (result.help) {

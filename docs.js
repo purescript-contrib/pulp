@@ -5,7 +5,7 @@ var glob = require("glob");
 var fs = require("fs");
 
 module.exports = function(pro, args, callback) {
-  log("Generating documentation in", process.cwd());
+  log.message("Generating documentation in", process.cwd());
   files.src(function(err, files) {
     var c = child.spawn("psc-docs", files, {
       stdio: [process.stdin, "pipe", process.stderr]
@@ -13,7 +13,7 @@ module.exports = function(pro, args, callback) {
       if (code) {
         callback(new Error("Subcommand terminated with error code " + code), code);
       } else {
-        log("Documentation generated.");
+        log.message("Documentation generated.");
         callback(null, 0);
       }
     }).on("error", function(err) {

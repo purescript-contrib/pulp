@@ -79,6 +79,9 @@ if (!runNoParseCmd()) {
     "--help -h": {
       description: "Show this help message"
     },
+    "--args": {
+      type: "string",
+    },
     "--command *": {
       type: "string"
     },

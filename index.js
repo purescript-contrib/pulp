@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-var path = require("path");
-var fs = require("fs");
 var log = require("./log");
 
 var commands = {
@@ -61,7 +59,7 @@ function done(args) {
         process.exit(0);
       }
     }
-  }
+  };
 }
 
 function runNoParseCmd() {

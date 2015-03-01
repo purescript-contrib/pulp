@@ -10,7 +10,7 @@ function stripWatchArg(arg) {
 
 var match = new Minimatch("{src,test,bower_components}/**/*");
 
-function watch(p, act) {
+function watch(act) {
   require("watch").watchTree(".", {
     interval: 1337,
     ignoreDotFiles: true
@@ -32,5 +32,5 @@ module.exports = function() {
     log("Source tree changed; restarting:");
     p = child.fork(mod, args);
   };
-  watch(["src/**/*", "test/**/*", "bower_components/**/*"], change);
+  watch(change);
 };

@@ -133,6 +133,10 @@ if (!runNoParseCmd()) {
     "--skip-compile": {
       type: "boolean",
       description: "Skip compilation step when browserifying."
+    },
+    "--test-runtime": {
+      type: "string",
+      description: "Run test script using this command instead of Node."
     }
   }).validate(function(result) {
     if (result.help) {
@@ -145,6 +149,7 @@ if (!runNoParseCmd()) {
     }
     var command = result.command;
     result.command = commands[command];
+    result.command.name = command;
     if (!result.command) {
       console.error(command ? ("Unknown command '" + command + "'.")
                     : "No command specified.");
@@ -159,7 +164,9 @@ if (!runNoParseCmd()) {
 
   if (!args.buildPath) args.buildPath = "./output";
 
-  if (!args.main) args.main = "Main";
+  if (!args.main) {
+    args.main = (args.command.name === "test") ? "Test.Main" : "Main";
+  }
 
   if (args.command.noProject) {
     args.command.action(args, done(args));

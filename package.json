@@ -1,6 +1,6 @@
 {
   "name": "pulp",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "A build system and package manager for PureScript projects",
   "keywords": [
     "purescript",

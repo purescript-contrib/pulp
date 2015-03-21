@@ -109,7 +109,16 @@ var commands = [
   args.command(
     "docs", "Generate project documentation.", function() {
       return require("./docs").apply(this, arguments);
-    }
+    }, [
+      args.option(
+        "withTests", ["--with-tests", "-t"], args.flag,
+        "Include tests."
+      ),
+      args.option(
+        "withDeps", ["--with-deps", "-d"], args.flag,
+        "Include external dependencies."
+      )
+    ]
   ),
   args.command(
     "psci", "Launch a PureScript REPL configured for the project.",

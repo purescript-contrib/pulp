@@ -25,7 +25,7 @@ module.exports = function(pro, args, callback) {
     if (err) {
       return callback(err);
     }
-    child.spawn("psci", [], {
+    child.spawn("psci", args.remainder, {
       stdio: "inherit"
     }).on("exit", function(code, signal) {
       callback();

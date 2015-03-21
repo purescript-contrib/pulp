@@ -24,11 +24,12 @@
     "browserify": "^5.9.1",
     "concat-stream": "^1.4.6",
     "glob": "^4.0.2",
+    "merge": "^1.2.0",
     "minimatch": "^1.0.0",
     "q": "^1.0.1",
-    "raptor-args": "^0.1.14-beta",
     "string-stream": "0.0.7",
     "temp": "^0.8.1",
-    "watch": "^0.11.0"
+    "watch": "^0.11.0",
+    "wordwrap": "0.0.2"
   }
 }

@@ -11,7 +11,7 @@ function optimising(pro, args, callback) {
   log("Compiling...");
   exec.psc([files.src, files.deps], [
     "--module=" + args.main, "--main=" + args.main
-  ], null, function(err, src) {
+  ].concat(args.remainder), null, function(err, src) {
     if (err) return callback(err);
     log("Compilation successful.");
     log("Browserifying...");
@@ -42,7 +42,7 @@ function incremental(pro, args, callback) {
       b.add(path.join(buildPath, args.main));
     } else {
       var entryPoint = args.main.replace("\\", "\\\\").replace("'", "\\'");
-      var src = "require('" + entryPoint + "').main();\n"
+      var src = "require('" + entryPoint + "').main();\n";
       var entryPath = path.join(buildPath, "browserify.js");
       fs.writeFileSync(entryPath, src, "utf-8");
       b.add(entryPath);
@@ -68,4 +68,4 @@ module.exports = function(pro, args, callback) {
       callback();
     }
   });
-}
+};

@@ -7,7 +7,7 @@ var fs = require("fs");
 module.exports = function(pro, args, callback) {
   log("Generating documentation in", process.cwd());
   files.src(function(err, files) {
-    var c = child.spawn("psc-docs", files, {
+    var c = child.spawn("psc-docs", args.remainder.concat(files), {
       stdio: [process.stdin, "pipe", process.stderr]
     }).on("exit", function(code, signal) {
       if (code) {

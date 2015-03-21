@@ -1,5 +1,13 @@
 var merge = require("merge");
-var wrap = require("wordwrap").hard;
+
+function wrap(s, indent) {
+  var w = require("wordwrap").hard;
+  if (process.stdout.columns) {
+    return w(indent, process.stdout.columns)(s);
+  } else {
+    return indent ? (new Array(indent + 1).join(" ")) + s : s;
+  }
+}
 
 function defaults(options) {
   return options.reduce(function(acc, next) {
@@ -186,8 +194,7 @@ function printTable(table, stream) {
   keys.forEach(function(key) {
     var pad = longest - key.length, indent = longest + 3;
     stream.write("  " + key + (new Array(pad + 2).join(" ")));
-    stream.write(wrap(indent, process.stdout.columns)(table[key])
-                 .slice(indent) + "\n");
+    stream.write(wrap(table[key], indent).slice(indent) + "\n");
   });
 }
 
@@ -221,7 +228,7 @@ function help(globals, commands, context, stream) {
   if (context) {
     cmd = commands.filter(function(c) { return c.name === context; })[0];
     out.write("\n").bold().write("Command: " + cmd.name).reset().write("\n");
-    out.write(wrap(2, process.stdout.columns)(cmd.desc) + "\n");
+    out.write(wrap(cmd.desc, 2) + "\n");
     out.write("\n").bold().write("Command options:").reset().write("\n");
     printOpts(cmd.options, out);
   }
@@ -231,9 +238,9 @@ function help(globals, commands, context, stream) {
   if (!context) {
     out.bold().write("Commands:").reset().write("\n");
     printCmds(commands, out);
-    out.write("\n").write(wrap(2, process.stdout.columns)(
+    out.write("\n").write(wrap(
       "Use `" + process.argv[1] + " <command> --help` to learn about " +
-        "command specific options."
+        "command specific options.", 2
     )).write("\n\n");
   }
 };

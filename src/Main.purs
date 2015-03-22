@@ -6,10 +6,14 @@ import Control.Monad.Eff.Exception
 import Data.Array.Unsafe (head)
 import Data.Either (Either(..))
 import Debug.Trace
+import Text.Parsing.Parser (ParseError(..))
 
 import qualified Pulp.Args as Args
+import Pulp.Args.Help
 import qualified Pulp.Args.Types as Type
 import Pulp.Args.Parser (parse)
+import Pulp.System.FFI
+import qualified Pulp.System.Log as Log
 import Pulp.System.Process (argv, exit)
 
 globals :: [Args.Option]
@@ -79,23 +83,22 @@ commands = [
     "Launch a PureScript REPL configured for the project." nop []
   ]
 
-failed :: forall e. Error -> Eff (trace :: Trace | e) Unit
+failed :: forall e. Error -> EffN (trace :: Trace | e) Unit
 failed err = do
   trace $ "ERROR: " ++ show err
   exit 1
 
-succeeded :: forall e. Unit -> Eff e Unit
+succeeded :: forall e. Unit -> EffN e Unit
 succeeded _ = exit 0
-
-log :: forall e. String -> Aff (trace :: Trace | e) Unit
-log s = apathize $ liftEff' $ trace s
 
 main = runAff failed succeeded do
   opts <- parse globals commands argv
   case opts of
-    Left err -> log $ "Error: " ++ show err
+    Left (ParseError { message: err }) -> do
+      Log.err $ "Error: " ++ err
+      printHelp Log.out globals commands
     Right opts -> do
-      log $ "Globals: " ++ show opts.globalOpts
-      log $ "Command: " ++ opts.command.name
-      log $ "Locals: " ++ show opts.commandOpts
-      log $ "Remainder: " ++ show opts.remainder
+      Log.log $ "Globals: " ++ show opts.globalOpts
+      Log.log $ "Command: " ++ opts.command.name
+      Log.log $ "Locals: " ++ show opts.commandOpts
+      Log.log $ "Remainder: " ++ show opts.remainder

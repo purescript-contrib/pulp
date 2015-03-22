@@ -1,0 +1,19 @@
+{
+  "name": "pulp",
+  "version": "1.0.0",
+  "moduleType": [
+    "node"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+    "purescript-parsing": "~0.3.1",
+    "purescript-maps": "~0.3.3",
+    "purescript-sequences": "~0.2.0",
+    "purescript-aff": "~0.6.0"
+  }
+}

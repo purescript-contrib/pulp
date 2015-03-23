@@ -31,6 +31,14 @@ var buildArgs = [
   args.option(
     "main", ["--main", "-m"], args.string,
     "Application's entry point.", "Main"
+  ),
+  args.option(
+    "optimise", ["--optimise", "-O"], args.flag,
+    "Perform dead code elimination."
+  ),
+  args.option(
+    "to", ["--to", "-t"], args.string,
+    "Output file name (stdout if not specified)."
   )
 ];
 
@@ -76,20 +84,12 @@ var commands = [
       return require("./browserify").apply(this, arguments);
     }, buildArgs.concat([
       args.option(
-        "to", ["--to", "-t"], args.string,
-        "Output file name for bundle (stdout if not specified)."
-      ),
-      args.option(
         "transform", ["--transform"], args.string,
         "Apply a Browserify transform."
       ),
       args.option(
         "sourceMap", ["--source-map"], args.string,
         "Generate source maps."
-      ),
-      args.option(
-        "optimise", ["--optimise", "-O"], args.flag,
-        "Perform dead code elimination."
       ),
       args.option(
         "skipEntryPoint", ["--skip-entry-point"], args.flag,

@@ -16,7 +16,7 @@ module.exports = function(pro, args, callback) {
     var env = extend({}, process.env);
     env.NODE_PATH = buildPath + path.delimiter + process.env.NODE_PATH;
     var src = "require('" + entryPoint + "').main();\n";
-    var entryPath = path.join(buildPath, "main.js");
+    var entryPath = path.join(buildPath, "index.js");
     fs.writeFileSync(entryPath, src, "utf-8");
     exec.exec(
       "node", false, [entryPath].concat(args.remainder),

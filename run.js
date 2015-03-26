@@ -19,7 +19,7 @@ module.exports = function(pro, args, callback) {
     var src = "require('" + entryPoint + "').main();\n";
     temp.open({prefix: "pulp-run", suffix: ".js"}, function(err, info) {
       if (err) return callback(err);
-      fs.write(info.fd, src, "utf-8", function(err) {
+      fs.write(info.fd, src, 0, "utf-8", function(err) {
         if (err) return callback(err);
         fs.close(info.fd, function(err) {
           if (err) return callback(err);

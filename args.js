@@ -66,6 +66,11 @@ function helpOpt(context, stream) {
     {error: true, help: true, context: context} : null;
 }
 
+function versionOpt(context, stream) {
+  return ["--version", "-v"].indexOf(stream[0]) >= 0 ?
+    {error: true, version: true, context: context} : null;
+}
+
 function arg(args, stream) {
   var token = stream[0], next = stream.slice(1),
       i = 0, l = args.length, result, o = {};
@@ -136,7 +141,8 @@ function either(p1, p2) {
 
 function parse(globals, commands, stream) {
   return seq(
-    many(either(helpOpt.bind(this, null),
+    many(either(either(helpOpt.bind(this, null),
+                       versionOpt.bind(this, null)),
                 arg.bind(this, globals))),
     function(globalOpts) {
       return seq(
@@ -223,6 +229,9 @@ function help(globals, commands, context, stream) {
     option(
       "help", ["--help", "-h"], flag, "Show this help message."
     ),
+    option(
+      "version", ["--version", "-v"], flag, "Show current pulp version"
+    )
   ]);
   out.write("Usage: " + process.argv[1] + " [options] <command> [command-options]\n");
   if (context) {

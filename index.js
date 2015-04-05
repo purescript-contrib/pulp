@@ -131,6 +131,10 @@ var commands = [
 var opts = args.parse(globals, commands, process.argv.slice(2));
 
 if (args.isError(opts)) {
+  if (opts.version) {
+    console.log(require('./package.json').version);
+    process.exit(0);
+  }
   if (!opts.help) {
     var ansi = require("ansi")(process.stderr);
     ansi.red().bold().write("Error:").reset().write(" ");
@@ -163,6 +167,7 @@ function done(opts) {
 if (opts.monochrome) {
   log.mono(true);
 }
+
 
 var command = opts.command;
 

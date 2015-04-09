@@ -5,7 +5,7 @@ var fs = require("fs");
 function bowerFile(name) {
   return JSON.stringify({
     name: name,
-    version: "1.0.0",
+    version: "0.1.0",
     moduleType: ["node"],
     ignore: [
       "**/.*",

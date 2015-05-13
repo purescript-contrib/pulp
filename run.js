@@ -24,7 +24,7 @@ module.exports = function(pro, args, callback) {
         fs.close(info.fd, function(err) {
           if (err) return callback(err);
           exec.exec(
-            "node", false, [info.path].concat(args.remainder),
+            args.engine, false, [info.path].concat(args.remainder),
             env, callback
           );
         });

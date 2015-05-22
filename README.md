@@ -64,6 +64,12 @@ it.
   PureScript's `psc-docs` command.
 * `pulp psci` launches a PureScript REPL using `psci` with the
   project's modules and dependencies installed.
+* `pulp get` a shortcut for `pulp dep install --save purescript-`. For example
+  `pulp get signal` is equivalent to `bower install --save purescript-signal`.
+  You may also pass a flag `--dev` to save as a development dependency via `--save-dev`.
+* `pulp gen` will automatically create `src` and `test` files for a given module, as well as
+  wire the new test file into `test/Main.purs`. For example in a fresh pulp project, running
+  `pulp gen Foo.Bar` will generate `src/Foo/Bar.purs`, and `test/Foo/Bar.purs`.
 
 ## Watch and restart
 

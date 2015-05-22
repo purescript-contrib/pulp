@@ -61,8 +61,16 @@ function write(file, trail, moduleName){
 
 }
 
+function addToMain(moduleName){
+  moduleName = moduleName.split(".").map(capitalise).join(".");
+  var p = path.join(process.cwd(), "test/Main.purs");
+  console.log("adding to ", p);
+  fs.appendFileSync(p, "  Test." + moduleName + ".main\n");
+}
+
 module.exports = function(pro, args, callback) {
   write(src,  ["src"],  args.remainder[0]);
   write(test, ["test"], args.remainder[0]);
+  addToMain(args.remainder[0]);
   callback();
 }

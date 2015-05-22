@@ -13,7 +13,7 @@ function test(moduleName){
   "import Debug.Trace",
   "",
   "main = do",
-  "  trace \"Write tests for " + moduleName + "\""
+  "  trace \"You should add tests for " + moduleName + "\""
   ].join("\n") + "\n";
 }
 

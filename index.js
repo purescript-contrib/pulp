@@ -129,8 +129,8 @@ var commands = [
   args.command(
     "get", "Shortcut for pulp dep install --save purescript-",
     function(pro, ar, callback) {
-      dev = ar.dev ? "-dev" : "";
-      ar.remainder = ["install", "--save" + dev, "purescript-" + ar.remainder[0]];
+      ar.remainder = ["install", "--save" + (ar.dev ? "-dev" : "")]
+        .concat( ar.remainder.map(function(x){ return "purescript-" + x; }) );
       return require("./bower").apply(this, [pro, ar, callback]);
     }, [
       args.option(
@@ -138,6 +138,12 @@ var commands = [
         "save as development dependency"
       )
     ]
+  ),
+  args.command(
+    "gen", "produce a new purescript module and test file",
+    function(){
+      return require("./gen").apply(this, arguments)
+    }
   )
 ];
 

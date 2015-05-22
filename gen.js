@@ -17,8 +17,14 @@ function test(moduleName){
   ].join("\n") + "\n";
 }
 
+function capitalise(string) {
+    if(string){
+      return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+    }else{ return ""; }
+}
+
 function write(file, trail, moduleName){
-  var modulePath = moduleName.split(".");
+  var modulePath = moduleName.split(".").map(capitalise);
 
   function prependBase(x){
     return path.join.apply(this, [process.cwd()].concat(trail).concat([x]));
@@ -26,25 +32,20 @@ function write(file, trail, moduleName){
 
   function writeFile(fileName){
     var f = prependBase(fileName + ".purs");
-
     if(fs.existsSync(f)){
-      console.log("file already exists : " + f );
+      console.log("file already exists : " + f + "\n leaving it be." );
     }else{
       console.log("writing file : " + f );
-      fs.writeFileSync(f, file(moduleName), "utf-8");
+      fs.writeFileSync(f, file(modulePath.join(".")), "utf-8");
     }
   }
 
   function writeDir(dirName){
     var p = prependBase(dirName);
     if(!fs.existsSync(p)){
-      console.log(p);
       fs.mkdirSync(p);
-      console.log("no way");
-      trail.push(dirName);
-    }else{
-      console.log("already dir", p);
     }
+    trail.push(dirName);
   }
 
   writeDir("");
@@ -61,7 +62,7 @@ function write(file, trail, moduleName){
 }
 
 module.exports = function(pro, args, callback) {
-  write(src, ["src"], args.remainder[0]);
+  write(src,  ["src"],  args.remainder[0]);
   write(test, ["test"], args.remainder[0]);
   callback();
 }

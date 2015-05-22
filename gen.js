@@ -37,14 +37,17 @@ function write(file, trail, moduleName){
 
   function writeDir(dirName){
     var p = prependBase(dirName);
-    console.log("p",p);
     if(!fs.existsSync(p)){
       console.log(p);
       fs.mkdirSync(p);
       console.log("no way");
       trail.push(dirName);
+    }else{
+      console.log("already dir", p);
     }
   }
+
+  writeDir("");
 
   for(var i = 0; i < modulePath.length; i++){
     var current = modulePath[i];

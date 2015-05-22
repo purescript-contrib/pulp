@@ -23,17 +23,17 @@ function capitalise(string) {
     }else{ return ""; }
 }
 
+function prependBase(trail, x){
+  return path.join.apply(this, [process.cwd()].concat(trail).concat([x]));
+}
+
 function write(file, trail, moduleName){
   var modulePath = moduleName.split(".").map(capitalise);
 
-  function prependBase(x){
-    return path.join.apply(this, [process.cwd()].concat(trail).concat([x]));
-  }
-
   function writeFile(fileName){
-    var f = prependBase(fileName + ".purs");
+    var f = prependBase(trail, fileName + ".purs");
     if(fs.existsSync(f)){
-      console.log("file already exists : " + f + "\n leaving it be." );
+      console.log("file already exists : " + f + "\nleaving it be." );
     }else{
       console.log("writing file : " + f );
       fs.writeFileSync(f, file(modulePath.join(".")), "utf-8");
@@ -41,7 +41,7 @@ function write(file, trail, moduleName){
   }
 
   function writeDir(dirName){
-    var p = prependBase(dirName);
+    var p = prependBase(trail, dirName);
     if(!fs.existsSync(p)){
       fs.mkdirSync(p);
     }

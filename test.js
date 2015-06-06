@@ -14,6 +14,7 @@ module.exports = function(pro, args, callback) {
     if (!args.to) args.to = "./output/test.js";
     exec.psc(
       [files.src, files.test, files.deps],
+      [files.srcForeign, files.testForeign, files.depsForeign],
       ["-o", args.to, "--main=" + args.main],
       null, function(err, rv) {
         if (err) return callback(err);
@@ -27,6 +28,7 @@ module.exports = function(pro, args, callback) {
   } else {
     exec.pscMake(
       [files.src, files.test, files.deps],
+      [files.srcForeign, files.testForeign, files.depsForeign],
       ["-o", args.buildPath], null, function(err, rv) {
         if (err) return callback(err);
         log("Build successful. Running tests...");

@@ -39,12 +39,22 @@ function exec(cmd, quiet, args, env, callback) {
   }
 }
 
-function invokeCompiler(cmd, quiet, deps, args, env, callback) {
+function invokeCompiler(cmd, quiet, deps, ffi, args, env, callback) {
   files.resolve(deps, function(err, deps) {
     if (err) {
       callback(err);
     } else {
-      exec(cmd, quiet, args.concat(deps), env, callback);
+      files.resolve(ffi, function(err, ffi) {
+        if (err) {
+          callback(err);
+        } else {
+          var allArgs = args.concat(deps).concat([].concat.apply([], ffi.map(function(path) {
+            return ["--ffi", path];
+          })));
+
+          exec(cmd, quiet, allArgs, env, callback);
+        }
+      });
     }
   });
 }

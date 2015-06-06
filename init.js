@@ -19,19 +19,19 @@ function bowerFile(name) {
 var mainFile = [
   "module Main where",
   "",
-  "import Debug.Trace",
+  "import Control.Monad.Eff.Console",
   "",
   "main = do",
-  "  trace \"Hello sailor!\""
+  "  log \"Hello sailor!\""
 ].join("\n") + "\n";
 
 var testFile = [
   "module Test.Main where",
   "",
-  "import Debug.Trace",
+  "import Control.Monad.Eff.Console",
   "",
   "main = do",
-  "  trace \"You should add some tests.\""
+  "  log \"You should add some tests.\""
 ].join("\n") + "\n";
 
 function init(callback) {

@@ -12,9 +12,15 @@ function updateConfig(callback) {
           : data.toString().split("\n").filter(function(e) { return e.indexOf(":m ") !== 0 &&
                                                       e.trim().length; });
     files.resolve([files.src, files.test, files.deps], function(err, deps) {
-      var psci = entries.concat(deps.map(function(i) { return ":m " + i; }));
-      fs.writeFile(".psci", psci.join("\n") + "\n", "utf-8", function(err) {
-        callback(err);
+      files.resolve([files.srcForeign, files.testForeign, files.depsForeign], function(err, ffi) {
+        var psci = entries.concat(deps.map(function(path) { 
+          return ":load " + path; 
+        })).concat(ffi.map(function(path) {
+          return ":foreign " + path;
+        }));
+        fs.writeFile(".psci", psci.join("\n") + "\n", "utf-8", function(err) {
+          callback(err);
+        }); 
       });
     });
   });

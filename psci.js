@@ -8,9 +8,11 @@ function updateConfig(callback) {
     if (err && err.code !== "ENOENT") {
       return callback(err);
     }
-    var entries = err ? []
-          : data.toString().split("\n").filter(function(e) { return e.indexOf(":m ") !== 0 &&
-                                                      e.trim().length; });
+    var entries = err ? [] : data.toString().split("\n").filter(function(e) { 
+      return e.indexOf(":load ") !== 0 &&
+             e.indexOf(":foreign ") !== 0 &&
+             e.trim().length; 
+    });
     files.resolve([files.src, files.test, files.deps], function(err, deps) {
       files.resolve([files.srcForeign, files.testForeign, files.depsForeign], function(err, ffi) {
         var psci = entries.concat(deps.map(function(path) { 

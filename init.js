@@ -1,6 +1,7 @@
 var log = require("./log");
 var path = require("path");
 var fs = require("fs");
+var bower = require("./bower");
 
 function bowerFile(name) {
   return JSON.stringify({
@@ -12,7 +13,10 @@ function bowerFile(name) {
       "node_modules",
       "bower_components",
       "output"
-    ]
+    ],
+    dependencies: {
+      "purescript-console": "^0.1.0"
+    }
   }, null, 2) + "\n";
 }
 
@@ -46,7 +50,7 @@ function init(callback) {
     fs.mkdirSync("test");
   }
   fs.writeFileSync(path.join(process.cwd(), "test", "Main.purs"), testFile, "utf-8");
-  callback();
+  bower.launchBower(["update"], callback);
 }
 
 module.exports = function(args, callback) {

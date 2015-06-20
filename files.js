@@ -1,12 +1,12 @@
 var glob = require("glob");
 
 function deps(callback) {
-  glob("bower_components/*/src/**/*.purs", {}, callback);
+  glob("bower_components/purescript-*/src/**/*.purs", {}, callback);
 }
 module.exports.deps = deps;
 
 function depsForeign(callback) {
-  glob("bower_components/*/src/**/*.js", {}, callback);
+  glob("bower_components/purescript-*/src/**/*.js", {}, callback);
 }
 module.exports.depsForeign = depsForeign;
 

@@ -39,7 +39,7 @@ function exec(cmd, quiet, args, env, callback) {
   }
 }
 
-function invokeCompiler(cmd, quiet, deps, ffi, args, env, callback) {
+module.exports.psc = function(deps, ffi, args, env, callback) {
   files.resolve(deps, function(err, deps) {
     if (err) {
       callback(err);
@@ -52,14 +52,23 @@ function invokeCompiler(cmd, quiet, deps, ffi, args, env, callback) {
             return ["--ffi", path];
           })));
 
-          exec(cmd, quiet, allArgs, env, callback);
+          exec("psc", true, allArgs, env, callback);
         }
       });
     }
   });
-}
+};
+
+module.exports.pscBundle = function(dir, args, env, callback) {
+  files.resolve(dir, function(err, deps) {
+    if (err) {
+      callback(err);
+    } else {
+      var allArgs = args.concat(deps);
+
+      exec("psc-bundle", true, allArgs, env, callback);
+    }
+  });
+};
 
 module.exports.exec = exec;
-module.exports.invokeCompiler = invokeCompiler;
-module.exports.psc = invokeCompiler.bind(null, "psc", true);
-module.exports.pscMake = invokeCompiler.bind(null, "psc-make", true);

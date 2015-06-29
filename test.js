@@ -22,7 +22,7 @@ module.exports = function(pro, args, callback) {
         log("Build successful. Bundling Javascript...");
         exec.pscBundle(
           [files.outputModules(args.buildPath)],
-          ["-o", args.to, "--main=" + args.main],
+          ["-o", args.to, "--module", args.main, "--main", args.main],
           null, function(err, rv) {
             if (err) return callback(err);
             log("Running tests...");

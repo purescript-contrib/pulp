@@ -30,6 +30,13 @@ function testForeign(callback) {
 }
 module.exports.testForeign = testForeign;
 
+function outputModules(buildPath) {
+  return function(callback) {
+    glob(buildPath + "/*/@(index.js|foreign.js)", {}, callback);
+  };
+}
+module.exports.outputModules = outputModules;
+
 function resolve(fns, callback) {
   function it(acc, fns, callback) {
     if (!fns.length) {

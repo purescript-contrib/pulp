@@ -29,6 +29,7 @@
     "q": "^1.0.1",
     "string-stream": "0.0.7",
     "temp": "^0.8.1",
+    "ver-compare": "^0.1.1",
     "watch": "^0.11.0",
     "wordwrap": "0.0.2"
   }

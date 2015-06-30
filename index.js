@@ -2,6 +2,7 @@
 
 var args = require("./args");
 var log = require("./log");
+var validate = require("./validate");
 var merge = require("merge");
 
 var globals = [
@@ -180,19 +181,21 @@ if (opts.monochrome) {
 
 var command = opts.command;
 
-if (command.name === "init") {
-  command.action(opts, done(opts));
-} else {
-  require("./project")(opts, function(err, pro) {
-    if (err) {
-      log.error("ERROR:", err.message);
-      process.exit(1);
-    } else {
-      if (opts.watch) {
-        require("./watch")();
+validate(function() {
+  if (command.name === "init") {
+    command.action(opts, done(opts));
+  } else {
+    require("./project")(opts, function(err, pro) {
+      if (err) {
+        log.error("ERROR:", err.message);
+        process.exit(1);
       } else {
-        command.action(pro, opts, done(opts));
+        if (opts.watch) {
+          require("./watch")();
+        } else {
+          command.action(pro, opts, done(opts));
+        }
       }
-    }
-  });
-}
+    });
+  }
+});

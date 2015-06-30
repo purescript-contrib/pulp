@@ -75,6 +75,10 @@ var commands = [
       args.option(
         "testRuntime", ["--runtime", "-r"], args.string,
         "Run test script using this command instead of Node."
+      ),
+      args.option(
+        "engine", ["--engine"], args.string,
+        "Run the Application on a different JavaScript engine (node, iojs)", "node"
       )
     ].concat([buildArgs[0]])
   ),
@@ -104,7 +108,12 @@ var commands = [
   args.command(
     "run", "Compile and run the project.", function() {
       return require("./run").apply(this, arguments);
-    }, buildArgs
+    }, [
+      args.option(
+        "engine", ["--engine"], args.string,
+        "Run the Application on a different JavaScript engine (node, iojs)", "node"
+      )
+    ].concat(buildArgs)
   ),
   args.command(
     "docs", "Generate project documentation.", function() {

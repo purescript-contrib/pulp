@@ -10,31 +10,33 @@ module.exports = function(pro, args, callback) {
     log("Tests OK.");
     callback();
   };
-  if (args.testRuntime) {
-    if (!args.to) args.to = "./output/test.js";
-    exec.psc(
-      [files.src, files.test, files.deps],
-      [files.srcForeign, files.testForeign, files.depsForeign],
-      ["-o", args.to, "--main=" + args.main],
-      null, function(err, rv) {
-        if (err) return callback(err);
-        log("Build successful. Running tests...");
-        exec.exec(
-          args.testRuntime, false, [args.to].concat(args.remainder),
-          process.env, done
+  
+  exec.psc(
+    [files.src, files.test, files.deps],
+    [files.srcForeign, files.testForeign, files.depsForeign],
+    ["-o", args.buildPath], null, function(err, rv) {
+      if (err) return callback(err);
+      
+      if (args.testRuntime) {
+        if (!args.to) args.to = "./output/test.js";
+        log("Build successful. Bundling Javascript...");
+        exec.pscBundle(
+          [files.outputModules(args.buildPath)],
+          ["-o", args.to, "--module", args.main, "--main", args.main],
+          null, function(err, rv) {
+            if (err) return callback(err);
+            log("Running tests...");
+            exec.exec(
+              args.testRuntime, false, [args.to].concat(args.remainder),
+              process.env, done
+            );
+          }
         );
-      }
-    );
-  } else {
-    exec.pscMake(
-      [files.src, files.test, files.deps],
-      [files.srcForeign, files.testForeign, files.depsForeign],
-      ["-o", args.buildPath], null, function(err, rv) {
-        if (err) return callback(err);
-        log("Build successful. Running tests...");
+      } else {
         var buildPath = path.resolve(args.buildPath);
+        log("Build successful. Running tests...");
         exec.exec(
-          "node", false,
+          args.engine, false,
           ["-e", "require('" + args.main + "').main()"].concat(args.remainder),
           {
             PATH: process.env.PATH,
@@ -42,6 +44,6 @@ module.exports = function(pro, args, callback) {
           }, done
         );
       }
-    );
-  }
+    }
+  );
 };

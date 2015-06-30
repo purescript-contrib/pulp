@@ -1,12 +1,31 @@
 var glob = require("glob");
+var fs = require("fs");
+
+function readJson(fn) {
+  try {
+    return JSON.parse(fs.readFileSync(fn).toString());
+  } catch (e) {
+    return {};
+  }
+}
 
 function deps(callback) {
-  glob("bower_components/purescript-*/src/**/*.purs", {}, callback);
+  var bowerrc = readJson(".bowerrc");
+  if (bowerrc.directory) {
+    glob(bowerrc.directory + "/purescript-*/src/**/*.purs", {}, callback);
+  } else {
+    glob("bower_components/purescript-*/src/**/*.purs", {}, callback);
+  }
 }
 module.exports.deps = deps;
 
 function depsForeign(callback) {
-  glob("bower_components/purescript-*/src/**/*.js", {}, callback);
+  var bowerrc = readJson(".bowerrc");
+  if (bowerrc.directory) {
+    glob(bowerrc.directory + "/purescript-*/src/**/*.js", {}, callback);
+  } else {
+    glob("bower_components/purescript-*/src/**/*.js", {}, callback);
+  }
 }
 module.exports.depsForeign = depsForeign;
 
@@ -29,6 +48,13 @@ function testForeign(callback) {
   glob("test/**/*.js", {}, callback);
 }
 module.exports.testForeign = testForeign;
+
+function outputModules(buildPath) {
+  return function(callback) {
+    glob(buildPath + "/*/@(index.js|foreign.js)", {}, callback);
+  };
+}
+module.exports.outputModules = outputModules;
 
 function resolve(fns, callback) {
   function it(acc, fns, callback) {

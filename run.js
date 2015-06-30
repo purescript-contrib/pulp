@@ -8,7 +8,7 @@ var temp = require("temp").track();
 
 module.exports = function(pro, args, callback) {
   log("Building project in", process.cwd());
-  exec.pscMake([files.src, files.deps], [files.srcForeign, files.depsForeign], ["-o", args.buildPath], null, function(err, rv) {
+  exec.psc([files.src, files.deps], [files.srcForeign, files.depsForeign], ["-o", args.buildPath], null, function(err, rv) {
     if (err) return callback(err);
     log("Build successful.");
     var buildPath = path.resolve(args.buildPath);
@@ -24,7 +24,7 @@ module.exports = function(pro, args, callback) {
         fs.close(info.fd, function(err) {
           if (err) return callback(err);
           exec.exec(
-            "node", false, [info.path].concat(args.remainder),
+            args.engine, false, [info.path].concat(args.remainder),
             env, callback
           );
         });

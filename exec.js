@@ -1,6 +1,5 @@
 var files = require("./files");
 var child = require("child_process");
-var glob = require("glob");
 var q = require("q");
 
 function exec(cmd, quiet, args, env, callback) {
@@ -8,7 +7,7 @@ function exec(cmd, quiet, args, env, callback) {
   var c = child.spawn(cmd, args, {
     stdio: [process.stdin, quiet ? "pipe" : process.stdout, process.stderr],
     env: env
-  }).on("exit", function(code, signal) {
+  }).on("exit", function(code) {
     if (code > 0) {
       if (quiet) {
         output.promise.then(function(buf) {

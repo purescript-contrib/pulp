@@ -36,7 +36,7 @@ module.exports = function(pro, args, callback) {
         var buildPath = path.resolve(args.buildPath);
         log("Build successful. Running tests...");
         exec.exec(
-          "node", false,
+          args.engine, false,
           ["-e", "require('" + args.main + "').main()"].concat(args.remainder),
           {
             PATH: process.env.PATH,

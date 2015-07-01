@@ -4,7 +4,7 @@ var exec = require("./exec").exec;
 module.exports = (function() {
   var exp = function(pro, args, callback) {
     var bowerArgs = args.remainder;
-    this.launchBower(bowerArgs, callback);
+    exp.launchBower(bowerArgs, callback);
   };
 
   exp.launchBower = function(bowerArgs, callback) {

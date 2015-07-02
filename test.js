@@ -40,7 +40,7 @@ module.exports = function(pro, args, callback) {
           ["-e", "require('" + args.main + "').main()"].concat(args.remainder),
           {
             PATH: process.env.PATH,
-            NODE_PATH: buildPath + ":" + process.env.NODE_PATH
+            NODE_PATH: buildPath + path.delimiter + process.env.NODE_PATH
           }, done
         );
       }

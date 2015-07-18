@@ -1,7 +1,7 @@
 var log = require("./log");
 var files = require("./files");
+var exec = require("./exec");
 var fs = require("fs");
-var child = require("child_process");
 
 function updateConfig(callback) {
   fs.readFile(".psci", function(err, data) {
@@ -33,10 +33,6 @@ module.exports = function(pro, args, callback) {
     if (err) {
       return callback(err);
     }
-    child.spawn("psci", args.remainder, {
-      stdio: "inherit"
-    }).on("exit", function(code, signal) {
-      callback();
-    });
+    exec.exec("psci", false, args.remainder, null, callback);
   });
 };

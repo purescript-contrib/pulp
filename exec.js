@@ -50,23 +50,10 @@ function exec(cmd, quiet, args, env, callback) {
 }
 
 module.exports.psc = function(deps, ffi, args, env, callback) {
-  files.resolve(deps, function(err, deps) {
-    if (err) {
-      callback(err);
-    } else {
-      files.resolve(ffi, function(err, ffi) {
-        if (err) {
-          callback(err);
-        } else {
-          var allArgs = args.concat(deps).concat([].concat.apply([], ffi.map(function(path) {
-            return ["--ffi", path];
-          })));
-
-          exec("psc", true, allArgs, env, callback);
-        }
-      });
-    }
-  });
+  var allArgs = args.concat(deps).concat([].concat.apply([], ffi.map(function(path) {
+    return ["--ffi", path];
+  })));
+  exec("psc", true, allArgs, env, callback);
 };
 
 module.exports.pscBundle = function(dir, args, env, callback) {

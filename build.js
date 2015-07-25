@@ -5,10 +5,11 @@ var fs = require("fs");
 
 module.exports = function(pro, args, callback) {
   log("Building project in", process.cwd());
-  
+  var globSet = files.defaultGlobs;
+
   exec.psc(
-    [files.srcGlob, files.depsGlob],
-    files.ffiGlobs,
+    globSet.sources(),
+    globSet.ffis(),
     ["-o", args.buildPath].concat(args.remainder),
     null, function(err, rv) {
       if (err) return callback(err);
@@ -16,7 +17,7 @@ module.exports = function(pro, args, callback) {
       if (args.optimise) {
         log("Bundling Javascript...");
         exec.pscBundle(
-          [files.outputModules(args.buildPath)], 
+          [files.outputModules(args.buildPath)],
           [
             "--module=" + args.main, "--main=" + args.main
           ].concat(args.remainder), null, function(err, src) {

@@ -13,8 +13,9 @@ function updateConfig(callback) {
              e.indexOf(":foreign ") !== 0 &&
              e.trim().length; 
     });
-    files.resolve([files.src, files.test, files.deps], function(err, deps) {
-      files.resolve([files.srcForeign, files.testForeign, files.depsForeign], function(err, ffi) {
+    var globSet = files.defaultGlobs.union(files.testGlobs);
+    files.resolveGlobs(globSet.sources(), function(err, deps) {
+      files.resolveGlobs(globSet.ffis(), function(err, ffi) {
         var psci = entries.concat(deps.map(function(path) { 
           return ":load " + path; 
         })).concat(ffi.map(function(path) {

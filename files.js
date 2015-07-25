@@ -11,7 +11,7 @@ function readJson(fn) {
   }
 }
 
-var bowerDirs = path.join(readJson(".bowerrc").directory || "bower_components", "purescript-*/");
+var bowerDirs = path.join(readJson(".bowerrc").directory || "bower_components", "purescript-*", "src");
 
 function SourceFileGlobSet(dirs) {
   if (!(this instanceof SourceFileGlobSet)) {

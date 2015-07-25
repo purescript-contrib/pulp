@@ -1,5 +1,7 @@
 var glob = require("glob");
 var fs = require("fs");
+var path = require("path");
+
 
 function readJson(fn) {
   try {
@@ -8,6 +10,13 @@ function readJson(fn) {
     return {};
   }
 }
+
+var bowerDirs = path.join(readJson(".bowerrc").directory || "bower_components", "purescript-*/");
+
+exports.srcGlob = "src/**/*.purs";
+exports.depsGlob = bowerDirs + exports.srcGlob;
+exports.testGlob = "test/**/*.purs";
+exports.ffiGlobs = ["src/**/*.js", bowerDirs + "src/**/*.js", "test/**/*.js"];
 
 function deps(callback) {
   var bowerrc = readJson(".bowerrc");

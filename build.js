@@ -7,8 +7,8 @@ module.exports = function(pro, args, callback) {
   log("Building project in", process.cwd());
   
   exec.psc(
-    [files.src, files.deps], 
-    [files.srcForeign, files.depsForeign], 
+    [files.srcGlob, files.depsGlob],
+    files.ffiGlobs,
     ["-o", args.buildPath].concat(args.remainder),
     null, function(err, rv) {
       if (err) return callback(err);

@@ -28,7 +28,18 @@ function exec(cmd, quiet, args, env, callback) {
     }
   }).on("error", function(err) {
     if (err.code === "ENOENT") {
-      callback(new Error("`" + cmd + "` executable not found."));
+      // On Windows: if executable wasn't found, try adding .cmd
+      if (process.platform == "win32") {
+        if (!cmd.match(/\.cmd$/i)) {
+          exec(cmd + ".cmd", quiet, args, env, callback)
+        } else {
+          var bareCmd = cmd.substr(0, cmd.length - 4)
+          callback(new Error("`" + bareCmd + "` executable not found. (nor `" + cmd + "`)"));
+        }
+      }
+      else {
+        callback(new Error("`" + cmd + "` executable not found."));
+      }
     }
   });
   if (quiet) {
@@ -39,23 +50,10 @@ function exec(cmd, quiet, args, env, callback) {
 }
 
 module.exports.psc = function(deps, ffi, args, env, callback) {
-  files.resolve(deps, function(err, deps) {
-    if (err) {
-      callback(err);
-    } else {
-      files.resolve(ffi, function(err, ffi) {
-        if (err) {
-          callback(err);
-        } else {
-          var allArgs = args.concat(deps).concat([].concat.apply([], ffi.map(function(path) {
-            return ["--ffi", path];
-          })));
-
-          exec("psc", true, allArgs, env, callback);
-        }
-      });
-    }
-  });
+  var allArgs = args.concat(deps).concat([].concat.apply([], ffi.map(function(path) {
+    return ["--ffi", path];
+  })));
+  exec("psc", true, allArgs, env, callback);
 };
 
 module.exports.pscBundle = function(dir, args, env, callback) {

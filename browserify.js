@@ -9,7 +9,7 @@ var stringStream = require("string-stream");
 
 function optimising(pro, args, callback) {
   log("Compiling...");
-  exec.psc([files.src, files.deps], [files.srcForeign, files.depsForeign], [
+  exec.psc([files.srcGlob, files.depsGlob], files.ffiGlobs, [
     "--module=" + args.main, "--main=" + args.main
   ].concat(args.remainder), null, function(err, src) {
     if (err) return callback(err);

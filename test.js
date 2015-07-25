@@ -12,8 +12,8 @@ module.exports = function(pro, args, callback) {
   };
   
   exec.psc(
-    [files.src, files.test, files.deps],
-    [files.srcForeign, files.testForeign, files.depsForeign],
+    [files.srcGlob, files.testGlob, files.depsGlob],
+    files.ffiGlobs,
     ["-o", args.buildPath], null, function(err, rv) {
       if (err) return callback(err);
       

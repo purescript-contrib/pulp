@@ -4,6 +4,7 @@ var compare = require("ver-compare").compareVersions;
 
 module.exports = function(callback) {
   exec("psc", true, ["--version"], process.env, function(err, ver) {
+    if (err) return callback(err)
     ver = ver.trim();
     if (compare(ver, "0.7.0.0") < 0) {
       log.error("This version of Pulp requires PureScript version 0.7.0.0 or higher.");

@@ -5,7 +5,7 @@ var fs = require("fs");
 
 module.exports = function(pro, args, callback) {
   log("Building project in", process.cwd());
-  var globSet = files.defaultGlobs;
+  var globSet = files.defaultGlobs.union(files.SourceFileGlobSet(args.includePaths));
 
   exec.psc(
     globSet.sources(),

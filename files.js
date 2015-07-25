@@ -15,11 +15,12 @@ var bowerDirs = path.join(readJson(".bowerrc").directory || "bower_components", 
 
 function SourceFileGlobSet(dirs) {
   if (!(this instanceof SourceFileGlobSet)) {
-    return new this(dirs);
+    return new SourceFileGlobSet(dirs);
   }
 
-  this._dirs = dirs;
+  this._dirs = dirs || [];
 }
+module.exports.SourceFileGlobSet = SourceFileGlobSet;
 
 SourceFileGlobSet.prototype.union = function union(other) {
   var removeDuplicates = function(arr) {
@@ -43,12 +44,12 @@ SourceFileGlobSet.prototype.ffis = function ffis() {
   });
 };
 
-exports.emptyGlobs      = new SourceFileGlobSet([]);
-exports.localGlobs      = new SourceFileGlobSet(["src"]);
-exports.dependencyGlobs = new SourceFileGlobSet([bowerDirs]);
-exports.testGlobs       = new SourceFileGlobSet(["test"]);
+module.exports.emptyGlobs      = new SourceFileGlobSet([]);
+module.exports.localGlobs      = new SourceFileGlobSet(["src"]);
+module.exports.dependencyGlobs = new SourceFileGlobSet([bowerDirs]);
+module.exports.testGlobs       = new SourceFileGlobSet(["test"]);
 
-exports.defaultGlobs = exports.localGlobs.union(exports.dependencyGlobs);
+module.exports.defaultGlobs = exports.localGlobs.union(exports.dependencyGlobs);
 
 function outputModules(buildPath) {
   return function(callback) {

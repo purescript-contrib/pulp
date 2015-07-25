@@ -7,6 +7,8 @@ module Pulp.System.Process
        , stderr
        ) where
 
+import Prelude
+
 import Control.Monad.Eff (Eff(..))
 
 import Data.Array (drop, (!!))
@@ -16,21 +18,16 @@ import Data.Maybe (fromMaybe)
 import Pulp.System.FFI
 import Pulp.System.Stream
 
-foreign import argv' "var argv$prime = process.argv" :: [String]
+foreign import argv' :: Array String
 
 commandName :: String
 commandName = fromMaybe "pulp" $ argv' !! 1
 
-argv :: [String]
+argv :: Array String
 argv = drop 2 argv'
 
-foreign import exit """
-  function exit(code) {
-    return function() {
-      process.exit(code);
-    };
-  }""" :: forall e. Number -> EffN e Unit
+foreign import exit :: forall e. Number -> EffN e Unit
 
-foreign import stdin "var stdin = process.stdin" :: NodeStream String
-foreign import stdout "var stdout = process.stdout" :: NodeStream String
-foreign import stderr "var stderr = process.stderr" :: NodeStream String
+foreign import stdin :: NodeStream String
+foreign import stdout :: NodeStream String
+foreign import stderr :: NodeStream String

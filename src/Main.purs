@@ -1,11 +1,13 @@
 module Main where
 
+import Prelude
+
 import Control.Monad.Aff
 import Control.Monad.Eff
+import Control.Monad.Eff.Console (log, CONSOLE(..))
 import Control.Monad.Eff.Exception
 import Data.Array.Unsafe (head)
 import Data.Either (Either(..))
-import Debug.Trace
 import Text.Parsing.Parser (ParseError(..))
 
 import qualified Pulp.Args as Args
@@ -16,7 +18,7 @@ import Pulp.System.FFI
 import qualified Pulp.System.Log as Log
 import Pulp.System.Process (argv, exit)
 
-globals :: [Args.Option]
+globals :: Array Args.Option
 globals = [
   Args.option "bowerFile" ["--bower-file", "-b"] Type.file
     "Read this bower.json file instead of autodetecting it.",
@@ -28,13 +30,13 @@ globals = [
     "Run a shell command after the operation finishes. Useful with `--watch`."
   ]
 
-mainlessBuildArgs :: [Args.Option]
+mainlessBuildArgs :: Array Args.Option
 mainlessBuildArgs = [
   Args.optionDefault "buildPath" ["--build-path", "-o"] Type.string
     "Path for compiler output." "./output"
   ]
 
-buildArgs :: [Args.Option]
+buildArgs :: Array Args.Option
 buildArgs = [
   Args.optionDefault "main" ["--main", "-m"] Type.string
     "Application's entry point." "Main"
@@ -43,7 +45,7 @@ buildArgs = [
 nop :: Args.Action
 nop _ = return unit
 
-commands :: [Args.Command]
+commands :: Array Args.Command
 commands = [
   Args.command "init" "Generate an example PureScript project." nop [
      Args.option "force" ["--force"] Type.flag
@@ -83,9 +85,9 @@ commands = [
     "Launch a PureScript REPL configured for the project." nop []
   ]
 
-failed :: forall e. Error -> EffN (trace :: Trace | e) Unit
+failed :: forall e. Error -> EffN (console :: CONSOLE | e) Unit
 failed err = do
-  trace $ "ERROR: " ++ show err
+  log $ "ERROR: " ++ show err
   exit 1
 
 succeeded :: forall e. Unit -> EffN e Unit

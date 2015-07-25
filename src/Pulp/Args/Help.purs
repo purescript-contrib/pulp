@@ -2,6 +2,8 @@ module Pulp.Args.Help
        ( printHelp
        ) where
 
+import Prelude
+
 import Control.Monad.Eff.Class (liftEff)
 import Data.Array (sort)
 import Data.Foldable (foldr)
@@ -18,20 +20,9 @@ import Pulp.System.FFI
 import Pulp.System.Process (stderr, commandName)
 import Pulp.System.Stream (write)
 
-foreign import pad """
-  function pad(n) {
-    return new Array(n + 1).join(" ");
-  }""" :: Number -> String
+foreign import pad :: Number -> String
 
-foreign import wrap """
-  function wrap(s) {
-    return function(indent) {
-      return function() {
-        var cols = process.stdout.columns;
-        return cols ? require("wordwrap")(indent, cols)(s).slice(indent) : s;
-      };
-    };
-  }""" :: forall e. String -> Number -> EffN e String
+foreign import wrap :: forall e. String -> Number -> EffN e String
 
 formatTable :: forall e. StrMap String -> EffN e String
 formatTable table =
@@ -52,28 +43,28 @@ describeOpt opt = opt.desc ++ case opt.defaultValue of
   Nothing -> ""
   Just def -> " [Default: \"" ++ def ++ "\"]"
 
-prepareOpts :: [Option] -> StrMap String
+prepareOpts :: Array Option -> StrMap String
 prepareOpts = foldr foldOpts empty
   where formatKey n = (Str.joinWith " " n.match) ++ case n.parser.name of
           Nothing -> ""
           Just arg -> " " ++ arg
         foldOpts n = insert (formatKey n) (describeOpt n)
 
-formatOpts :: forall e. [Option] -> AffN e String
+formatOpts :: forall e. Array Option -> AffN e String
 formatOpts = liftEff <<< formatTable <<< prepareOpts
 
-prepareCmds :: [Command] -> StrMap String
+prepareCmds :: Array Command -> StrMap String
 prepareCmds = foldr foldCmds empty
   where foldCmds n = insert n.name n.desc
 
-formatCmds :: forall e. [Command] -> AffN e String
+formatCmds :: forall e. Array Command -> AffN e String
 formatCmds = liftEff <<< formatTable <<< prepareCmds
 
 helpOpt :: Option
 helpOpt = option "help" ["--help", "-h"] Type.flag
             "Show this help message."
 
-printHelp :: forall e. Ansi -> [Option] -> [Command] -> AffN e Unit
+printHelp :: forall e. Ansi -> Array Option -> Array Command -> AffN e Unit
 printHelp stream globals commands = do
   write stream $ "Usage: " ++ commandName ++ " [global-options] <command> [command-options]\n"
   -- if context print command docs

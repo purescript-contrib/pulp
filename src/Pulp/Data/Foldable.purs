@@ -1,5 +1,7 @@
 module Pulp.Data.Foldable where
 
+import Prelude
+
 import Data.Foldable
 import Data.Maybe (Maybe(..))
 

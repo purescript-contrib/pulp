@@ -11,14 +11,16 @@
     "output"
   ],
   "dependencies": {
-    "purescript-parsing": "~0.3.1",
-    "purescript-maps": "~0.3.3",
-    "purescript-sequences": "~0.2.0",
-    "purescript-aff": "~0.6.0",
-    "purescript-foldable-traversable": "~0.3.1",
-    "purescript-monoid": "~0.2.0",
-    "purescript-maybe": "~0.2.2",
-    "purescript-either": "~0.1.6",
-    "purescript-strings": "~0.4.4"
+    "purescript-parsing": "~0.4.0",
+    "purescript-maps": "~0.4.0",
+    "purescript-aff": "~0.11.0",
+    "purescript-foldable-traversable": "^0.4.0",
+    "purescript-maybe": "~0.3.0",
+    "purescript-monoid": "~0.3.0",
+    "purescript-strings": "^0.5.0",
+    "purescript-either": "~0.2.0",
+    "purescript-prelude": "~0.1.0",
+    "purescript-eff": "~0.1.0",
+    "purescript-console": "~0.1.0"
   }
 }

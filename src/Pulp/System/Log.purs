@@ -5,6 +5,8 @@ module Pulp.System.Log
        , err
        ) where
 
+import Prelude
+
 import Pulp.System.Ansi
 import Pulp.System.FFI
 import Pulp.System.Process (stderr)

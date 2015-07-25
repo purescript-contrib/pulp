@@ -1,13 +1,16 @@
 module Pulp.Args.Parser where
 
+import Prelude
+
 import Control.Alt
-import Control.Alternative
 import Control.Monad.Aff
 import Control.Monad.Eff.Exception
 import Control.Monad.Error.Class
 import Control.Monad.Trans
+import Data.Array (many)
 import Data.Either (Either(..))
 import Data.Foldable (find, elem)
+import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 
@@ -31,20 +34,21 @@ matchNamed o key = o.name == key
 matchOpt :: Option -> String -> Boolean
 matchOpt o key = elem key o.match
 
-lookup :: forall m a b. (Monad m, Eq b, Show b) => (a -> b -> Boolean) -> [a] -> ParserT [b] m (Tuple b a)
+lookup :: forall m a b. (Monad m, Eq b, Show b) => (a -> b -> Boolean) -> Array a -> ParserT (List b) m (Tuple b a)
 lookup match table = do
   next <- token
+  next :: b
   case find (\i -> match i next) table of
     Just entry -> return $ Tuple next entry
     Nothing -> fail ("Unknown command: " ++ show next)
 
-lookupOpt :: [Option] -> OptParser (Tuple String Option)
+lookupOpt :: Array Option -> OptParser (Tuple String Option)
 lookupOpt = lookup matchOpt
 
-lookupCmd :: [Command] -> OptParser (Tuple String Command)
+lookupCmd :: Array Command -> OptParser (Tuple String Command)
 lookupCmd = lookup matchNamed
 
-opt :: [Option] -> OptParser Options
+opt :: Array Option -> OptParser Options
 opt opts = do
   o <- lookupOpt opts
   case o of
@@ -52,13 +56,13 @@ opt opts = do
       val <- option.parser.parser key
       return $ Map.singleton option.name val
 
-cmd :: [Command] -> OptParser Command
+cmd :: Array Command -> OptParser Command
 cmd cmds = do
   o <- lookupCmd cmds <?> "command"
   case o of
     (Tuple key option) -> return option
 
-parseArgv :: [Option] -> [Command] -> OptParser Args
+parseArgv :: Array Option -> Array Command -> OptParser Args
 parseArgv globals commands = do
   globalOpts <- many $ try $ opt globals
   command <- cmd commands
@@ -71,6 +75,6 @@ parseArgv globals commands = do
     remainder: rest
     }
 
-parse :: forall e. [Option] -> [Command] -> [String] -> AffN e (Either ParseError Args)
+parse :: forall e. Array Option -> Array Command -> Array String -> AffN e (Either ParseError Args)
 parse globals commands s =
   runParserT s $ parseArgv globals commands

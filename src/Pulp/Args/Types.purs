@@ -1,5 +1,7 @@
 module Pulp.Args.Types where
 
+import Prelude
+
 import Control.Alt
 import Control.Monad.Trans
 import Data.Either (Either(..))

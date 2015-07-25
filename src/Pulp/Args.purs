@@ -1,5 +1,7 @@
 module Pulp.Args where
 
+import Prelude
+
 import Control.Monad.Aff
 import Data.Map (Map(..))
 import Data.Maybe (Maybe(..))
@@ -12,7 +14,7 @@ type Options = Map String (Maybe String)
 
 type Action = forall e. Options -> Aff e Unit
 
-type OptParser a = forall e. ParserT [String] (Aff (node :: Node | e)) a
+type OptParser a = forall e. ParserT (Array String) (Aff (node :: Node | e)) a
 
 type OptionParser = {
   name :: Maybe String,
@@ -21,7 +23,7 @@ type OptionParser = {
 
 type Option = {
   name :: String,
-  match :: [String],
+  match :: Array String,
   parser :: OptionParser,
   desc :: String,
   defaultValue :: Maybe String
@@ -30,7 +32,7 @@ type Option = {
 type Command = {
   name :: String,
   desc :: String,
-  options :: [Option],
+  options :: Array Option,
   action :: Action
   }
 
@@ -38,10 +40,10 @@ type Args = {
   globalOpts :: Options,
   commandOpts :: Options,
   command :: Command,
-  remainder :: [String]
+  remainder :: Array String
   }
 
-option :: String -> [String] -> OptionParser -> String -> Option
+option :: String -> Array String -> OptionParser -> String -> Option
 option name match parser desc = {
   name: name,
   match: match,
@@ -50,11 +52,11 @@ option name match parser desc = {
   defaultValue: Nothing
   }
 
-optionDefault :: String -> [String] -> OptionParser -> String -> String -> Option
+optionDefault :: String -> Array String -> OptionParser -> String -> String -> Option
 optionDefault n m p d defaultValue =
   (option n m p d) { defaultValue = Just defaultValue }
 
-command :: String -> String -> Action -> [Option] -> Command
+command :: String -> String -> Action -> Array Option -> Command
 command name desc action options = {
   name: name,
   desc: desc,

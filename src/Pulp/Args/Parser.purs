@@ -10,7 +10,7 @@ import Control.Monad.Trans
 import Data.Array (many)
 import Data.Either (Either(..))
 import Data.Foldable (find, elem)
-import Data.List (List(..))
+import Data.List (List(..), toList)
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 
@@ -18,7 +18,8 @@ import qualified Data.Map as Map
 
 import Text.Parsing.Parser
 import Text.Parsing.Parser.Combinators ((<?>), try)
-import Text.Parsing.Parser.Token (token)
+import qualified Text.Parsing.Parser.Token as Token
+import qualified Text.Parsing.Parser.Pos as Pos
 
 import Pulp.Args
 import Pulp.System.FFI (AffN(..))
@@ -34,10 +35,14 @@ matchNamed o key = o.name == key
 matchOpt :: Option -> String -> Boolean
 matchOpt o key = elem key o.match
 
+-- | A version of Text.Parsing.Parser.Token.token which lies about the position,
+-- | since we don't care about it here.
+token :: forall m a. (Monad m) => ParserT (List a) m a
+token = Token.token (const Pos.initialPos)
+
 lookup :: forall m a b. (Monad m, Eq b, Show b) => (a -> b -> Boolean) -> Array a -> ParserT (List b) m (Tuple b a)
 lookup match table = do
   next <- token
-  next :: b
   case find (\i -> match i next) table of
     Just entry -> return $ Tuple next entry
     Nothing -> fail ("Unknown command: " ++ show next)
@@ -69,12 +74,14 @@ parseArgv globals commands = do
   commandOpts <- many $ try $ opt command.options
   rest <- many token
   return $ {
-    globalOpts: Map.unions globalOpts,
+    globalOpts: Map.unions (toList globalOpts),
     command: command,
-    commandOpts: Map.unions commandOpts,
+    commandOpts: Map.unions (toList commandOpts),
     remainder: rest
     }
 
 parse :: forall e. Array Option -> Array Command -> Array String -> AffN e (Either ParseError Args)
 parse globals commands s =
-  runParserT s $ parseArgv globals commands
+  runParserT initialState $ parseArgv globals commands
+  where
+  initialState = PState { input: toList s, position: Pos.initialPos }

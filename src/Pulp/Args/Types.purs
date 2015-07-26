@@ -8,7 +8,6 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 
 import Text.Parsing.Parser (ParserT(..))
-import Text.Parsing.Parser.Token (token)
 
 import Pulp.Args
 import Pulp.Args.Parser

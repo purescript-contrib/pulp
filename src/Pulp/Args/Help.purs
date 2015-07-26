@@ -20,9 +20,9 @@ import Pulp.System.FFI
 import Pulp.System.Process (stderr, commandName)
 import Pulp.System.Stream (write)
 
-foreign import pad :: Number -> String
+foreign import pad :: Int -> String
 
-foreign import wrap :: forall e. String -> Number -> EffN e String
+foreign import wrap :: forall e. String -> Int -> EffN e String
 
 formatTable :: forall e. StrMap String -> EffN e String
 formatTable table =

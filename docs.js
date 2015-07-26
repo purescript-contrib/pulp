@@ -4,13 +4,14 @@ var exec = require("./exec");
 
 module.exports = function(pro, args, callback) {
   log("Generating documentation in", process.cwd());
-  var src = [files.srcGlob, files.depsGlob];
-  var gen = [files.src];
+  var globSrc = files.defaultGlobs;
+  var globGen = files.localGlobs;
   if (args.withTests) {
-    src.push(files.testGlob);
-    gen.push(files.test)
+    globSrc = globSrc.union(files.testGlobs);
+    globGen = globGen.union(files.testGlobs);
   }
-  files.resolve(gen, function(err, genFiles) {
+
+  files.resolveGlobs(globGen.sources(), function(err, genFiles) {
     var docgen = [].concat.apply([], genFiles.map(function(path) {
       var moduleName = path.match("([A-Z][^\/\.]*(\/|\.))+");
       var docPath = path.replace(/^(src|test)/, "docs").replace(/.purs$/, ".md");
@@ -22,7 +23,7 @@ module.exports = function(pro, args, callback) {
       }
     }));
     exec.exec(
-      "psc-docs", true, args.remainder.concat(src).concat(docgen),
+      "psc-docs", true, args.remainder.concat(globSrc.sources()).concat(docgen),
       null, function(err, code) {
         if(err) return callback(err, code);
         if(code) return callback(new Error("Subcommand terminated with error code " + code), code);

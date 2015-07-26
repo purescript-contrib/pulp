@@ -10,13 +10,15 @@ module.exports = function(pro, args, callback) {
     log("Tests OK.");
     callback();
   };
-  
+  var globSet = files.defaultGlobs.union(files.testGlobs);
+
   exec.psc(
-    [files.srcGlob, files.testGlob, files.depsGlob],
-    files.ffiGlobs,
-    ["-o", args.buildPath], null, function(err, rv) {
+    globSet.sources(),
+    globSet.ffis(),
+    ["-o", args.buildPath],
+    null, function(err, rv) {
       if (err) return callback(err);
-      
+
       if (args.testRuntime) {
         if (!args.to) args.to = "./output/test.js";
         log("Build successful. Bundling Javascript...");

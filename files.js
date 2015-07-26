@@ -1,5 +1,5 @@
-var glob = require("glob");
 var fs = require("fs");
+var glob = require("glob");
 var path = require("path");
 
 
@@ -11,52 +11,44 @@ function readJson(fn) {
   }
 }
 
-var bowerDirs = path.join(readJson(".bowerrc").directory || "bower_components", "purescript-*/");
+var bowerDirs = path.join(readJson(".bowerrc").directory || "bower_components", "purescript-*", "src");
 
-exports.srcGlob = "src/**/*.purs";
-exports.depsGlob = bowerDirs + exports.srcGlob;
-exports.testGlob = "test/**/*.purs";
-exports.ffiGlobs = ["src/**/*.js", bowerDirs + "src/**/*.js", "test/**/*.js"];
-
-function deps(callback) {
-  var bowerrc = readJson(".bowerrc");
-  if (bowerrc.directory) {
-    glob(bowerrc.directory + "/purescript-*/src/**/*.purs", {}, callback);
-  } else {
-    glob("bower_components/purescript-*/src/**/*.purs", {}, callback);
+function SourceFileGlobSet(dirs) {
+  if (!(this instanceof SourceFileGlobSet)) {
+    return new this(dirs);
   }
-}
-module.exports.deps = deps;
 
-function depsForeign(callback) {
-  var bowerrc = readJson(".bowerrc");
-  if (bowerrc.directory) {
-    glob(bowerrc.directory + "/purescript-*/src/**/*.js", {}, callback);
-  } else {
-    glob("bower_components/purescript-*/src/**/*.js", {}, callback);
-  }
+  this._dirs = dirs;
 }
-module.exports.depsForeign = depsForeign;
 
-function src(callback) {
-  glob("src/**/*.purs", {}, callback);
-}
-module.exports.src = src;
+SourceFileGlobSet.prototype.union = function union(other) {
+  var removeDuplicates = function(arr) {
+    return arr.filter(function(elem, pos) {
+      return arr.indexOf(elem) == pos;
+    });
+  };
+  var dirsUnion = removeDuplicates(this._dirs.concat(other._dirs));
+  return new SourceFileGlobSet(dirsUnion);
+};
 
-function srcForeign(callback) {
-  glob("src/**/*.js", {}, callback);
-}
-module.exports.srcForeign = srcForeign;
+SourceFileGlobSet.prototype.sources = function sources() {
+  return this._dirs.map(function(d) {
+    return d + "/**/*.purs";
+  });
+};
 
-function test(callback) {
-  glob("test/**/*.purs", {}, callback);
-}
-module.exports.test = test;
+SourceFileGlobSet.prototype.ffis = function ffis() {
+  return this._dirs.map(function(d) {
+    return d + "/**/*.js";
+  });
+};
 
-function testForeign(callback) {
-  glob("test/**/*.js", {}, callback);
-}
-module.exports.testForeign = testForeign;
+exports.emptyGlobs      = new SourceFileGlobSet([]);
+exports.localGlobs      = new SourceFileGlobSet(["src"]);
+exports.dependencyGlobs = new SourceFileGlobSet([bowerDirs]);
+exports.testGlobs       = new SourceFileGlobSet(["test"]);
+
+exports.defaultGlobs = exports.localGlobs.union(exports.dependencyGlobs);
 
 function outputModules(buildPath) {
   return function(callback) {
@@ -64,6 +56,17 @@ function outputModules(buildPath) {
   };
 }
 module.exports.outputModules = outputModules;
+
+function resolveGlobs(patterns, callback) {
+  var fns = patterns.map(function(pattern) {
+    return function(cb) {
+      glob(pattern, {}, cb);
+    }
+  });
+
+  resolve(fns, callback);
+}
+module.exports.resolveGlobs = resolveGlobs;
 
 function resolve(fns, callback) {
   function it(acc, fns, callback) {

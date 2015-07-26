@@ -9,7 +9,7 @@ var stringStream = require("string-stream");
 
 function optimising(pro, args, callback) {
   log("Compiling...");
-  var globSet = files.defaultGlobs;
+  var globSet = files.defaultGlobs.union(files.SourceFileGlobSet(args.includePaths));
 
   exec.psc(
     globSet.sources(),

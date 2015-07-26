@@ -10,7 +10,7 @@ module.exports = function(pro, args, callback) {
     log("Tests OK.");
     callback();
   };
-  var globSet = files.defaultGlobs.union(files.testGlobs);
+  var globSet = files.defaultGlobs.union(files.SourceFileGlobSet(args.includePaths));
 
   exec.psc(
     globSet.sources(),

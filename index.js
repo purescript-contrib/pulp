@@ -24,11 +24,19 @@ var globals = [
   )
 ];
 
-var buildArgs = [
+/* Options common to both 'build' and 'test'. */
+var buildTestArgs = [
   args.option(
     "buildPath", ["--build-path", "-o"], args.string,
     "Path for compiler output.", "./output"
   ),
+  args.option(
+    "includePaths", ["--include", "-I"], args.directories,
+    "Additional directories for PureScript source files, separated by spaces."
+  )
+];
+
+var buildArgs = buildTestArgs.concat([
   args.option(
     "main", ["--main", "-m"], args.string,
     "Application's entry point.", "Main"
@@ -41,7 +49,7 @@ var buildArgs = [
     "to", ["--to", "-t"], args.string,
     "Output file name (stdout if not specified)."
   )
-];
+]);
 
 var commands = [
   args.command(
@@ -81,7 +89,7 @@ var commands = [
         "engine", ["--engine"], args.string,
         "Run the Application on a different JavaScript engine (node, iojs)", "node"
       )
-    ].concat([buildArgs[0]])
+    ].concat(buildTestArgs)
   ),
   args.command(
     "browserify", "Produce a deployable bundle using Browserify.",

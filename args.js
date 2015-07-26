@@ -1,4 +1,5 @@
 var merge = require("merge");
+var fs = require("fs");
 
 function wrap(s, indent) {
   var w = require("wordwrap").hard;
@@ -60,6 +61,20 @@ function file(arg, stream) {
   }
 };
 module.exports.file = file;
+
+function directories(arg, stream) {
+  if (!stream[0]) return argErr(arg, "Needs a directory argument.");
+  var dirnames = stream[0].split(/\s+/).filter(function(s) { return s !== '' });
+  var notExists = dirnames.filter(function(d) { return !fs.existsSync(d) });
+  if (notExists.length === 0) {
+    return [dirnames, stream.slice(1)];
+  } else {
+    var quoted = notExists.map(function(f) { return "'" + f + "'" })
+    var directories = notExists.length === 1 ? "Directory" : "Directories"
+    return argErr(arg, directories + ": " + quoted.join(' ') + " not found.");
+  }
+}
+module.exports.directories = directories;
 
 function helpOpt(context, stream) {
   return ["--help", "-h"].indexOf(stream[0]) >= 0 ?
@@ -209,6 +224,7 @@ function printOpts(options, stream) {
     var key = next.match.join(" ");
     if (next.type === file) key += " <file>";
     else if (next.type === string) key += " <string>";
+    else if (next.type === directories) key += " <dirs>";
     var desc = next.desc;
     if (next.defaultValue) desc += " [Default: \"" + next.defaultValue + "\"]";
     acc[key] = desc;

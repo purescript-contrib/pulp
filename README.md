@@ -60,6 +60,10 @@ it.
   output file using `--to`; the default is to output the bundle to
   stdout, which is convenient for doing things like `pulp browserify |
   uglifyjs -c`.
+
+  If you want to browserify your test suite, e.g. if you want to run
+  tests in the browser, you can run `pulp browserify -I test --main
+  Test.Main`.
 * `pulp docs` generates a project documentation file using
   PureScript's `psc-docs` command.
 * `pulp psci` launches a PureScript REPL using `psci` with the

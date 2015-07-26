@@ -24,8 +24,12 @@ var globals = [
   )
 ];
 
-/* Options common to both 'build' and 'test'. */
-var buildTestArgs = [
+/* Options common to 'build', 'test' and 'browserify'. */
+var buildTestBrowserifyArgs = [
+  args.option(
+    "main", ["--main", "-m"], args.string,
+    "Application's entry point.", "Main"
+  ),
   args.option(
     "buildPath", ["--build-path", "-o"], args.string,
     "Path for compiler output.", "./output"
@@ -36,11 +40,7 @@ var buildTestArgs = [
   )
 ];
 
-var buildArgs = buildTestArgs.concat([
-  args.option(
-    "main", ["--main", "-m"], args.string,
-    "Application's entry point.", "Main"
-  ),
+var buildArgs = buildTestBrowserifyArgs.concat([
   args.option(
     "optimise", ["--optimise", "-O"], args.flag,
     "Perform dead code elimination."
@@ -89,13 +89,13 @@ var commands = [
         "engine", ["--engine"], args.string,
         "Run the Application on a different JavaScript engine (node, iojs)", "node"
       )
-    ].concat(buildTestArgs)
+    ].concat(buildTestBrowserifyArgs)
   ),
   args.command(
     "browserify", "Produce a deployable bundle using Browserify.",
     function() {
       return require("./browserify").apply(this, arguments);
-    }, buildArgs.concat([
+    }, buildTestBrowserifyArgs.concat([
       args.option(
         "transform", ["--transform"], args.string,
         "Apply a Browserify transform."

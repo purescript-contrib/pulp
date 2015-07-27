@@ -7,31 +7,57 @@ var browserifyInc = require("browserify-incremental");
 var path = require("path");
 var fs = require("fs");
 var stringStream = require("string-stream");
+var merge = require("merge");
 
 function optimising(pro, args, callback) {
-  log("Compiling...");
-  var globSet = files.defaultGlobs.union(files.SourceFileGlobSet(args.includePaths));
-
-  exec.psc(
-    globSet.sources(),
-    globSet.ffis(),
-    ["--module=" + args.main, "--main=" + args.main].concat(args.remainder),
-    null, function(err, src) {
-      if (err) return callback(err);
-      log("Compilation successful.");
-      log("Browserifying...");
-      var nodePath = process.env.NODE_PATH;
-      var buildPath = path.resolve(args.buildPath);
-      process.env["NODE_PATH"] = nodePath ? (buildPath + ":" + nodePath) : buildPath;
-      var b = browserify({
-        basedir: buildPath,
-        entries: new stringStream(src)
-      });
-      if (args.transform) b.transform(args.transform);
-      b.bundle().pipe(args.to ? fs.createWriteStream(args.to) : process.stdout)
-        .on("close", callback);
-    }
-  );
+  var fn = function(err) {
+    var globSet = files.defaultGlobs.union(files.SourceFileGlobSet(args.includePaths));
+    exec.pscBundle(
+      [files.outputModules(args.buildPath)],
+      ["--module=" + args.main, "--main=" + args.main].concat(args.remainder),
+      null, function(err, src) {
+        if (err) return callback(err);
+        log("Browserifying...");
+        var nodePath = process.env.NODE_PATH;
+        var buildPath = path.resolve(args.buildPath);
+        process.env["NODE_PATH"] = nodePath ? (buildPath + ":" + nodePath) : buildPath;
+        var b = browserify({
+          basedir: buildPath,
+          entries: new stringStream(src)
+        });
+        if (args.transform) b.transform(args.transform);
+        b.bundle().pipe(args.to ? fs.createWriteStream(args.to) : process.stdout)
+         .on("close", callback);
+      }
+    );
+  };
+  if (args.skipCompile) {
+    fn(null);
+  } else {
+    var buildArgs = merge({}, args);
+    delete buildArgs.optimise;
+    build(pro, buildArgs, fn);
+  }
+  /* exec.psc(
+     globSet.sources(),
+     globSet.ffis(),
+     ["--module=" + args.main, "--main=" + args.main].concat(args.remainder),
+     null, function(err, src) {
+     if (err) return callback(err);
+     log("Compilation successful.");
+     log("Browserifying...");
+     var nodePath = process.env.NODE_PATH;
+     var buildPath = path.resolve(args.buildPath);
+     process.env["NODE_PATH"] = nodePath ? (buildPath + ":" + nodePath) : buildPath;
+     var b = browserify({
+     basedir: buildPath,
+     entries: new stringStream(src)
+     });
+     if (args.transform) b.transform(args.transform);
+     b.bundle().pipe(args.to ? fs.createWriteStream(args.to) : process.stdout)
+     .on("close", callback);
+     }
+     ); */
 }
 
 function incremental(pro, args, callback) {
@@ -60,7 +86,7 @@ function incremental(pro, args, callback) {
     }
     if (args.transform) b.transform(args.transform);
     b.bundle().pipe(args.to ? fs.createWriteStream(args.to) : process.stdout)
-      .on("close", callback);
+     .on("close", callback);
   };
   if (args.skipCompile) {
     fn(null);

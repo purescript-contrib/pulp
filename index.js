@@ -31,6 +31,10 @@ var buildTestBrowserifyArgs = [
     "Path for compiler output.", "./output"
   ),
   args.option(
+    "optimise", ["--optimise", "-O"], args.flag,
+    "Perform dead code elimination."
+  ),
+  args.option(
     "includePaths", ["--include", "-I"], args.directories,
     "Additional directories for PureScript source files, separated by spaces."
   )
@@ -40,10 +44,6 @@ var buildArgs = buildTestBrowserifyArgs.concat([
   args.option(
     "main", ["--main", "-m"], args.string,
     "Application's entry point.", "Main"
-  ),
-  args.option(
-    "optimise", ["--optimise", "-O"], args.flag,
-    "Perform dead code elimination."
   ),
   args.option(
     "to", ["--to", "-t"], args.string,

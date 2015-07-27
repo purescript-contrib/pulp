@@ -7,15 +7,18 @@ import fs from "fs";
 
 const temp = _temp.track();
 
-function sh(cwd, cmd) {
+function sh(cwd, cmd, input) {
   return new Promise((resolve, reject) => {
-    exec(cmd, { cwd }, (err, stdout, stderr) => {
+    const proc = exec(cmd, { cwd }, (err, stdout, stderr) => {
       if (err) {
         reject(err);
       } else {
         resolve([stdout, stderr]);
       }
     });
+    if (input) {
+      proc.stdin.end(input);
+    }
   });
 }
 

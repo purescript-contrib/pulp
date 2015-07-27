@@ -119,6 +119,10 @@ var commands = [
       args.option(
         "skipCompile", ["--skip-compile"], args.flag,
         "Don't run `pulp build` before browserifying."
+      ),
+      args.option(
+        "force", ["--force"], args.flag,
+        "Force a non-incremental build by deleting the build cache."
       )
     ])
   ),

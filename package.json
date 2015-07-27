@@ -24,7 +24,8 @@
   "dependencies": {
     "ansi": "^0.3.0",
     "bower": "*",
-    "browserify": "^5.9.1",
+    "browserify": "^11.0.0",
+    "browserify-incremental": "^3.0.1",
     "concat-stream": "^1.4.6",
     "glob": "^4.0.2",
     "merge": "^1.2.0",

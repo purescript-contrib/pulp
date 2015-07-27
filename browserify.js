@@ -3,6 +3,7 @@ var log = require("./log");
 var files = require("./files");
 var build = require("./build");
 var browserify = require("browserify");
+var browserifyInc = require("browserify-incremental");
 var path = require("path");
 var fs = require("fs");
 var stringStream = require("string-stream");
@@ -39,9 +40,14 @@ function incremental(pro, args, callback) {
     log("Browserifying...");
     var nodePath = process.env.NODE_PATH;
     var buildPath = path.resolve(args.buildPath);
+    var cachePath = path.resolve(process.cwd(), ".browserify-cache.json");
     process.env["NODE_PATH"] = nodePath ? (buildPath + ":" + nodePath) : buildPath;
-    var b = browserify({
-      basedir: buildPath
+    if (args.force) {
+      fs.unlinkSync(cachePath);
+    }
+    var b = browserifyInc({
+      basedir: buildPath,
+      cacheFile: cachePath
     });
     if (args.skipEntryPoint) {
       b.add(path.join(buildPath, args.main));

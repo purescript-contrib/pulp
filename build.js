@@ -14,7 +14,7 @@ module.exports = function(pro, args, callback) {
     null, function(err, rv) {
       if (err) return callback(err);
       log("Build successful.");
-      if (args.optimise) {
+      if (args.optimise || args.to) {
         log("Bundling Javascript...");
         exec.pscBundle(
           [files.outputModules(args.buildPath)],

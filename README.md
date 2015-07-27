@@ -1,4 +1,4 @@
-# Pulp
+# <img align="right" src="https://travis-ci.org/bodil/pulp.svg?branch=master"> Pulp
 
 A build tool for PureScript.
 

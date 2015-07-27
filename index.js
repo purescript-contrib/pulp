@@ -27,10 +27,6 @@ var globals = [
 /* Options common to 'build', 'test' and 'browserify'. */
 var buildTestBrowserifyArgs = [
   args.option(
-    "main", ["--main", "-m"], args.string,
-    "Application's entry point.", "Main"
-  ),
-  args.option(
     "buildPath", ["--build-path", "-o"], args.string,
     "Path for compiler output.", "./output"
   ),
@@ -41,6 +37,10 @@ var buildTestBrowserifyArgs = [
 ];
 
 var buildArgs = buildTestBrowserifyArgs.concat([
+  args.option(
+    "main", ["--main", "-m"], args.string,
+    "Application's entry point.", "Main"
+  ),
   args.option(
     "optimise", ["--optimise", "-O"], args.flag,
     "Perform dead code elimination."
@@ -96,6 +96,10 @@ var commands = [
     function() {
       return require("./browserify").apply(this, arguments);
     }, buildTestBrowserifyArgs.concat([
+      args.option(
+        "main", ["--main", "-m"], args.string,
+        "Application's entry point.", "Main"
+      ),
       args.option(
         "transform", ["--transform"], args.string,
         "Apply a Browserify transform."

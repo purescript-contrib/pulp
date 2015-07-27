@@ -7,8 +7,7 @@ A build tool for PureScript.
 ## Installation
 
 ```sh
-$ cabal install purescript
-$ npm install -g pulp
+$ npm install -g purescript pulp
 ```
 
 ## Project Structure

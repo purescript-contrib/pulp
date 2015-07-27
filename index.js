@@ -97,6 +97,10 @@ var commands = [
       return require("./browserify").apply(this, arguments);
     }, buildTestBrowserifyArgs.concat([
       args.option(
+        "to", ["--to", "-t"], args.string,
+        "Output file name (stdout if not specified)."
+      ),
+      args.option(
         "main", ["--main", "-m"], args.string,
         "Application's entry point.", "Main"
       ),

@@ -155,6 +155,25 @@ var commands = [
     function() {
       return require("./psci").apply(this, arguments);
     }
+  ),
+  args.command(
+    "get", "Shortcut for pulp dep install --save purescript-",
+    function(pro, ar, callback) {
+      ar.remainder = ["install", "--save" + (ar.dev ? "-dev" : "")]
+        .concat( ar.remainder.map(function(x){ return "purescript-" + x; }) );
+      return require("./bower").apply(this, [pro, ar, callback]);
+    }, [
+      args.option(
+        "dev", ["--dev"], args.flag,
+        "save as development dependency"
+      )
+    ]
+  ),
+  args.command(
+    "gen", "produce a new purescript module and test file",
+    function(){
+      return require("./gen").apply(this, arguments)
+    }
   )
 ];
 

@@ -160,6 +160,23 @@ var commands = [
 
 var opts = args.parse(globals, commands, process.argv.slice(2));
 
+if (args.isError(opts) && opts.help && opts.context === "dep") {
+  // Special treatment for `pulp dep --help`
+  opts = {
+    command: {
+      action: function() {
+        return require("./bower").apply(this, arguments);
+      }
+    },
+    remainder: ["help"]
+  };
+  var ansi = require("ansi")(process.stderr);
+  ansi.bold().write("Dependency Management with Bower\n\n").reset();
+  console.error("The `pulp dep` command invokes the Bower package manager.");
+  console.error("Run Bower commands like eg. `pulp dep install` instead of `bower install`.\n");
+  console.error("Consult Bower's help page for the available commands:");
+}
+
 if (args.isError(opts)) {
   if (opts.version) {
     console.log(require('./package.json').version);

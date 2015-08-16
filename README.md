@@ -67,6 +67,10 @@ it.
   PureScript's `psc-docs` command.
 * `pulp psci` launches a PureScript REPL using `psci` with the
   project's modules and dependencies installed.
+* `pulp server` uses Webpack to launch a web server on your project
+  directory, with the compiled project mounted as `/app.js`. Simply
+  add an `index.html` file and enjoy Webpack style automatic
+  rebuilding.
 
 ## Watch and restart
 

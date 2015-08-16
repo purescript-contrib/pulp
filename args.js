@@ -45,6 +45,13 @@ function flag(arg, stream) {
 }
 module.exports.flag = flag;
 
+function int(arg, stream) {
+  var num = parseInt(stream[0], 10);
+  if (isNaN(num)) return argErr(arg, "Needs an integer argument.");
+  return [num, stream.slice(1)];
+};
+module.exports.int = int;
+
 function string(arg, stream) {
   if (!stream[0]) return argErr(arg, "Needs a string argument.");
   return [stream[0], stream.slice(1)];
@@ -226,7 +233,7 @@ function printOpts(options, stream) {
     else if (next.type === string) key += " <string>";
     else if (next.type === directories) key += " <dirs>";
     var desc = next.desc;
-    if (next.defaultValue) desc += " [Default: \"" + next.defaultValue + "\"]";
+    if (next.defaultValue) desc += " [Default: " + next.defaultValue + "]";
     acc[key] = desc;
     return acc;
   }, {}), stream);

@@ -155,6 +155,37 @@ var commands = [
     function() {
       return require("./psci").apply(this, arguments);
     }
+  ),
+  args.command(
+    "server", "Launch a Webpack development server.",
+    function() {
+      return require("./server").apply(this, arguments);
+    }, buildishArgs.concat([
+      args.option(
+        "main", ["--main", "-m"], args.string,
+        "Application's entry point.", "Main"
+      ),
+      args.option(
+        "config", ["--config", "-c"], args.file,
+        "Override the default Webpack config."
+      ),
+      args.option(
+        "port", ["--port", "-p"], args.int,
+        "Port number to listen on.", 1337
+      ),
+      args.option(
+        "host", ["--host", "-h"], args.string,
+        "IP address to bind the server to.", "localhost"
+      ),
+      args.option(
+        "noInfo", ["--no-info"], args.flag,
+        "Display no info to the console, only warnings and errors."
+      ),
+      args.option(
+        "quiet", ["--quiet", "-q"], args.flag,
+        "Display nothing to the console when rebuilding."
+      )
+    ])
   )
 ];
 

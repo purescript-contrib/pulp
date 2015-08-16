@@ -10,14 +10,14 @@ function stripWatchArg(arg) {
 
 var match = new Minimatch("{src,test,bower_components}/**/*");
 
-function watch(act) {
+function watch(match, act) {
   require("watch").watchTree(".", {
     interval: 1337,
     ignoreDotFiles: true
   }, function(f, curr, prev) {
     if (!(typeof f === "object" && prev === null && curr === null)) {
       if (match.match(f)) {
-        act();
+        act(f);
       }
     }
   });
@@ -32,5 +32,7 @@ module.exports = function() {
     log("Source tree changed; restarting:");
     p = child.fork(mod, args);
   };
-  watch(change);
+  watch(match, change);
 };
+
+module.exports.watch = watch;

@@ -20,6 +20,14 @@ function bowerFile(name) {
   }, null, 2) + "\n";
 }
 
+var gitignore = [
+  "/bower_components/",
+  "/node_modules/",
+  "/output/",
+  "/.psci*",
+  "/src/.webpack.js"
+].join("\n") + "\n";
+
 var mainFile = [
   "module Main where",
   "",
@@ -41,6 +49,7 @@ var testFile = [
 function init(callback) {
   var name = path.basename(process.cwd());
   log("Generating project skeleton in", process.cwd());
+  fs.writeFileSync(path.join(process.cwd(), ".gitignore"), gitignore, "utf-8");
   fs.writeFileSync(path.join(process.cwd(), "bower.json"), bowerFile(name), "utf-8");
   if (!fs.existsSync("src")) {
     fs.mkdirSync("src");

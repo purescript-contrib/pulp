@@ -31,6 +31,7 @@ var gitignore = [
 var mainFile = [
   "module Main where",
   "",
+  "import Prelude",
   "import Control.Monad.Eff.Console",
   "",
   "main = do",
@@ -40,6 +41,7 @@ var mainFile = [
 var testFile = [
   "module Test.Main where",
   "",
+  "import Prelude",
   "import Control.Monad.Eff.Console",
   "",
   "main = do",

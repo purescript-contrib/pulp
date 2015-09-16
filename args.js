@@ -28,7 +28,7 @@ function argErr(arg, message) {
 module.exports.argErr = argErr;
 
 function isError(v) {
-  return v && v.error;
+  return v && !!v.error;
 }
 module.exports.isError = isError;
 

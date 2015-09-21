@@ -23,7 +23,7 @@ module.exports = function(pro, args, callback) {
     if (err) return callback(err);
     var main = args.main.replace(".", path.sep) + ".purs";
     var entryPoint = main.replace("\\", "\\\\").replace("'", "\\'");
-    var src = "require('." + path.sep + entryPoint + "').main();\n";
+    var src = "require('." + path.sep.replace("\\", "\\\\") + entryPoint + "').main();\n";
     var entryPath = path.join("src", ".webpack.js");
     fs.writeFileSync(entryPath, src, "utf-8");
 

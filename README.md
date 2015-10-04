@@ -79,6 +79,10 @@ option, which will cause `pulp` to run indefinitely, watching your
 `src` and `test` folders for changes, and re-running the command
 whenever something changes.
 
+`pulp` requires [Watchman](https://facebook.github.io/watchman) to be
+installed. Please follow the
+[Watchman installation documentation](https://facebook.github.io/watchman/docs/install.html).
+
 ## License
 
 Copyright 2014 Bodil Stokke

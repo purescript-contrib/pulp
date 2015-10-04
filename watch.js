@@ -65,17 +65,17 @@ function watchProject(watchDirectory, callback) {
 function watch(callback) {
   client.capabilityCheck({optional:[], required:["relative_root"]}, function (error, res){
     if (error) {
-      log.error("Watchman capability check failed. Error" + error);
+      log.error("Watchman capability check failed. " + error);
 
       client.end();
     }
     else {
       watchDirectories.forEach(function(watchDirectory){
         watchProject(watchDirectory, function(error, res){
-          if (error) log.error("Failed to watch project " + watchDirectory + ". Error: " + error);
+          if (error) log.error("Failed to watch project " + watchDirectory + ". " + error);
           else {
             subscribeToWatch(watchDirectory, res.watch, res.relativePath, function(error){
-              if (error) log.error("Failed to subscribe to watch. Error: " + error);
+              if (error) log.error("Failed to subscribe to watch. " + error);
               else {
                 callback();
               }

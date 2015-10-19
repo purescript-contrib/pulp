@@ -174,7 +174,7 @@ var commands = [
         "Port number to listen on.", 1337
       ),
       args.option(
-        "host", ["--host", "-h"], args.string,
+        "host", ["--host"], args.string,
         "IP address to bind the server to.", "localhost"
       ),
       args.option(

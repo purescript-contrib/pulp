@@ -1,5 +1,7 @@
 # <img align="right" src="https://travis-ci.org/bodil/pulp.svg?branch=master"> Pulp
 
+[![Join the chat at https://gitter.im/bodil/pulp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/bodil/pulp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 A build tool for PureScript.
 
 ![Jarvis Cocker dancing](http://24.media.tumblr.com/77b76c557515a801a7e99ca5507b6548/tumblr_n5cx52oT831r4ba6to1_400.gif)

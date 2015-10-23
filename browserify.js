@@ -20,7 +20,7 @@ function optimising(pro, args, callback) {
         log("Browserifying...");
         var nodePath = process.env.NODE_PATH;
         var buildPath = path.resolve(args.buildPath);
-        process.env["NODE_PATH"] = nodePath ? (buildPath + ":" + nodePath) : buildPath;
+        process.env["NODE_PATH"] = nodePath ? (buildPath + path.delimiter + nodePath) : buildPath;
         var b = browserify({
           basedir: buildPath,
           entries: new stringStream(src)
@@ -47,7 +47,7 @@ function incremental(pro, args, callback) {
     var nodePath = process.env.NODE_PATH;
     var buildPath = path.resolve(args.buildPath);
     var cachePath = path.resolve(process.cwd(), ".browserify-cache.json");
-    process.env["NODE_PATH"] = nodePath ? (buildPath + ":" + nodePath) : buildPath;
+    process.env["NODE_PATH"] = nodePath ? (buildPath + path.delimiter + nodePath) : buildPath;
     if (args.force) {
       fs.unlinkSync(cachePath);
     }

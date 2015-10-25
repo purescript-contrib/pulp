@@ -8,8 +8,8 @@ module.exports = (function() {
   };
 
   exp.launchBower = function(bowerArgs, callback) {
-    var executable = "bower";
-    exec(path.join(__dirname, "node_modules", ".bin", executable), false,
+    var executable = path.join(require.resolve("bower"), "..", "..", "bin", "bower");
+    exec(executable, false,
       bowerArgs, process.env, callback);
   };
 

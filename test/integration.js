@@ -2,7 +2,7 @@ import run from "./sh";
 
 const hello = "Hello sailor!";
 const test = "You should add some tests.";
-const doc = "## Module Main";
+const doc = "## Module Main\n\n#### `main`\n\n``` purescript\nmain :: forall e. Eff (console :: CONSOLE | e) Unit\n```";
 
 describe("integration tests", function() {
   this.timeout(60000);

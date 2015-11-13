@@ -4,7 +4,7 @@ import Prelude
 
 import Control.Monad.Aff
 import Control.Monad.Aff.AVar
-import Data.Map (Map(..))
+import Data.Map (Map())
 import Data.Maybe (Maybe(..))
 import Data.List (List(..))
 

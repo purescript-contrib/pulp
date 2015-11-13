@@ -11,7 +11,7 @@ module Pulp.System.Process
 
 import Prelude
 
-import Control.Monad.Eff (Eff(..))
+import Control.Monad.Eff (Eff())
 
 import Data.Array (drop, (!!))
 import Data.Function

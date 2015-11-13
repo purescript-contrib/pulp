@@ -11,7 +11,7 @@ class Stream s a where
 
 foreign import data NodeStream :: * -> *
 
-foreign import writeToNodeStream :: forall a e. Fn3 (NodeStream a) a (Callback Unit) Unit
+foreign import writeToNodeStream :: forall a. Fn3 (NodeStream a) a (Callback Unit) Unit
 
 instance nodeStream :: Stream NodeStream a where
   write s a = runNode $ runFn3 writeToNodeStream s a

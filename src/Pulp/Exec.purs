@@ -43,6 +43,17 @@ shareAll =
 shareAllButStdout :: StdIOOptions
 shareAllButStdout = shareAll { stdout = Pipe }
 
+-- | Start a child process asynchronously, with the given command line
+-- | arguments and environment, and wait for it to exit.
+-- | On a non-zero exit code, throw an error.
+--
+-- | If the executable was not found and we are on Windows, retry with ".cmd"
+-- | appended.
+-- |
+-- | Stdout, stdin, and stderr of the child process are shared with the pulp
+-- | process (that is, data on stdin from pulp is relayed to the child process,
+-- | and any stdout and stderr from the child process are relayed back out by
+-- | pulp, which usually means they will immediately appear in the terminal).
 exec :: forall e. String -> Array String -> StrMap String -> AffN e Unit
 exec cmd args env = do
   child <- spawn cmd args env shareAll
@@ -55,6 +66,8 @@ exec cmd args env = do
 
   retry newCmd = exec newCmd args env
 
+-- | Same as exec, except instead of relaying stdout immediately, it is
+-- | captured and returned as a String.
 execQuiet :: forall e. String -> Array String -> StrMap String -> AffN e String
 execQuiet cmd args env = do
   child <- spawn cmd args env shareAllButStdout

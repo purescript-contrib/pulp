@@ -1,6 +1,7 @@
 
 // module Pulp.System.ChildProcess
 
-exports["runProcess'"] = function runProcess$prime(cmd, args, opts, callback) {
-  require("child_process").spawn
+exports["spawn'"] = function spawn$prime(cmd, args, env, stdio, callback) {
+  var opts = { env: env, stdio: stdio };
+  require("child_process").spawn(cmd, args, opts, callback);
 }

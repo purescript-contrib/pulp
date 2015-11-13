@@ -12,6 +12,7 @@ import Data.Function
 import Data.String (stripSuffix)
 import Data.StrMap (StrMap())
 import Data.Maybe (Maybe(..))
+import qualified Data.Array as Array
 import Control.Monad (when)
 import Control.Monad.Error.Class (MonadError, throwError)
 import Control.Monad.Eff.Exception (Error(), error)
@@ -25,13 +26,14 @@ import Pulp.System.Stream
 import Pulp.System.FFI
 import Pulp.System.ChildProcess
 
--- TODO
-psc :: Unit
-psc = unit
+psc :: forall e. Array String -> Array String -> Array String -> StrMap String -> AffN e String
+psc deps ffi args env =
+  let allArgs = args <> deps <> (Array.concatMap (\path -> ["--ffi", path]) ffi)
+  in  execQuiet "psc" allArgs env
 
--- TODO
-pscBundle :: Unit
-pscBundle = unit
+pscBundle :: forall e. Array String -> Array String -> StrMap String -> AffN e String
+pscBundle files args env =
+  execQuiet "psc-bundle" (files <> args) env
 
 shareAll :: StdIOOptions
 shareAll =

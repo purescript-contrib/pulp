@@ -13,6 +13,7 @@ import Data.String (stripSuffix)
 import Data.StrMap (StrMap())
 import Data.Maybe (Maybe(..))
 import qualified Data.Array as Array
+import Data.Nullable (toNullable)
 import Control.Monad (when)
 import Control.Monad.Error.Class (MonadError, throwError)
 import Control.Monad.Eff.Exception (Error(), error)
@@ -26,12 +27,12 @@ import Pulp.System.Stream
 import Pulp.System.FFI
 import Pulp.System.ChildProcess
 
-psc :: forall e. Array String -> Array String -> Array String -> StrMap String -> AffN e String
+psc :: forall e. Array String -> Array String -> Array String -> Maybe (StrMap String) -> AffN e String
 psc deps ffi args env =
   let allArgs = args <> deps <> (Array.concatMap (\path -> ["--ffi", path]) ffi)
   in  execQuiet "psc" allArgs env
 
-pscBundle :: forall e. Array String -> Array String -> StrMap String -> AffN e String
+pscBundle :: forall e. Array String -> Array String -> Maybe (StrMap String) -> AffN e String
 pscBundle files args env =
   execQuiet "psc-bundle" (files <> args) env
 
@@ -56,9 +57,9 @@ shareAllButStdout = shareAll { stdout = Pipe }
 -- | process (that is, data on stdin from pulp is relayed to the child process,
 -- | and any stdout and stderr from the child process are relayed back out by
 -- | pulp, which usually means they will immediately appear in the terminal).
-exec :: forall e. String -> Array String -> StrMap String -> AffN e Unit
+exec :: forall e. String -> Array String -> Maybe (StrMap String) -> AffN e Unit
 exec cmd args env = do
-  child <- spawn cmd args env shareAll
+  child <- spawn cmd args (toNullable env) shareAll
   attempt (wait child) >>= either (handleErrors cmd retry) onExit
 
   where
@@ -70,9 +71,9 @@ exec cmd args env = do
 
 -- | Same as exec, except instead of relaying stdout immediately, it is
 -- | captured and returned as a String.
-execQuiet :: forall e. String -> Array String -> StrMap String -> AffN e String
+execQuiet :: forall e. String -> Array String -> Maybe (StrMap String) -> AffN e String
 execQuiet cmd args env = do
-  child <- spawn cmd args env shareAllButStdout
+  child <- spawn cmd args (toNullable env) shareAllButStdout
   outVar <- makeVar
   forkAff (concatStream child.stdout >>= putVar outVar)
   attempt (wait child) >>= either (handleErrors cmd retry) (onExit outVar)

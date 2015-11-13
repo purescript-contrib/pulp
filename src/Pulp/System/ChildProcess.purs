@@ -12,6 +12,7 @@ import Data.Profunctor.Strong (first)
 import Data.Tuple (Tuple(..))
 import qualified Data.Map as Map
 import Data.StrMap (StrMap())
+import Data.Nullable (Nullable())
 import qualified Data.List as List
 import Data.Function
 import Control.Monad.Eff.Class (liftEff)
@@ -27,12 +28,12 @@ type ChildProcess =
   , stderr :: NodeStream String
   }
 
-spawn :: forall e. String -> Array String -> StrMap String -> StdIOOptions -> AffN e ChildProcess
+spawn :: forall e. String -> Array String -> Nullable (StrMap String) -> StdIOOptions -> AffN e ChildProcess
 spawn cmd args env stdio = runNode $ runFn5 spawn' cmd args env (toActualStdIOOptions stdio)
 
 foreign import spawn' :: Fn5 String
                              (Array String)
-                             (StrMap String)
+                             (Nullable (StrMap String))
                              ActualStdIOOptions
                              (Callback ChildProcess)
                              Unit

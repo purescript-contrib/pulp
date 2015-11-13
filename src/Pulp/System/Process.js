@@ -13,3 +13,11 @@ exports.exit = function exit(code) {
     process.exit(code);
   };
 };
+
+exports.getEnvironment = function getEnvironment() {
+  return process.env
+}
+
+exports.getPlatform = function getPlatform() {
+  return process.platform;
+};

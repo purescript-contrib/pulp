@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "ansi": "^0.3.0",
-    "bower": "*",
+    "bower": "^1.6.5",
     "browserify": "^11.0.0",
     "browserify-incremental": "^3.0.1",
     "concat-stream": "^1.4.6",

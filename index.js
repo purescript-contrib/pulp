@@ -48,6 +48,10 @@ var buildArgs = buildishArgs.concat([
   args.option(
     "to", ["--to", "-t"], args.string,
     "Output file name (stdout if not specified)."
+  ),
+  args.option(
+    "modules", ["--modules"], args.string,
+    "Additional modules to be included in the output bundle (comma-separated list)."
   )
 ]);
 

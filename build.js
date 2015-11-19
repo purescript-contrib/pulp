@@ -16,11 +16,17 @@ module.exports = function(pro, args, callback) {
       log("Build successful.");
       if (args.optimise || args.to) {
         log("Bundling Javascript...");
+
+        var bundleArgs = [
+          "--module=" + args.main, "--main=" + args.main
+        ].concat(
+          (args.modules || "").split(",").map(function(m) { return "--module=" + m; }),
+          args.remainder
+        );
+
         exec.pscBundle(
           [files.outputModules(args.buildPath)],
-          [
-            "--module=" + args.main, "--main=" + args.main
-          ].concat(args.remainder), null, function(err, src) {
+          bundleArgs, null, function(err, src) {
             if (err) return callback(err);
             var out = args.to ? fs.createWriteStream(args.to) : process.stdout;
             out.write(src, "utf-8", function(err) {

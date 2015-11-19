@@ -8,7 +8,8 @@ import Control.Monad.Eff.Class (liftEff)
 import Data.Array (sort)
 import Data.Foldable (foldr)
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.StrMap (StrMap(..), keys, lookup, insert, empty)
+import Data.Maybe.Unsafe (fromJust)
+import Data.StrMap (StrMap(), keys, lookup, insert, empty)
 import qualified Data.String as Str
 import Data.Traversable (sequence)
 
@@ -28,8 +29,7 @@ formatTable :: forall e. StrMap String -> EffN e String
 formatTable table =
   let headers = sort $ keys table
       longest = fromMaybe 0 $ max $ headers <#> Str.length
-      formatEntry key = case lookup key table of
-        (Just entry) ->
+      formatEntry key = fromJust (lookup key table) # \entry ->
           let padding = longest - Str.length key
           in do
             formatted <- wrap entry (longest + 4)

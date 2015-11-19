@@ -2,8 +2,9 @@ module Pulp.System.FFI where
 
 import Prelude
 
-import Control.Monad.Aff (Aff(..), makeAff)
-import Control.Monad.Eff (Eff(..))
+import Control.Monad.Aff (Aff(), makeAff)
+import Control.Monad.Aff.AVar (AVAR())
+import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Exception (Error())
 import Data.Function
 
@@ -11,7 +12,7 @@ foreign import data Node :: !
 foreign import data NodeError :: *
 
 type EffN e a = Eff (node :: Node | e) a
-type AffN e a = Aff (node :: Node | e) a
+type AffN e a = Aff (node :: Node, avar :: AVAR | e) a
 
 type Callback a = (NodeError -> a -> Unit) -> Unit
 

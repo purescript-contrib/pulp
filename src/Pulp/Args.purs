@@ -3,7 +3,8 @@ module Pulp.Args where
 import Prelude
 
 import Control.Monad.Aff
-import Data.Map (Map(..))
+import Control.Monad.Aff.AVar
+import Data.Map (Map())
 import Data.Maybe (Maybe(..))
 import Data.List (List(..))
 
@@ -15,7 +16,7 @@ type Options = Map String (Maybe String)
 
 type Action = forall e. Options -> Aff e Unit
 
-type OptParser a = forall e. ParserT (List String) (Aff (node :: Node | e)) a
+type OptParser a = forall e. ParserT (List String) (Aff (node :: Node, avar :: AVAR | e)) a
 
 type OptionParser = {
   name :: Maybe String,

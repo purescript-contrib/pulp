@@ -3,8 +3,9 @@ module Main where
 import Prelude
 
 import Control.Monad.Aff
+import Control.Monad.Aff.AVar
 import Control.Monad.Eff
-import Control.Monad.Eff.Console (log, CONSOLE(..))
+import Control.Monad.Eff.Console (log, CONSOLE())
 import Control.Monad.Eff.Exception
 import Data.Array.Unsafe (head)
 import Data.Either (Either(..))
@@ -93,6 +94,7 @@ failed err = do
 succeeded :: forall e. Unit -> EffN e Unit
 succeeded _ = exit 0
 
+main :: forall e. Eff (avar :: AVAR, console :: CONSOLE, node :: Node | e) Unit
 main = runAff failed succeeded do
   opts <- parse globals commands argv
   case opts of

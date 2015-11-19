@@ -22,7 +22,7 @@ import qualified Text.Parsing.Parser.Token as Token
 import qualified Text.Parsing.Parser.Pos as Pos
 
 import Pulp.Args
-import Pulp.System.FFI (AffN(..))
+import Pulp.System.FFI (AffN())
 
 halt :: forall a. String -> OptParser a
 halt err = lift $ throwError $ error err

@@ -24,6 +24,8 @@
     "purescript-console": "~0.1.1",
     "purescript-unsafe-coerce": "~0.1.0",
     "purescript-profunctor": "~0.3.1",
-    "purescript-nullable": "~0.2.1"
+    "purescript-nullable": "~0.2.1",
+    "purescript-globals": "~0.2.1",
+    "purescript-integers": "~0.2.1"
   }
 }

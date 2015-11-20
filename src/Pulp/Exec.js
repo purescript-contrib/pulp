@@ -7,6 +7,17 @@ exports.isENOENT = function isENOENT(error) {
   return error.code === "ENOENT";
 };
 
-exports["concatStream'"] = function exec$prime(stream, callback) {
-  stream.pipe(require("concat-stream")(callback));
+exports["concatStream'"] = function concatStream$prime(stream, callback) {
+  var concat = require("concat-stream");
+
+  var onSuccess = function(buf) {
+    callback(null, buf.toString("utf-8"));
+  };
+
+  var onError = function(err) {
+    callback(err, null);
+  }
+
+  stream.on('error', onError);
+  stream.pipe(concat(onSuccess));
 }

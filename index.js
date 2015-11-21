@@ -218,6 +218,8 @@ var commands = [
 
 var opts = args.parse(globals, commands, process.argv.slice(2));
 
+module.exports.opts = opts;
+
 if (args.isError(opts) && opts.help && opts.context === "dep") {
   // Special treatment for `pulp dep --help`
   opts = {

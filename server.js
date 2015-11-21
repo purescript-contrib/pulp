@@ -5,9 +5,7 @@ var webpack = require("webpack");
 var Server = require("webpack-dev-server");
 var files = require("./files");
 var watch = require("./watch").watch;
-var Minimatch = require("minimatch").Minimatch;
-
-var ffiMatch = new Minimatch("src/**/*.js");
+var minimatch = require("minimatch");
 
 module.exports = function(pro, args, callback) {
   var buildPath = path.resolve(args.buildPath);
@@ -80,10 +78,13 @@ module.exports = function(pro, args, callback) {
       console.log("Server running on http://" + args.host + ":" + args.port + "/");
     });
 
-    watch(ffiMatch, function(f) {
-      touch(path.join("src", main), function(err) {
-        if (err) return callback(err);
-      });
+    watch(["src"], function(change) {
+      var matched = minimatch(change, "src/**/*.js");
+      if (matched) {
+        touch(path.join("src", main), function(err) {
+          if (err) return callback(err);
+        });
+      }
     });
   });
 }

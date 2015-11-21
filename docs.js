@@ -4,11 +4,11 @@ var exec = require("./exec");
 
 module.exports = function(pro, args, callback) {
   log("Generating documentation in", process.cwd());
-  var globSrc = files.defaultGlobs;
-  var globGen = files.localGlobs;
+  var globSrc = files.defaultGlobs(args);
+  var globGen = files.localGlobs(args);
   if (args.withTests) {
-    globSrc = globSrc.union(files.testGlobs);
-    globGen = globGen.union(files.testGlobs);
+    globSrc = globSrc.union(files.testGlobs(args));
+    globGen = globGen.union(files.testGlobs(args));
   }
 
   files.resolveGlobs(globGen.sources(), function(err, genFiles) {

@@ -11,8 +11,8 @@ module.exports = function(pro, args, callback) {
     callback();
   };
   var globSet =
-      [ files.defaultGlobs
-      , files.testGlobs
+      [ files.defaultGlobs(args)
+      , files.testGlobs(args)
       , files.SourceFileGlobSet(args.includePaths)
       ].reduce(function(a, b) { return a.union(b) })
 

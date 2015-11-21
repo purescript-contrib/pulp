@@ -11,7 +11,7 @@ var ffiMatch = new Minimatch("src/**/*.js");
 
 module.exports = function(pro, args, callback) {
   var buildPath = path.resolve(args.buildPath);
-  var globSet = files.defaultGlobs.union(files.SourceFileGlobSet(args.includePaths));
+  var globSet = files.defaultGlobs(args).union(files.SourceFileGlobSet(args.includePaths));
   var sources = globSet.sources().map(function(i) {
     return "src[]=" + i;
   });

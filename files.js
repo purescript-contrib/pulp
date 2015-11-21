@@ -10,8 +10,7 @@ function readJson(fn) {
     return {};
   }
 }
-
-var bowerDirs = path.join(readJson(".bowerrc").directory || "bower_components", "purescript-*", "src");
+module.exports.readJson = readJson;
 
 function SourceFileGlobSet(dirs) {
   if (!(this instanceof SourceFileGlobSet)) {
@@ -44,12 +43,25 @@ SourceFileGlobSet.prototype.ffis = function ffis() {
   });
 };
 
-module.exports.emptyGlobs      = new SourceFileGlobSet([]);
-module.exports.localGlobs      = new SourceFileGlobSet(["src"]);
-module.exports.dependencyGlobs = new SourceFileGlobSet([bowerDirs]);
-module.exports.testGlobs       = new SourceFileGlobSet(["test"]);
+function localGlobs(args) {
+  return new SourceFileGlobSet(args.srcPath);
+}
+module.exports.localGlobs = localGlobs;
 
-module.exports.defaultGlobs = exports.localGlobs.union(exports.dependencyGlobs);
+function dependencyGlobs(args) {
+  return new SourceFileGlobSet(args.dependencyPath);
+}
+module.exports.dependencyGlobs = dependencyGlobs;
+
+function testGlobs(args) {
+  return new SourceFileGlobSet(args.testPath);
+}
+module.exports.testGlobs = testGlobs;
+
+function defaultGlobs(args) {
+  return localGlobs(args).union(dependencyGlobs(args));
+}
+module.exports.defaultGlobs = defaultGlobs;
 
 function outputModules(buildPath) {
   return function(callback) {

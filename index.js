@@ -3,7 +3,11 @@
 var args = require("./args");
 var log = require("./log");
 var validate = require("./validate");
+var files = require("./files");
 var merge = require("merge");
+var path = require("path");
+
+var defaultDependencyPath = path.join(files.readJson(".bowerrc").directory || "bower_components", "purescript-*", "src");
 
 var globals = [
   args.option(
@@ -24,8 +28,31 @@ var globals = [
   )
 ];
 
+// Options for any command requiring paths
+var pathArgs = [
+  args.option(
+    "includePaths", ["--include", "-I"], args.directories,
+    "Additional directories for PureScript source files, separated by spaces."
+  ),
+  args.option(
+    "srcPath", ["--src-path"], args.directories,
+    "Directories for PureScript source files, separated by spaces.",
+    [ "src" ]
+  ),
+  args.option(
+    "testPath", ["--test-path"], args.directories,
+    "Directories for PureScript test files, separated by spaces.",
+    [ "test" ]
+  ),
+  args.option(
+    "dependencyPath", ["--dependency-path"], args.directories,
+    "Directories for PureScript dependency files, separated by spaces.",
+    [ defaultDependencyPath ]
+  )
+];
+
 // Options common to 'build', 'test' and 'browserify'
-var buildishArgs = [
+var buildishArgs = pathArgs.concat([
   args.option(
     "buildPath", ["--build-path", "-o"], args.string,
     "Path for compiler output.", "./output"
@@ -33,12 +60,8 @@ var buildishArgs = [
   args.option(
     "optimise", ["--optimise", "-O"], args.flag,
     "Perform dead code elimination."
-  ),
-  args.option(
-    "includePaths", ["--include", "-I"], args.directories,
-    "Additional directories for PureScript source files, separated by spaces."
   )
-];
+]);
 
 var buildArgs = buildishArgs.concat([
   args.option(
@@ -143,7 +166,7 @@ var commands = [
   args.command(
     "docs", "Generate project documentation.", function() {
       return require("./docs").apply(this, arguments);
-    }, [
+    }, pathArgs.concat([
       args.option(
         "withTests", ["--with-tests", "-t"], args.flag,
         "Include tests."
@@ -152,13 +175,13 @@ var commands = [
         "withDeps", ["--with-deps", "-d"], args.flag,
         "Include external dependencies."
       )
-    ]
+    ])
   ),
   args.command(
     "psci", "Launch a PureScript REPL configured for the project.",
     function() {
       return require("./psci").apply(this, arguments);
-    }
+    }, pathArgs
   ),
   args.command(
     "server", "Launch a Webpack development server.",

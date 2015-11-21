@@ -8,7 +8,7 @@ var temp = require("temp").track();
 
 module.exports = function(pro, args, callback) {
   log("Building project in", process.cwd());
-  var globSet = files.defaultGlobs.union(files.SourceFileGlobSet(args.includePaths));
+  var globSet = files.defaultGlobs(args).union(files.SourceFileGlobSet(args.includePaths));
 
   exec.psc(
     globSet.sources(),

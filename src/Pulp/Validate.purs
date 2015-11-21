@@ -21,7 +21,8 @@ validate :: forall e. AffN e Unit
 validate = do
   ver <- getPscVersion
   when (ver < minimumPscVersion) $ do
-    Log.err $ "This version of Pulp requires PureScript version 0.7.0.0 or higher."
+    Log.err $ "This version of Pulp requires PureScript version "
+              <> showVersion minimumPscVersion <> " or higher."
     Log.err $ "Your installed version is " <> showVersion ver <> "."
     Log.err $ "Please either upgrade PureScript or downgrade Pulp to version 3.x."
     liftEff $ exit 1

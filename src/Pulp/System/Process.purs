@@ -30,7 +30,7 @@ commandName = fromMaybe "pulp" $ argv' !! 1
 argv :: Array String
 argv = drop 2 argv'
 
-foreign import exit :: forall e. Int -> EffN e Unit
+foreign import exit :: forall e a. Int -> EffN e a
 
 foreign import stdin :: NodeStream String
 foreign import stdout :: NodeStream String

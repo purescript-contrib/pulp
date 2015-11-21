@@ -18,6 +18,7 @@ import Pulp.Args.Parser (parse)
 import Pulp.System.FFI
 import qualified Pulp.System.Log as Log
 import Pulp.System.Process (argv, exit)
+import Pulp.Validate (validate)
 
 globals :: Array Args.Option
 globals = [
@@ -102,6 +103,7 @@ main = runAff failed succeeded do
       Log.err $ "Error: " ++ err
       printHelp Log.out globals commands
     Right opts -> do
+      validate
       Log.log $ "Globals: " ++ show opts.globalOpts
       Log.log $ "Command: " ++ opts.command.name
       Log.log $ "Locals: " ++ show opts.commandOpts

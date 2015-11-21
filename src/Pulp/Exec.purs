@@ -59,7 +59,7 @@ shareAllButStdout = shareAll { stdout = Pipe }
 -- | pulp, which usually means they will immediately appear in the terminal).
 exec :: forall e. String -> Array String -> Maybe (StrMap String) -> AffN e Unit
 exec cmd args env = do
-  child <- spawn cmd args (toNullable env) shareAll
+  child <- liftEff $ spawn cmd args (toNullable env) shareAll
   attempt (wait child) >>= either (handleErrors cmd retry) onExit
 
   where
@@ -73,7 +73,7 @@ exec cmd args env = do
 -- | captured and returned as a String.
 execQuiet :: forall e. String -> Array String -> Maybe (StrMap String) -> AffN e String
 execQuiet cmd args env = do
-  child <- spawn cmd args (toNullable env) shareAllButStdout
+  child <- liftEff $ spawn cmd args (toNullable env) shareAllButStdout
   outVar <- makeVar
   forkAff (concatStream child.stdout >>= putVar outVar)
   attempt (wait child) >>= either (handleErrors cmd retry) (onExit outVar)

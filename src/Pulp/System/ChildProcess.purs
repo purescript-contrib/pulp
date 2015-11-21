@@ -28,15 +28,15 @@ type ChildProcess =
   , stderr :: NodeStream String
   }
 
-spawn :: forall e. String -> Array String -> Nullable (StrMap String) -> StdIOOptions -> AffN e ChildProcess
-spawn cmd args env stdio = runNode $ runFn5 spawn' cmd args env (toActualStdIOOptions stdio)
+spawn :: forall e. String -> Array String -> Nullable (StrMap String) -> StdIOOptions -> EffN e ChildProcess
+spawn cmd args env stdio = runFn4 spawn' cmd args env (toActualStdIOOptions stdio)
 
-foreign import spawn' :: Fn5 String
-                             (Array String)
-                             (Nullable (StrMap String))
-                             ActualStdIOOptions
-                             (Callback ChildProcess)
-                             Unit
+foreign import spawn' :: forall e.
+  Fn4 String
+      (Array String)
+      (Nullable (StrMap String))
+      ActualStdIOOptions
+      (EffN e ChildProcess)
 
 wait :: forall e. ChildProcess -> AffN e Int
 wait child = runNode $ runFn2 wait' child

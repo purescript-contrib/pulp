@@ -14,7 +14,10 @@ foreign import data NodeError :: *
 type EffN e a = Eff (node :: Node | e) a
 type AffN e a = Aff (node :: Node, avar :: AVAR | e) a
 
-type Callback a = (NodeError -> a -> Unit) -> Unit
+-- | A normal side-effecting node callback, taking 2 parameters: the first for
+-- | an error, the second for success. The type of the success value should be
+-- | the same as the type parameter.
+foreign import data Callback :: * -> *
 
 foreign import runNode'  :: forall a e. Fn3 (Error -> EffN e Unit) (a -> EffN e Unit) (Callback a -> Unit) (EffN e Unit)
 

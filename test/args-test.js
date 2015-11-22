@@ -167,7 +167,7 @@ describe('Args', () => {
               path.join(__dirname, 'nothereagain/')
             ];
             var quoted = directories.map(dir => "'" + dir + "'");
-            var stream = [directories.join(' '), {}];
+            var stream = [directories.join(path.delimiter), {}];
 
             it('returns argErr: Directories Not Found', () => {
               assert.deepEqual(args.directories(arg, stream), {

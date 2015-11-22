@@ -44,17 +44,17 @@ SourceFileGlobSet.prototype.ffis = function ffis() {
 };
 
 function localGlobs(args) {
-  return new SourceFileGlobSet(args.srcPath);
+  return new SourceFileGlobSet([args.srcPath]);
 }
 module.exports.localGlobs = localGlobs;
 
 function dependencyGlobs(args) {
-  return new SourceFileGlobSet(args.dependencyPath);
+  return new SourceFileGlobSet([path.join(args.dependencyPath, "purescript-*", "src")]);
 }
 module.exports.dependencyGlobs = dependencyGlobs;
 
 function testGlobs(args) {
-  return new SourceFileGlobSet(args.testPath);
+  return new SourceFileGlobSet([args.testPath]);
 }
 module.exports.testGlobs = testGlobs;
 

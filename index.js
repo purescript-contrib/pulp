@@ -7,7 +7,7 @@ var files = require("./files");
 var merge = require("merge");
 var path = require("path");
 
-var defaultDependencyPath = path.join(files.readJson(".bowerrc").directory || "bower_components", "purescript-*", "src");
+var defaultDependencyPath = files.readJson(".bowerrc").directory || "bower_components";
 
 var globals = [
   args.option(
@@ -32,22 +32,22 @@ var globals = [
 var pathArgs = [
   args.option(
     "includePaths", ["--include", "-I"], args.directories,
-    "Additional directories for PureScript source files, separated by spaces."
+    "Additional source directories, separated by `" + path.delimiter + "`."
   ),
   args.option(
-    "srcPath", ["--src-path"], args.directories,
-    "Directories for PureScript source files, separated by spaces.",
-    [ "src" ]
+    "srcPath", ["--src-path"], args.directory,
+    "Directory for PureScript source files.",
+    "src"
   ),
   args.option(
-    "testPath", ["--test-path"], args.directories,
-    "Directories for PureScript test files, separated by spaces.",
-    [ "test" ]
+    "testPath", ["--test-path"], args.directory,
+    "Directory for PureScript test files.",
+    "test"
   ),
   args.option(
-    "dependencyPath", ["--dependency-path"], args.directories,
-    "Directories for PureScript dependency files, separated by spaces.",
-    [ defaultDependencyPath ]
+    "dependencyPath", ["--dependency-path"], args.directory,
+    "Directory for PureScript dependency files.",
+    defaultDependencyPath
   )
 ];
 

@@ -1,5 +1,6 @@
 var merge = require("merge");
 var fs = require("fs");
+var path = require("path");
 
 function wrap(s, indent) {
   var w = require("wordwrap").hard;
@@ -61,7 +62,7 @@ module.exports.string = string;
 function file(arg, stream) {
   var filename = stream[0];
   if (!filename) return argErr(arg, "Needs a file argument.");
-  if (require("fs").existsSync(filename)) {
+  if (fs.existsSync(filename)) {
     return [filename, stream.slice(1)];
   } else {
     return argErr(arg, "File '" + filename + "' not found.");
@@ -69,15 +70,31 @@ function file(arg, stream) {
 };
 module.exports.file = file;
 
+function directory(arg, stream) {
+  var filename = stream[0];
+  if (!filename) return argErr(arg, "Needs a directory argument.");
+  var stats = fs.statSync(filename);
+  if (stats) {
+    if (stats.isDirectory()) {
+      return [filename, stream.slice(1)];
+    } else {
+      return argErr(arg, "Path '" + filename + "' is not a directory.");
+    }
+  } else {
+    return argErr(arg, "Directory '" + filename + "' not found.");
+  }
+};
+module.exports.directory = directory;
+
 function directories(arg, stream) {
   if (!stream[0]) return argErr(arg, "Needs a directory argument.");
-  var dirnames = stream[0].split(/\s+/).filter(function(s) { return s !== '' });
-  var notExists = dirnames.filter(function(d) { return !fs.existsSync(d) });
+  var dirnames = stream[0].split(path.delimiter).filter(function(s) { return s !== ""; });
+  var notExists = dirnames.filter(function(d) { return !fs.existsSync(d); });
   if (notExists.length === 0) {
     return [dirnames, stream.slice(1)];
   } else {
-    var quoted = notExists.map(function(f) { return "'" + f + "'" })
-    var directories = notExists.length === 1 ? "Directory" : "Directories"
+    var quoted = notExists.map(function(f) { return "'" + f + "'"; });
+    var directories = notExists.length === 1 ? "Directory" : "Directories";
     return argErr(arg, directories + ": " + quoted.join(' ') + " not found.");
   }
 }
@@ -231,7 +248,8 @@ function printOpts(options, stream) {
     var key = next.match.join(" ");
     if (next.type === file) key += " <file>";
     else if (next.type === string) key += " <string>";
-    else if (next.type === directories) key += " <dirs>";
+    else if (next.type === directory) key += " <dir>";
+    else if (next.type === directories) key += " <dir" + path.delimiter + "dir" + path.delimiter + "...>";
     var desc = next.desc;
     if (next.defaultValue) desc += " [Default: " + next.defaultValue + "]";
     acc[key] = desc;

@@ -32,17 +32,24 @@ globals = [
     "Run a shell command after the operation finishes. Useful with `--watch`."
   ]
 
-mainlessBuildArgs :: Array Args.Option
-mainlessBuildArgs = [
+-- | Options common to 'build', 'test', and 'browserify'
+buildTestBrowserifyArgs :: Array Args.Option
+buildTestBrowserifyArgs = [
   Args.optionDefault "buildPath" ["--build-path", "-o"] Type.string
-    "Path for compiler output." "./output"
+    "Path for compiler output." "./output",
+  Args.option "includePaths", ["--include", "-I"] Type.string
+    "Additional directories for PureScript source files, separated by spaces."
   ]
 
 buildArgs :: Array Args.Option
 buildArgs = [
   Args.optionDefault "main" ["--main", "-m"] Type.string
-    "Application's entry point." "Main"
-  ] ++ mainlessBuildArgs
+    "Application's entry point." "Main",
+  Args.option "optimise" ["--optimise", "-O"] Type.flag
+    "Perform dead code elimination."
+  Args.option "to" ["--to", "-t"] Type.string
+    "Output file name (stdout if not specified)."
+  ] ++ buildTestBrowserifyArgs
 
 nop :: Args.Action
 nop _ = return unit
@@ -59,24 +66,31 @@ commands = [
     Args.optionDefault "main" ["--main", "-m"] Type.string
       "Test entry point." "Test.Main",
     Args.option "testRuntime" ["--runtime", "-r"] Type.string
-      "Run test script using this command instead of Node."
-    ] ++ mainlessBuildArgs,
+      "Run test script using this command instead of Node.",
+    Args.optionDefault "engine" ["--engine"] Type.string
+      "Run the Application on a different JavaScript engine (node, iojs)", "node"
+    ] ++ buildTestBrowserifyArgs,
   Args.command "browserify"
     "Produce a deployable bundle using Browserify." nop [
       Args.option "to" ["--to", "-t"] Type.string
         "Output file name for bundle (stdout if not specified).",
+      Args.optionDefault "main" ["--main", "-m"] Type.string
+        "Application's entry point." "Main",
       Args.option "transform" ["--transform"] Type.string
         "Apply a Browserify transform.",
       Args.option "sourceMap" ["--source-map"] Type.string
         "Generate source maps.",
-      Args.option "optimise" ["--optimise", "-O"] Type.flag
-        "Perform dead code elimination.",
       Args.option "skipEntryPoint" ["--skip-entry-point"] Type.flag
         "Don't add code to automatically invoke Main.",
       Args.option "skipCompile" ["--skip-compile"] Type.flag
-        "Don't run `pulp build` before browserifying."
-      ],
-  Args.command "run" "Compile and run the project." nop buildArgs,
+        "Don't run `pulp build` before browserifying.",
+      Args.option "force" ["--force"] Type.flag
+        "Force a non-incremental build by deleting the build cache."
+      ] ++ buildTestBrowserifyArgs,
+  Args.command "run" "Compile and run the project." nop [
+    Args.optionDefault "engine" ["--engine"] Type.string
+      "Run the Application on a different JavaScript engine (node, iojs)", "node"
+    ] ++ buildArgs,
   Args.command "docs" "Generate project documentation." nop [
     Args.option "withTests" ["--with-tests", "-t"] Type.flag
       "Include tests.",

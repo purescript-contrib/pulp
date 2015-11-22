@@ -1,5 +1,6 @@
 var fs = require("fs");
 var p = require("path");
+var mkdirp = require("mkdirp");
 
 function findIn(path, file, callback) {
   var fullPath = p.join(path, file);
@@ -19,8 +20,17 @@ function readConfig(configFilePath, callback) {
     } catch(e) {
       return callback(e);
     }
-    process.chdir(p.dirname(configFilePath));
-    callback(null, pro);
+    var path = p.dirname(configFilePath);
+    var cachePath = p.resolve(path, ".pulp-cache");
+    process.chdir(path);
+    mkdirp(cachePath, function(err) {
+      if (err) return callback(err);
+      callback(null, {
+        path: path,
+        cache: cachePath,
+        bowerfile: pro
+      });
+    });
   });
 }
 

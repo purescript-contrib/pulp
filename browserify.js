@@ -47,7 +47,7 @@ function incremental(pro, args, callback) {
     log("Browserifying...");
     var nodePath = process.env.NODE_PATH;
     var buildPath = path.resolve(args.buildPath);
-    var cachePath = path.resolve(process.cwd(), ".browserify-cache.json");
+    var cachePath = path.resolve(pro.cache, "browserify.json");
     process.env["NODE_PATH"] = nodePath ? (buildPath + path.delimiter + nodePath) : buildPath;
     if (args.force) {
       fs.unlinkSync(cachePath);

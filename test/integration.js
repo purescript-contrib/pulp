@@ -38,11 +38,11 @@ describe("integration tests", function() {
   }));
 
   it("pulp build -O --src-path alt", run(function*(sh, pulp, assert, temp) {
-    fs.mkdirSync(path.join(temp, "alt"));
-    fs.writeFileSync(path.join(temp, "bower.json"), "{}");
-    fs.writeFileSync(path.join(temp, "alt", "Alt.purs"), "module Alt where\n");
+    yield pulp("init");
+    yield sh("mv src alt");
     const [src] = yield pulp("build -O --src-path alt");
-    assert.ok(src.indexOf("var PS") !== -1);
+    const [out] = yield sh("node", src);
+    assert.equal(out.trim(), hello);
   }));
 
   it("pulp test", run(function*(sh, pulp, assert) {
@@ -52,13 +52,10 @@ describe("integration tests", function() {
   }));
 
   it("pulp test --test-path alt", run(function*(sh, pulp, assert, temp) {
-    var test = "module Test.Main where\nimport Prelude\nimport Control.Monad.Eff\nmain :: Eff () Unit\nmain = pure unit";
     yield pulp("init");
-    fs.mkdirSync(path.join(temp, "alt"));
-    fs.writeFileSync(path.join(temp, "bower.json"), "{}");
-    fs.writeFileSync(path.join(temp, "alt", "Test.purs"), test);
-    const [out] = yield pulp("test --test-path alt");
-    assert.equal(out, "");
+    yield sh("mv test alt");
+    const [out] = yield pulp("test --src-path alt");
+    assert.equal(out.trim(), test);
   }));
 
   it("pulp browserify", run(function*(sh, pulp, assert) {

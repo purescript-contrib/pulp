@@ -31,9 +31,9 @@ function exec(cmd, quiet, args, env, callback) {
       // On Windows: if executable wasn't found, try adding .cmd
       if (process.platform == "win32") {
         if (!cmd.match(/\.cmd$/i)) {
-          exec(cmd + ".cmd", quiet, args, env, callback)
+          exec(cmd + ".cmd", quiet, args, env, callback);
         } else {
-          var bareCmd = cmd.substr(0, cmd.length - 4)
+          var bareCmd = cmd.substr(0, cmd.length - 4);
           callback(new Error("`" + bareCmd + "` executable not found. (nor `" + cmd + "`)"));
         }
       }

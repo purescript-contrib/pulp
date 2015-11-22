@@ -74,7 +74,7 @@ function resolveGlobs(patterns, callback) {
   var fns = patterns.map(function(pattern) {
     return function(cb) {
       glob(pattern, {}, cb);
-    }
+    };
   });
 
   resolve(fns, callback);

@@ -12,7 +12,7 @@ var merge = require("merge");
 function optimising(pro, args, callback) {
   var fn = function(err) {
     if (err) return callback(err);
-    var globSet = files.defaultGlobs.union(files.SourceFileGlobSet(args.includePaths));
+    var globSet = files.defaultGlobs(args).union(files.SourceFileGlobSet(args.includePaths));
     exec.pscBundle(
       [files.outputModules(args.buildPath)],
       ["--module=" + args.main, "--main=" + args.main].concat(args.remainder),

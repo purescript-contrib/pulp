@@ -39,7 +39,7 @@ export default function run(fn) {
       } else {
         const pulpPath = resolve(__dirname, "..", "index.js");
         const pulp = (cmd) => sh(path, `node ${pulpPath} ${cmd}`);
-        co(fn(sh.bind(null, path), pulp, asserts(path))).then(done, done);
+        co(fn(sh.bind(null, path), pulp, asserts(path), path)).then(done, done);
       }
     });
   };

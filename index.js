@@ -60,6 +60,10 @@ var buildishArgs = pathArgs.concat([
   args.option(
     "optimise", ["--optimise", "-O"], args.flag,
     "Perform dead code elimination."
+  ),
+  args.option(
+    "force", ["--force"], args.flag,
+    "Force a build even if no source files have changed."
   )
 ]);
 
@@ -142,14 +146,6 @@ var commands = [
       args.option(
         "skipEntryPoint", ["--skip-entry-point"], args.flag,
         "Don't add code to automatically invoke Main."
-      ),
-      args.option(
-        "skipCompile", ["--skip-compile"], args.flag,
-        "Don't run `pulp build` before browserifying."
-      ),
-      args.option(
-        "force", ["--force"], args.flag,
-        "Force a non-incremental build by deleting the build cache."
       )
     ])
   ),

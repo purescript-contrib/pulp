@@ -32,13 +32,9 @@ function optimising(pro, args, callback) {
       }
     );
   };
-  if (args.skipCompile) {
-    fn(null);
-  } else {
-    var buildArgs = merge({}, args);
-    delete buildArgs.optimise;
-    build(pro, buildArgs, fn);
-  }
+  var buildArgs = merge({}, args);
+  delete buildArgs.optimise;
+  build(pro, buildArgs, fn);
 }
 
 function incremental(pro, args, callback) {
@@ -69,11 +65,7 @@ function incremental(pro, args, callback) {
     b.bundle().pipe(args.to ? fs.createWriteStream(args.to) : process.stdout)
      .on("close", callback);
   };
-  if (args.skipCompile) {
-    fn(null);
-  } else {
-    build(pro, args, fn);
-  }
+  build(pro, args, fn);
 }
 
 module.exports = function(pro, args, callback) {

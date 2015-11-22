@@ -114,7 +114,7 @@ var commands = [
       ),
       args.option(
         "engine", ["--engine"], args.string,
-        "Run the Application on a different JavaScript engine (node, iojs)", "node"
+        "Use the specified command to run compiled code", "node"
       )
     ].concat(buildishArgs)
   ),
@@ -159,7 +159,7 @@ var commands = [
     }, [
       args.option(
         "engine", ["--engine"], args.string,
-        "Run the Application on a different JavaScript engine (node, iojs)", "node"
+        "Use the specified command to run compiled code", "node"
       )
     ].concat(buildArgs)
   ),

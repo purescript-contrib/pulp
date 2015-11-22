@@ -274,7 +274,7 @@ function help(globals, commands, context, stream) {
       "version", ["--version", "-v"], flag, "Show current pulp version"
     )
   ]);
-  out.write("Usage: " + process.argv[1] + " [options] <command> [command-options]\n");
+  out.write("Usage: " + path.parse(process.argv[1]).name + " [options] <command> [command-options]\n");
   if (context) {
     cmd = commands.filter(function(c) { return c.name === context; })[0];
     out.write("\n").bold().write("Command: " + cmd.name).reset().write("\n");
@@ -289,7 +289,7 @@ function help(globals, commands, context, stream) {
     out.bold().write("Commands:").reset().write("\n");
     printCmds(commands, out);
     out.write("\n").write(wrap(
-      "Use `" + process.argv[1] + " <command> --help` to learn about " +
+      "Use `" + path.parse(process.argv[1]).name + " <command> --help` to learn about " +
         "command specific options.", 2
     )).write("\n\n");
   }

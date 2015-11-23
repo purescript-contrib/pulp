@@ -11,10 +11,8 @@ function stripWatchArg(arg) {
   return arg !== "-w" && arg !== "--watch";
 }
 
-function topLevel(directories) {
-  return directories.map(function(a){
-    return a.split(path.sep)[0];
-  });
+function topLevel(directory) {
+  return directory.split(path.sep)[0];
 }
 
 function watch(directories, act) {
@@ -38,7 +36,7 @@ module.exports = function() {
 
   var dependencyPath = topLevel(index.opts.opts.dependencyPath);
 
-  var directories = srcPath.concat(testPath).concat(dependencyPath);
+  var directories = [srcPath, testPath, dependencyPath];
 
   var localGlobs = files.localGlobs(index.opts.opts);
 

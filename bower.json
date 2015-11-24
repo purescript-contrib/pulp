@@ -26,6 +26,7 @@
     "purescript-profunctor": "~0.3.1",
     "purescript-nullable": "~0.2.1",
     "purescript-globals": "~0.2.1",
-    "purescript-integers": "~0.2.1"
+    "purescript-integers": "~0.2.1",
+    "purescript-versions": "~0.1.1"
   }
 }

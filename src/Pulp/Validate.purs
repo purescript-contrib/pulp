@@ -1,10 +1,11 @@
 module Pulp.Validate (validate) where
 
 import Prelude
-import Data.String (trim)
 import Data.Maybe
 import Data.Either
-import Data.List (toList)
+import Data.List (toList, List(..))
+import Data.String (trim)
+import Data.Version.Haskell (Version(..), parseVersion, showVersion)
 import Control.Monad (when)
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Eff.Class (liftEff)
@@ -12,7 +13,6 @@ import Control.Monad.Eff.Exception (error)
 import Text.Parsing.Parser (ParseError(..))
 
 import Pulp.Exec (execQuiet)
-import Pulp.Data.Version
 import Pulp.System.Process (exit)
 import Pulp.System.FFI
 import qualified Pulp.System.Log as Log
@@ -39,4 +39,4 @@ getPscVersion = do
       liftEff $ exit 1
 
 minimumPscVersion :: Version
-minimumPscVersion = Version (toList [0, 7, 0, 0])
+minimumPscVersion = Version (toList [0, 7, 0, 0]) Nil

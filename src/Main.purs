@@ -7,7 +7,6 @@ import Control.Monad.Aff.AVar
 import Control.Monad.Eff
 import Control.Monad.Eff.Console (log, CONSOLE())
 import Control.Monad.Eff.Exception
-import Data.Array.Unsafe (head)
 import Data.Either (Either(..))
 import Text.Parsing.Parser (ParseError(..))
 
@@ -37,7 +36,7 @@ buildTestBrowserifyArgs :: Array Args.Option
 buildTestBrowserifyArgs = [
   Args.optionDefault "buildPath" ["--build-path", "-o"] Type.string
     "Path for compiler output." "./output",
-  Args.option "includePaths", ["--include", "-I"] Type.string
+  Args.option "includePaths" ["--include", "-I"] Type.string
     "Additional directories for PureScript source files, separated by spaces."
   ]
 
@@ -46,7 +45,7 @@ buildArgs = [
   Args.optionDefault "main" ["--main", "-m"] Type.string
     "Application's entry point." "Main",
   Args.option "optimise" ["--optimise", "-O"] Type.flag
-    "Perform dead code elimination."
+    "Perform dead code elimination.",
   Args.option "to" ["--to", "-t"] Type.string
     "Output file name (stdout if not specified)."
   ] ++ buildTestBrowserifyArgs
@@ -68,10 +67,10 @@ commands = [
     Args.option "testRuntime" ["--runtime", "-r"] Type.string
       "Run test script using this command instead of Node.",
     Args.optionDefault "engine" ["--engine"] Type.string
-      "Run the Application on a different JavaScript engine (node, iojs)", "node"
+      "Run the Application on a different JavaScript engine (node, iojs)" "node"
     ] ++ buildTestBrowserifyArgs,
   Args.command "browserify"
-    "Produce a deployable bundle using Browserify." nop [
+    "Produce a deployable bundle using Browserify." nop $ [
       Args.option "to" ["--to", "-t"] Type.string
         "Output file name for bundle (stdout if not specified).",
       Args.optionDefault "main" ["--main", "-m"] Type.string
@@ -87,9 +86,9 @@ commands = [
       Args.option "force" ["--force"] Type.flag
         "Force a non-incremental build by deleting the build cache."
       ] ++ buildTestBrowserifyArgs,
-  Args.command "run" "Compile and run the project." nop [
+  Args.command "run" "Compile and run the project." nop $ [
     Args.optionDefault "engine" ["--engine"] Type.string
-      "Run the Application on a different JavaScript engine (node, iojs)", "node"
+      "Run the Application on a different JavaScript engine (node, iojs)" "node"
     ] ++ buildArgs,
   Args.command "docs" "Generate project documentation." nop [
     Args.option "withTests" ["--with-tests", "-t"] Type.flag

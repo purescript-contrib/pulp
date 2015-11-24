@@ -8,19 +8,23 @@ module Pulp.Args.Types
 
 import Prelude
 
+import Control.Monad (when, unless)
 import Control.Monad.Aff (Aff())
 import Control.Monad.Aff.AVar (AVAR())
 import Control.Alt
 import Control.Monad.Trans
+import Data.String (split)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.List (List(..))
 import Data.Int (fromString)
-import Data.Foldable (elem)
+import Data.Foldable (elem, for_)
 
 import Text.Parsing.Parser (ParserT(..))
 import Node.FS (FS())
-import Node.FS.Aff (exists)
+import Node.FS.Stats (Stats(), isFile, isDirectory)
+import Node.FS.Aff (exists, stat)
+import qualified Node.Path as Path
 
 import Pulp.Args
 import Pulp.Args.Parser
@@ -52,14 +56,25 @@ int = {
       Nothing -> err
   }
 
+require :: (Stats -> Boolean) -> String -> String -> OptParser Unit
+require pred typ path = do
+  s <- lift (stat path) <|> halt (typ ++ " '" ++ path ++ "' not found.")
+  unless (pred s)
+    (halt ("Path '" ++ path ++ "' is not a " ++ typ ++ "."))
+
+requireFile :: String -> OptParser Unit
+requireFile = require isFile "File"
+
+requireDirectory :: String -> OptParser Unit
+requireDirectory = require isDirectory "Directory"
+
 file :: OptionParser
 file = {
   name: Just "<file>",
   parser: \arg -> do
     path <- token <|> argErr arg "Needs a file argument."
-    e <- lift $ exists path
-    if e then return $ Just path
-      else halt ("File '" ++ path ++ "' not found.")
+    requireFile path
+    return $ Just path
   }
 
 directory :: OptionParser
@@ -67,5 +82,15 @@ directory = {
   name: Just "<directory>",
   parser: \arg -> do
     path <- token <|> argErr arg "Needs a directory argument."
-    return $ Just "lol"
+    requireDirectory path
+    return $ Just path
+  }
+
+directories :: OptionParser
+directories = {
+  name: Just "<directories>",
+  parser: \arg -> do
+    paths <- token <|> argErr arg "Needs a directory argument."
+    for_ (split Path.delimiter paths) requireDirectory
+    return $ Just paths
   }

@@ -15,11 +15,11 @@ import Data.Maybe (Maybe(..))
 import Data.List (List(..))
 
 import Text.Parsing.Parser (ParserT(..))
+import Node.FS (FS())
+import Node.FS.Aff (exists)
 
 import Pulp.Args
 import Pulp.Args.Parser
-import Pulp.System.Files (exists)
-import Pulp.System.FFI (Node())
 
 flag :: OptionParser
 flag = {

@@ -27,6 +27,8 @@
     "purescript-nullable": "~0.2.1",
     "purescript-globals": "~0.2.1",
     "purescript-integers": "~0.2.1",
-    "purescript-versions": "~0.1.1"
+    "purescript-versions": "~0.1.1",
+    "purescript-node-fs": "~0.9.1",
+    "purescript-node-fs-aff": "~0.2.0"
   }
 }

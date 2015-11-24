@@ -9,6 +9,7 @@ import Control.Monad.Eff.Console (log, CONSOLE())
 import Control.Monad.Eff.Exception
 import Data.Either (Either(..))
 import Text.Parsing.Parser (ParseError(..))
+import Node.FS (FS())
 
 import qualified Pulp.Args as Args
 import Pulp.Args.Help
@@ -108,7 +109,7 @@ failed err = do
 succeeded :: forall e. Unit -> EffN e Unit
 succeeded _ = exit 0
 
-main :: forall e. Eff (avar :: AVAR, console :: CONSOLE, node :: Node | e) Unit
+main :: forall e. Eff (avar :: AVAR, console :: CONSOLE, node :: Node, fs :: FS | e) Unit
 main = runAff failed succeeded do
   opts <- parse globals commands argv
   case opts of

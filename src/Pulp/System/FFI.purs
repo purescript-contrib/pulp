@@ -8,11 +8,13 @@ import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Exception (Error())
 import Data.Function
 
+import Node.FS (FS())
+
 foreign import data Node :: !
 foreign import data NodeError :: *
 
-type EffN e a = Eff (node :: Node | e) a
-type AffN e a = Aff (node :: Node, avar :: AVAR | e) a
+type EffN e a = Eff (node :: Node, fs :: FS | e) a
+type AffN e a = Aff (node :: Node, fs :: FS, avar :: AVAR | e) a
 
 -- | A normal side-effecting node callback, taking 2 parameters: the first for
 -- | an error, the second for success. The type of the success value should be

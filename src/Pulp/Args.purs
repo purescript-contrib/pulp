@@ -9,6 +9,7 @@ import Data.Maybe (Maybe(..))
 import Data.List (List(..))
 
 import Text.Parsing.Parser (ParserT())
+import Node.FS (FS())
 
 import Pulp.System.FFI
 
@@ -16,7 +17,7 @@ type Options = Map String (Maybe String)
 
 type Action = forall e. Options -> Aff e Unit
 
-type OptParser a = forall e. ParserT (List String) (Aff (node :: Node, avar :: AVAR | e)) a
+type OptParser a = forall e. ParserT (List String) (Aff (fs :: FS, node :: Node, avar :: AVAR | e)) a
 
 type OptionParser = {
   name :: Maybe String,

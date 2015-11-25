@@ -5,9 +5,15 @@ import run from "./sh";
 const hello = "Hello sailor!";
 const test = "You should add some tests.";
 const doc = "## Module Main\n\n#### `main`\n\n``` purescript\nmain :: forall e. Eff (console :: CONSOLE | e) Unit\n```";
+const bowerMissing = "* ERROR: No bower.json found in current or parent directories. Are you in a PureScript project?";
 
 describe("integration tests", function() {
   this.timeout(60000);
+
+  it("errors when bower.json is missing", run(function*(sh, pulp, assert) {
+    const [_, err] = yield pulp("build", null, { expectedExitCode: 1 });
+    assert.equal(err.trim(), bowerMissing);
+  }));
 
   it("pulp run", run(function*(sh, pulp, assert) {
     yield pulp("init");

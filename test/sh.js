@@ -7,18 +7,27 @@ import fs from "fs";
 
 const temp = _temp.track();
 
-function sh(cwd, cmd, input) {
+function sh(cwd, cmd, input, opts) {
   return new Promise((resolve, reject) => {
-    const proc = exec(cmd, { cwd }, (err, stdout, stderr) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve([stdout, stderr]);
-      }
+    const proc = exec(cmd, { cwd }, (error, stdout, stderr) => {
+      resolve({ error, stdout, stderr });
     });
     if (input) {
       proc.stdin.end(input);
     }
+  }).then(function(r) {
+    var expectedExitCode = (opts && opts.expectedExitCode) || 0;
+    var exitCode = (r.error && r.error.code) || 0;
+    if (expectedExitCode !== exitCode) {
+      if (expectedExitCode == 0) {
+        throw r.error;
+      } else {
+        throw new Error(cmd + ": Expected exit code " + expectedExitCode +
+                               " but got " + exitCode);
+      }
+    }
+
+    return [r.stdout, r.stderr];
   });
 }
 
@@ -31,6 +40,11 @@ function asserts(path) {
   });
 }
 
+function pulpFn(path, pulpPath) {
+  return (cmd, input, opts) =>
+    sh(path, `node ${pulpPath} ${cmd}`, input, opts);
+}
+
 export default function run(fn) {
   return function(done) {
     temp.mkdir("pulp-test-", (err, path) => {
@@ -38,7 +52,7 @@ export default function run(fn) {
         throw err;
       } else {
         const pulpPath = resolve(__dirname, "..", "index.js");
-        const pulp = (cmd) => sh(path, `node ${pulpPath} ${cmd}`);
+        const pulp = pulpFn(path, pulpPath);
         co(fn(sh.bind(null, path), pulp, asserts(path), path)).then(done, done);
       }
     });

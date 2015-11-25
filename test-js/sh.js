@@ -49,7 +49,7 @@ export default function run(fn) {
       if (err) {
         throw err;
       } else {
-        const pulpPath = resolve(__dirname, "..", "index.js");
+        const pulpPath = resolve(__dirname, "..", "output", "pulp.js");
         const pulp = pulpFn(path, pulpPath);
         co(fn(sh.bind(null, path), pulp, asserts(path), path)).then(done, done);
       }

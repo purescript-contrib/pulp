@@ -179,7 +179,8 @@ main = runAff failed succeeded do
   where
   handleParseError err = go (head argv)
     where
-    -- TODO: this is kind of gross
+    -- TODO: this is kind of gross, especially that --version and --help are
+    -- repeated
     go (Just x)
       | x `elem` ["--version", "-v"] = liftEff $ log $ showVersion version
       | x `elem` ["--help", "-h"]    = printHelp Log.out globals commands

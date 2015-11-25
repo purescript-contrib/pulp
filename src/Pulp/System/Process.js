@@ -21,3 +21,13 @@ exports.getEnvironment = function getEnvironment() {
 exports.getPlatform = function getPlatform() {
   return process.platform;
 };
+
+exports.chdir = function chdir(dir) {
+  return function() {
+    process.chdir(dir);
+  }
+};
+
+exports.cwd = function cwd() {
+  return process.cwd();
+}

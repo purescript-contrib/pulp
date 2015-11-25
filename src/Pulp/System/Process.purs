@@ -7,6 +7,8 @@ module Pulp.System.Process
        , stderr
        , getEnvironment
        , getPlatform
+       , chdir
+       , cwd
        ) where
 
 import Prelude
@@ -39,3 +41,7 @@ foreign import stderr :: NodeStream String
 foreign import getEnvironment :: forall e. EffN e (StrMap String)
 
 foreign import getPlatform :: forall e. EffN e String
+
+foreign import chdir :: forall e. String -> EffN e Unit
+
+foreign import cwd :: forall e. EffN e String

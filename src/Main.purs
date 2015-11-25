@@ -7,12 +7,17 @@ import Control.Monad.Error.Class (throwError)
 import Control.Monad.Aff
 import Control.Monad.Aff.AVar
 import Control.Monad.Eff
+import Control.Monad.Eff.Class
 import Control.Monad.Eff.Console (log, CONSOLE())
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Eff.Exception
+import Data.Maybe (Maybe(..))
 import Data.Either (Either(..), either)
 import Data.Foreign (parseJSON, Foreign())
 import Data.Foreign.Class (readProp)
+import Data.Version (showVersion)
+import Data.Array (head)
+import Data.Foldable (elem)
 import Text.Parsing.Parser (ParseError(..))
 import Node.FS (FS())
 import Node.Encoding (Encoding(UTF8))
@@ -27,6 +32,7 @@ import Pulp.System.FFI
 import qualified Pulp.System.Log as Log
 import Pulp.System.Process (argv, exit)
 import Pulp.Validate (validate)
+import Pulp.Version (version)
 
 globals :: Array Args.Option
 globals = [
@@ -37,7 +43,9 @@ globals = [
   Args.option "monochrome" ["--monochrome"] Type.flag
     "Don't colourise log output.",
   Args.option "then" ["--then"] Type.string
-    "Run a shell command after the operation finishes. Useful with `--watch`."
+    "Run a shell command after the operation finishes. Useful with `--watch`.",
+  Args.option "version" ["--version", "v"] Type.flag
+    "Show current pulp version."
   ]
 
 defaultDependencyPath :: String
@@ -160,8 +168,11 @@ main = runAff failed succeeded do
   opts <- parse globals commands argv
   case opts of
     Left (ParseError { message: err }) -> do
-      Log.err $ "Error: " ++ err
-      printHelp Log.out globals commands
+      if (head argv `elem` [Just "--version", Just "-v"])
+        then liftEff $ log $ showVersion version
+        else do
+          Log.err $ "Error: " ++ err
+          printHelp Log.out globals commands
     Right opts -> do
       validate
       Log.log $ "Globals: " ++ show ((map <<< map) showForeign opts.globalOpts)

@@ -16,10 +16,11 @@
     "url": "https://github.com/bodil/pulp.git"
   },
   "bin": {
-    "pulp": "./index.js"
+    "pulp": "output/pulp.js"
   },
   "scripts": {
-    "test": "mocha --compilers js:babel/register"
+    "build": "pulp build --optimise --to output/pulp.js",
+    "test": "mocha test-js --compilers js:babel/register"
   },
   "dependencies": {
     "ansi": "^0.3.0",

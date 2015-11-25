@@ -19,7 +19,8 @@ import qualified Node.Path as P
 
 import Pulp.System.FFI
 import qualified Pulp.System.Process as Process
-import Pulp.Args (Options(), getOption)
+import Pulp.Args (Options())
+import Pulp.Args.Get (getOption)
 
 newtype Project = Project
   { bowerFile :: Foreign

@@ -79,20 +79,3 @@ command name desc action options = {
   options: options,
   action: action
   }
-
-getOption :: forall e a. (IsForeign a) => String -> Options -> AffN e (Maybe a)
-getOption name opts = do
-  case lookup name opts of
-    Just opt ->
-      maybe (pure Nothing) (map Just <<< fToAff <<< read) opt
-    Nothing ->
-      let msg = ("Tried to read a flag as an option: (" ++ name ++ ").")
-      in internalError msg (error msg)
-  where
-  fToAff = either (internalError "Data.Foreign.read failed" <<< error <<< show) return
-
-  internalError :: forall b. String -> Error -> AffN e b
-  internalError msg err = do
-    Log.err $ "Internal error: Pulp.Args.getOption: " ++ msg
-    Log.err "This is a bug. Please report it."
-    throwError err

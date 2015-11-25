@@ -167,12 +167,8 @@ main :: forall e. Eff (avar :: AVAR, console :: CONSOLE, node :: Node, fs :: FS 
 main = runAff failed succeeded do
   opts <- parse globals commands argv
   case opts of
-    Left (ParseError { message: err }) -> do
-      if (head argv `elem` [Just "--version", Just "-v"])
-        then liftEff $ log $ showVersion version
-        else do
-          Log.err $ "Error: " ++ err
-          printHelp Log.out globals commands
+    Left (ParseError { message: err }) ->
+      handleParseError err
     Right opts -> do
       validate
       Log.log $ "Globals: " ++ show ((map <<< map) showForeign opts.globalOpts)
@@ -180,6 +176,16 @@ main = runAff failed succeeded do
       Log.log $ "Locals: " ++ show ((map <<< map) showForeign opts.commandOpts)
       Log.log $ "Remainder: " ++ show opts.remainder
   where
+  handleParseError err = go (head argv)
+    where
+    -- TODO: this is kind of gross
+    go (Just x)
+      | x `elem` ["--version", "-v"] = liftEff $ log $ showVersion version
+      | x `elem` ["--help", "-h"]    = printHelp Log.out globals commands
+    go _ = do
+      Log.err $ "Error: " ++ err
+      printHelp Log.out globals commands
+
   showForeign :: Foreign -> String
   showForeign = unsafeInspect
 

@@ -12,9 +12,7 @@ function sh(cwd, cmd, input, opts) {
     const proc = exec(cmd, { cwd }, (error, stdout, stderr) => {
       resolve({ error, stdout, stderr });
     });
-    if (input) {
-      proc.stdin.end(input);
-    }
+    proc.stdin.end(input || "");
   }).then(function(r) {
     var expectedExitCode = (opts && opts.expectedExitCode) || 0;
     var exitCode = (r.error && r.error.code) || 0;

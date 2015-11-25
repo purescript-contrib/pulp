@@ -11,6 +11,7 @@ import Control.Monad.Error.Class (throwError)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Eff.Class (liftEff)
 import Data.Foreign (Foreign(), parseJSON)
+import Data.Foreign.Class (IsForeign, read, readProp)
 
 import Node.FS.Aff (exists, readTextFile, mkdir)
 import Node.Encoding (Encoding(UTF8))
@@ -20,7 +21,7 @@ import Pulp.System.FFI
 import qualified Pulp.System.Process as Process
 import Pulp.Args (Options(), getOption)
 
-type Project =
+newtype Project = Project
   { bowerFile :: Foreign
   , path :: String
   , cache :: String
@@ -50,7 +51,7 @@ readConfig configFilePath = do
       let cachePath = P.resolve [path] ".pulp-cache"
       liftEff $ Process.chdir path
       mkdir cachePath
-      return { bowerFile: pro, cache: cachePath, path: path }
+      return $ Project { bowerFile: pro, cache: cachePath, path: path }
 
 -- | Use the provided bower file, or if it is Nothing, try to find a bower file
 -- | path in this or any parent directory.
@@ -68,3 +69,11 @@ getBowerFile = maybe search pure
 getProject :: forall e. Options -> AffN e Project
 getProject args =
   getOption "bowerFile" args >>= getBowerFile >>= readConfig
+
+instance isForeignProject :: IsForeign Project where
+  read o =
+    map Project $ do
+      bowerFile <- readProp "bowerFile" o
+      path      <- readProp "path" o
+      cache     <- readProp "cache" o
+      return $ { bowerFile, path, cache }

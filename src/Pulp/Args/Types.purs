@@ -4,6 +4,7 @@ module Pulp.Args.Types
   , file
   , int
   , directory
+  , directories
   ) where
 
 import Prelude

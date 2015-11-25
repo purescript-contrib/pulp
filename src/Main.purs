@@ -53,7 +53,7 @@ defaultDependencyPath =
 -- | Options for any command requiring paths
 pathArgs :: Array Args.Option
 pathArgs = [
-  Args.option "includePaths" ["--include", "-I"] Type.string
+  Args.option "includePaths" ["--include", "-I"] Type.directories
     ("Additional directories for PureScript source files, separated by `" ++ Path.delimiter ++ "`."),
   Args.optionDefault "srcPath" ["--src-path"] Type.directory
     "Directory for PureScript source files." "src",

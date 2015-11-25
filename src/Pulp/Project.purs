@@ -13,11 +13,12 @@ import Control.Monad.Eff.Class (liftEff)
 import Data.Foreign (Foreign(), parseJSON)
 import Data.Foreign.Class (IsForeign, read, readProp)
 
-import Node.FS.Aff (exists, readTextFile, mkdir)
+import Node.FS.Aff (exists, readTextFile)
 import Node.Encoding (Encoding(UTF8))
 import qualified Node.Path as P
 
 import Pulp.System.FFI
+import Pulp.System.Files (mkdirIfNotExist)
 import qualified Pulp.System.Process as Process
 import Pulp.Args (Options())
 import Pulp.Args.Get (getOption)
@@ -51,7 +52,7 @@ readConfig configFilePath = do
       let path = P.dirname configFilePath
       let cachePath = P.resolve [path] ".pulp-cache"
       liftEff $ Process.chdir path
-      mkdir cachePath
+      mkdirIfNotExist cachePath
       return $ Project { bowerFile: pro, cache: cachePath, path: path }
 
 -- | Use the provided bower file, or if it is Nothing, try to find a bower file

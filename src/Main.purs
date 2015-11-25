@@ -11,7 +11,7 @@ import Control.Monad.Eff.Console (log, CONSOLE())
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Eff.Exception
 import Data.Either (Either(..), either)
-import Data.Foreign (parseJSON)
+import Data.Foreign (parseJSON, Foreign())
 import Data.Foreign.Class (readProp)
 import Text.Parsing.Parser (ParseError(..))
 import Node.FS (FS())
@@ -164,7 +164,12 @@ main = runAff failed succeeded do
       printHelp Log.out globals commands
     Right opts -> do
       validate
-      Log.log $ "Globals: " ++ show opts.globalOpts
+      Log.log $ "Globals: " ++ show ((map <<< map) showForeign opts.globalOpts)
       Log.log $ "Command: " ++ opts.command.name
-      Log.log $ "Locals: " ++ show opts.commandOpts
+      Log.log $ "Locals: " ++ show ((map <<< map) showForeign opts.commandOpts)
       Log.log $ "Remainder: " ++ show opts.remainder
+  where
+  showForeign :: Foreign -> String
+  showForeign = unsafeInspect
+
+foreign import unsafeInspect :: forall a. a -> String

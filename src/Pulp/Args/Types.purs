@@ -19,6 +19,7 @@ import Data.Maybe (Maybe(..))
 import Data.List (List(..))
 import Data.Int (fromString)
 import Data.Foldable (elem, for_)
+import Data.Foreign (toForeign)
 
 import Text.Parsing.Parser (ParserT(..))
 import Node.FS (FS())
@@ -42,7 +43,8 @@ flag = {
 string :: OptionParser
 string = {
   name: Just "<string>",
-  parser: \arg -> Just <$> (token <|> argErr arg "Needs a string argument.")
+  parser: \arg ->
+    (Just <<< toForeign) <$> (token <|> argErr arg "Needs a string argument.")
   }
 
 int :: OptionParser
@@ -52,7 +54,7 @@ int = {
     let err = argErr arg "Needs an int argument." :: forall a. OptParser a
     mint <- fromString <$> (token <|> err)
     case mint of
-      Just i -> return (Just (show i))
+      Just i -> return (Just (toForeign i))
       Nothing -> err
   }
 
@@ -74,7 +76,7 @@ file = {
   parser: \arg -> do
     path <- token <|> argErr arg "Needs a file argument."
     requireFile path
-    return $ Just path
+    return $ Just (toForeign path)
   }
 
 directory :: OptionParser
@@ -83,7 +85,7 @@ directory = {
   parser: \arg -> do
     path <- token <|> argErr arg "Needs a directory argument."
     requireDirectory path
-    return $ Just path
+    return $ Just (toForeign path)
   }
 
 directories :: OptionParser
@@ -91,6 +93,7 @@ directories = {
   name: Just "<directories>",
   parser: \arg -> do
     paths <- token <|> argErr arg "Needs a directory argument."
-    for_ (split Path.delimiter paths) requireDirectory
-    return $ Just paths
+    let paths' = split Path.delimiter paths
+    for_ paths' requireDirectory
+    return $ Just (toForeign paths')
   }

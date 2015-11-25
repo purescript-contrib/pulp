@@ -32,6 +32,12 @@ describe("integration tests", function() {
     assert.equal(out.trim(), hello);
   }));
 
+  it("handles .pulp-cache already existing", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+    yield sh("mkdir .pulp-cache");
+    yield pulp("build");
+  }));
+
   it("pulp --bower-file FILE run", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield sh("mv bower.json lol.json");

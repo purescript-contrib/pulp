@@ -13,7 +13,8 @@ import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Eff.Exception
 import Data.Maybe (Maybe(..))
 import Data.Either (Either(..), either)
-import Data.Foreign (parseJSON, Foreign())
+import Data.Map (union, insert)
+import Data.Foreign (parseJSON, Foreign(), toForeign)
 import Data.Foreign.Class (readProp)
 import Data.Version (showVersion)
 import Data.Array (head)
@@ -33,6 +34,7 @@ import qualified Pulp.System.Log as Log
 import Pulp.System.Process (argv, exit)
 import Pulp.Validate (validate)
 import Pulp.Version (version)
+import Pulp.Project (getProject)
 
 globals :: Array Args.Option
 globals = [
@@ -171,10 +173,9 @@ main = runAff failed succeeded do
       handleParseError err
     Right opts -> do
       validate
-      Log.log $ "Globals: " ++ show ((map <<< map) showForeign opts.globalOpts)
-      Log.log $ "Command: " ++ opts.command.name
-      Log.log $ "Locals: " ++ show ((map <<< map) showForeign opts.commandOpts)
-      Log.log $ "Remainder: " ++ show opts.remainder
+      opts' <- tweakOpts opts
+      opts.command.action opts'
+      -- TODO: --watch, --then
   where
   handleParseError err = go (head argv)
     where
@@ -186,6 +187,22 @@ main = runAff failed succeeded do
       Log.err $ "Error: " ++ err
       printHelp Log.out globals commands
 
+  -- TODO: refactor. this is really quite gross, especially with _project
+  tweakOpts opts =
+    let opts' = union opts.globalOpts opts.commandOpts in
+    if (opts.command.name == "init")
+      then return opts'
+      else do
+        proj <- getProject opts'
+        return $ insert "_project" (Just (toForeign proj)) opts'
+
+argsParserDiagnostics :: forall e. Args.Args -> AffN e Unit
+argsParserDiagnostics opts = do
+  Log.log $ "Globals: " ++ show ((map <<< map) showForeign opts.globalOpts)
+  Log.log $ "Command: " ++ opts.command.name
+  Log.log $ "Locals: " ++ show ((map <<< map) showForeign opts.commandOpts)
+  Log.log $ "Remainder: " ++ show opts.remainder
+  where
   showForeign :: Foreign -> String
   showForeign = unsafeInspect
 

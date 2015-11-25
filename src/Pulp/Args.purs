@@ -22,7 +22,7 @@ import qualified Pulp.System.Log as Log
 
 type Options = Map String (Maybe Foreign)
 
-type Action = forall e. Options -> Aff e Unit
+type Action = forall e. Options -> AffN e Unit
 
 type OptParser a = forall e. ParserT (List String) (Aff (fs :: FS, node :: Node, avar :: AVAR | e)) a
 

@@ -8,7 +8,7 @@ import Control.Monad.Aff
 import Control.Monad.Aff.AVar
 import Control.Monad.Eff
 import Control.Monad.Eff.Class
-import Control.Monad.Eff.Console (log, CONSOLE())
+import qualified Control.Monad.Eff.Console as Console
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Eff.Exception
 import Data.Maybe (Maybe(..))
@@ -157,15 +157,15 @@ commands = [
     ] ++ buildishArgs
   ]
 
-failed :: forall e a. Error -> EffN (console :: CONSOLE | e) a
+failed :: forall e a. Error -> EffN (console :: Console.CONSOLE | e) a
 failed err = do
-  log $ "ERROR: " ++ show err
+  Console.error $ show err
   exit 1
 
 succeeded :: forall e. Unit -> EffN e Unit
 succeeded _ = exit 0
 
-main :: forall e. Eff (avar :: AVAR, console :: CONSOLE, node :: Node, fs :: FS | e) Unit
+main :: forall e. Eff (avar :: AVAR, console :: Console.CONSOLE, node :: Node, fs :: FS | e) Unit
 main = runAff failed succeeded do
   opts <- parse globals commands argv
   case opts of
@@ -182,7 +182,7 @@ main = runAff failed succeeded do
     -- TODO: this is kind of gross, especially that --version and --help are
     -- repeated
     go (Just x)
-      | x `elem` ["--version", "-v"] = liftEff $ log $ showVersion version
+      | x `elem` ["--version", "-v"] = liftEff $ Console.log $ showVersion version
       | x `elem` ["--help", "-h"]    = printHelp Log.out globals commands
     go _ = do
       Log.err $ "Error: " ++ err

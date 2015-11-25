@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import run from "./sh";
+import semver from "semver";
 
 const hello = "Hello sailor!";
 const test = "You should add some tests.";
@@ -9,6 +10,16 @@ const bowerMissing = "* ERROR: No bower.json found in current or parent director
 
 describe("integration tests", function() {
   this.timeout(60000);
+
+  it("pulp --version", run(function*(sh, pulp, assert) {
+    const [out] = yield pulp("--version");
+    assert.ok(semver.valid(out.trim()), out + " is not a valid version.");
+  }));
+
+  it("pulp -v", run(function*(sh, pulp, assert) {
+    const [out] = yield pulp("-v");
+    assert.ok(semver.valid(out.trim()), out + " is not a valid version.");
+  }));
 
   it("errors when bower.json is missing", run(function*(sh, pulp, assert) {
     const [_, err] = yield pulp("build", null, { expectedExitCode: 1 });

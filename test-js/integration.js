@@ -21,6 +21,13 @@ describe("integration tests", function() {
     assert.equal(out.trim(), hello);
   }));
 
+  it("pulp --bower-file FILE run", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+    yield sh("mv bower.json lol.json");
+    const [out] = yield pulp("--bower-file lol.json run");
+    assert.equal(out.trim(), hello);
+  }));
+
   it("pulp build --to", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("build --to out.js");

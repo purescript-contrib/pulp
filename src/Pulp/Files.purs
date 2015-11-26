@@ -2,9 +2,10 @@
 module Pulp.Files where
 
 import Prelude
+import Data.Maybe (Maybe(..))
 import Data.Foreign.Class (IsForeign)
 import Data.List (fromList)
-import Data.Set (Set(), union, toList, singleton)
+import Data.Set (Set(), union, toList, singleton, empty)
 import qualified Node.Path as Path
 
 import Pulp.System.FFI
@@ -19,8 +20,10 @@ ffis = toList >>> fromList >>> map (++ "/**/*.js")
 
 globsFromOption' :: forall e a. (IsForeign a) => (a -> a) -> String -> Options -> AffN e (Set a)
 globsFromOption' f name opts = do
-  value <- getOption' name opts
-  pure $ singleton $ f value
+  value <- getOption name opts
+  pure $ case value of
+          Just v  -> singleton (f v)
+          Nothing -> empty
 
 globsFromOption :: forall e a. (IsForeign a) => String -> Options -> AffN e (Set a)
 globsFromOption = globsFromOption' id

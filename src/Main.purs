@@ -34,6 +34,7 @@ import Pulp.Validate (validate)
 import Pulp.Version (version)
 import Pulp.Project (getProject)
 import qualified Pulp.Init as Init
+import qualified Pulp.Build as Build
 
 globals :: Array Args.Option
 globals = [
@@ -103,7 +104,7 @@ commands = [
        "Overwrite any project found in the current directory."
      ],
   Args.command "dep" "Invoke Bower for package management." nop [],
-  Args.command "build" "Build the project." nop buildArgs,
+  Args.command "build" "Build the project." Build.action buildArgs,
   Args.command "test" "Run project tests." nop $ [
     Args.optionDefault "main" ["--main", "-m"] Type.string
       "Test entry point." "Test.Main",

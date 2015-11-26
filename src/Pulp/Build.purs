@@ -1,5 +1,8 @@
 
-module Pulp.Build where
+module Pulp.Build
+  ( action
+  , testBuild
+  ) where
 
 import Prelude
 import Data.Maybe
@@ -9,6 +12,7 @@ import Data.List (toList)
 import Data.Traversable (sequence)
 import Control.Monad.Eff.Class (liftEff)
 
+import Pulp.System.FFI
 import qualified Pulp.System.Process as Process
 import qualified Pulp.System.Log as Log
 import Pulp.Args
@@ -26,8 +30,8 @@ instance eqBuildType :: Eq BuildType where
 action :: Action
 action = go NormalBuild
 
-testBuild :: Action
-testBuild = go TestBuild
+testBuild :: forall e. Args -> AffN e Unit
+testBuild = runAction (go TestBuild)
 
 go :: BuildType -> Action
 go buildType = Action \args -> do

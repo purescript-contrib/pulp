@@ -1,5 +1,9 @@
 # Pulp Release History
 
+## 5.0.2
+
+Bugs fixed: #109.
+
 ## 5.0.1
 
 Bugs fixed: #105, #106, #107, #113.

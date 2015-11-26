@@ -34,6 +34,7 @@ function optimising(pro, args, callback) {
   };
   var buildArgs = merge({}, args);
   delete buildArgs.optimise;
+  delete buildArgs.to;
   build(pro, buildArgs, fn);
 }
 
@@ -65,7 +66,9 @@ function incremental(pro, args, callback) {
     b.bundle().pipe(args.to ? fs.createWriteStream(args.to) : process.stdout)
      .on("close", callback);
   };
-  build(pro, args, fn);
+  var buildArgs = merge({}, args);
+  delete buildArgs.to;
+  build(pro, buildArgs, fn);
 }
 
 module.exports = function(pro, args, callback) {

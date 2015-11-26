@@ -2,8 +2,6 @@ module Main where
 
 import Prelude
 
-import Control.Alt ((<|>))
-import Control.Monad.Error.Class (throwError)
 import Control.Monad.Aff
 import Control.Monad.Aff.AVar
 import Control.Monad.Eff
@@ -12,7 +10,7 @@ import qualified Control.Monad.Eff.Console as Console
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Eff.Exception
 import Data.Maybe (Maybe(..))
-import Data.Either (Either(..), either)
+import Data.Either (Either(..))
 import Data.Map (union, insert)
 import Data.Foreign (parseJSON, Foreign(), toForeign)
 import Data.Foreign.Class (readProp)
@@ -159,7 +157,7 @@ commands = [
 
 failed :: forall e a. Error -> EffN (console :: Console.CONSOLE | e) a
 failed err = do
-  Console.error $ show err
+  Console.error $ "* ERROR: " ++ message err
   exit 1
 
 succeeded :: forall e. Unit -> EffN e Unit

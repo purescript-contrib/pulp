@@ -1,5 +1,9 @@
 # Pulp Release History
 
+## 5.0.1
+
+Bugs fixed: #105, #106, #107, #113.
+
 ## 5.0.0
 
 * Pulp will now skip the build step if your project hasn't changed

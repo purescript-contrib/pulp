@@ -6,6 +6,7 @@ var files = require("./files");
 var index = require("./index");
 var minimatch = require("minimatch");
 var Watchpack = require("watchpack");
+var kill = require("tree-kill");
 
 function stripWatchArg(arg) {
   return arg !== "-w" && arg !== "--watch";
@@ -42,7 +43,7 @@ module.exports = function() {
       return minimatch(change, a);
     });
     if (matched) {
-      p.kill("SIGTERM");
+      kill(p.pid, "SIGTERM");
       log("Source tree changed; restarting:");
       p = child.fork(mod, args);
     }

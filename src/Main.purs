@@ -3,8 +3,6 @@ module Main where
 import Prelude
 
 import Control.Monad.Aff
-import Control.Monad.Aff.AVar
-import Control.Monad.Eff
 import Control.Monad.Eff.Class
 import qualified Control.Monad.Eff.Console as Console
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
@@ -18,7 +16,6 @@ import Data.Version (showVersion)
 import Data.Array (head)
 import Data.Foldable (elem)
 import Text.Parsing.Parser (ParseError(..))
-import Node.FS (FS())
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Sync (readTextFile)
 import qualified Node.Path as Path
@@ -157,7 +154,7 @@ commands = [
     ] ++ buildishArgs
   ]
 
-failed :: forall e a. Error -> EffN (console :: Console.CONSOLE | e) a
+failed :: forall e a. Error -> EffN e a
 failed err = do
   Console.error $ "* ERROR: " ++ message err
   exit 1
@@ -165,7 +162,7 @@ failed err = do
 succeeded :: forall e. Unit -> EffN e Unit
 succeeded _ = exit 0
 
-main :: forall e. Eff (avar :: AVAR, console :: Console.CONSOLE, node :: Node, fs :: FS | e) Unit
+main :: forall e. EffN e Unit
 main = runAff failed succeeded do
   opts <- parse globals commands argv
   case opts of

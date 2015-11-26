@@ -6,15 +6,18 @@ import Control.Monad.Aff (Aff(), makeAff)
 import Control.Monad.Aff.AVar (AVAR())
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Exception (Error())
+import Control.Monad.Eff.Console (CONSOLE())
 import Data.Function
 
 import Node.FS (FS())
+import Node.Buffer (BUFFER())
 
 foreign import data Node :: !
 foreign import data NodeError :: *
 
-type EffN e a = Eff (node :: Node, fs :: FS | e) a
-type AffN e a = Aff (node :: Node, fs :: FS, avar :: AVAR | e) a
+type PulpEffects e = (node :: Node, console :: CONSOLE, buffer :: BUFFER, fs :: FS, avar :: AVAR | e)
+type EffN e a = Eff (PulpEffects e) a
+type AffN e a = Aff (PulpEffects e) a
 
 -- | A normal side-effecting node callback, taking 2 parameters: the first for
 -- | an error, the second for success. The type of the success value should be

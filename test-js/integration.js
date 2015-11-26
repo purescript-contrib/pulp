@@ -33,6 +33,13 @@ describe("integration tests", function() {
     assert.equal(err.trim(), initWithoutForce);
   }));
 
+  it("init overwrites existing files with --force", run(function*(sh, pulp, assert) {
+    yield sh("echo 'hello' > bower.json");
+    yield pulp("init --force");
+    const [out] = yield sh("cat bower.json");
+    assert.notEqual(out.trim(), "hello");
+  }));
+
   it("pulp run", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const [out] = yield pulp("run");

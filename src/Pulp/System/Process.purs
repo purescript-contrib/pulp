@@ -38,6 +38,7 @@ foreign import stdin :: NodeStream String
 foreign import stdout :: NodeStream String
 foreign import stderr :: NodeStream String
 
+-- | Gets a copy of the current environment
 foreign import getEnvironment :: forall e. EffN e (StrMap String)
 
 foreign import getPlatform :: forall e. EffN e String

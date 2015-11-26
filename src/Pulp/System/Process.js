@@ -15,7 +15,7 @@ exports.exit = function exit(code) {
 };
 
 exports.getEnvironment = function getEnvironment() {
-  return process.env
+  return require('util')._extend({}, process.env);
 }
 
 exports.getPlatform = function getPlatform() {

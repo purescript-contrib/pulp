@@ -32,14 +32,17 @@ function scanDir(path) {
 }
 
 function maxMtime(path) {
-  return fsStat(path).then(function(stats) {
-    if (stats.isFile()) {
-      return stats.mtime.getTime();
-    } else {
-      return scanDir(path).map(function(stats) {
+  return fsStat(path)
+    .then(function(stats) {
+      if (stats.isFile()) {
         return stats.mtime.getTime();
-      }).max().toPromise(Promise);
-    }
-  });
+      } else {
+        return scanDir(path).map(function(stats) {
+          return stats.mtime.getTime();
+        }).max().toPromise(Promise);
+      }
+    }).catch(function(err) {
+      return 0;
+    });
 }
 module.exports = maxMtime;

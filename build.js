@@ -3,6 +3,7 @@ var log = require("./log");
 var files = require("./files");
 var fs = require("fs");
 var rebuild = require("./rebuild");
+var Promise = require("bluebird");
 
 function build(pro, args) {
   return new Promise(function(resolve, reject) {
@@ -53,7 +54,7 @@ function build(pro, args) {
 module.exports = function(pro, args, callback) {
   var paths = [args.srcPath, args.dependencyPath].concat(args.includePaths || []);
   rebuild.needs(pro, args, paths).then(function(shouldRebuild) {
-    if (shouldRebuild || args.force) {
+    if (shouldRebuild) {
       build(pro, args).then(callback, callback);
     } else {
       log("Project unchanged; skipping build step.");

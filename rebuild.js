@@ -2,8 +2,8 @@ var Promise = require("bluebird");
 var path = require("path");
 var fs = require("fs");
 var crypto = require("crypto");
+var mtime = require("./mtime");
 
-var stat = Promise.promisify(fs.stat);
 var readFile = Promise.promisify(fs.readFile);
 var writeFile = Promise.promisify(fs.writeFile);
 
@@ -12,13 +12,6 @@ function argHash(pro, args) {
   hash.update(JSON.stringify(pro));
   hash.update(JSON.stringify(args));
   return hash.digest("hex");
-}
-
-function lastChanged(p) {
-  return stat(p)
-    .then(function(stats) {
-      return stats.mtime.getTime();
-    });
 }
 
 function sameArgs(pro, args) {
@@ -30,10 +23,13 @@ function sameArgs(pro, args) {
 }
 
 function needsRebuild(pro, args, paths) {
-  var liveStamp = Promise.reduce(paths.map(lastChanged), function(acc, next) {
+  if (args.force) {
+    return Promise.resolve(true);
+  }
+  var liveStamp = Promise.reduce(paths.map(mtime), function(acc, next) {
     return acc > next ? acc : next;
   });
-  var cacheStamp = lastChanged(path.resolve(pro.cache, "build-stamp")).catch(function(err) {
+  var cacheStamp = mtime(path.resolve(pro.cache, "build-stamp")).catch(function(err) {
     return 0;
   });
   var stampChanged = Promise.all([liveStamp, cacheStamp]).spread(function(live, cache) {

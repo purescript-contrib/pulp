@@ -53,3 +53,5 @@ go buildType = Action \args -> do
       (["-o", buildPath] ++ args.remainder)
       Nothing
   Log.log "Build successful."
+
+  -- TODO: rebuild, psc-bundle

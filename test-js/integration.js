@@ -40,16 +40,22 @@ describe("integration tests", function() {
     assert.notEqual(out.trim(), "hello");
   }));
 
-  it("pulp run", run(function*(sh, pulp, assert) {
+  it("pulp build", run(function*(sh, pulp, assert) {
     yield pulp("init");
-    const [out] = yield pulp("run");
-    assert.equal(out.trim(), hello);
+    yield pulp("build");
+    yield sh("test -f output/Main/index.js");
   }));
 
   it("handles .pulp-cache already existing", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield sh("mkdir .pulp-cache");
     yield pulp("build");
+  }));
+
+  it("pulp run", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+    const [out] = yield pulp("run");
+    assert.equal(out.trim(), hello);
   }));
 
   it("pulp --bower-file FILE run", run(function*(sh, pulp, assert) {

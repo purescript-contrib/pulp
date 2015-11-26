@@ -17,21 +17,24 @@ sources = toList >>> fromList >>> map (++ "/**/*.purs")
 ffis :: Set String -> Array String
 ffis = toList >>> fromList >>> map (++ "/**/*.js")
 
-fromOption :: forall e a. (IsForeign a) => (a -> a) -> String -> Options -> AffN e (Set a)
-fromOption f name opts = do
+globsFromOption' :: forall e a. (IsForeign a) => (a -> a) -> String -> Options -> AffN e (Set a)
+globsFromOption' f name opts = do
   value <- getOption' name opts
-  pure $ singleton (f value)
+  pure $ singleton $ f value
+
+globsFromOption :: forall e a. (IsForeign a) => String -> Options -> AffN e (Set a)
+globsFromOption = globsFromOption' id
 
 localGlobs :: forall e. Options -> AffN e (Set String)
-localGlobs = fromOption id "srcPath"
+localGlobs = globsFromOption "srcPath"
 
 testGlobs :: forall e. Options -> AffN e (Set String)
-testGlobs = fromOption id "testPath"
+testGlobs = globsFromOption "testPath"
 
 dependencyGlobs :: forall e. Options -> AffN e (Set String)
 dependencyGlobs =
-  fromOption (\path -> Path.concat [path, "purescript-*", "src"])
-             "dependencyPath"
+  globsFromOption' (\path -> Path.concat [path, "purescript-*", "src"])
+                   "dependencyPath"
 
 defaultGlobs :: forall e. Options -> AffN e (Set String)
 defaultGlobs args =

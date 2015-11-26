@@ -7,6 +7,7 @@ const hello = "Hello sailor!";
 const test = "You should add some tests.";
 const doc = "## Module Main\n\n#### `main`\n\n``` purescript\nmain :: forall e. Eff (console :: CONSOLE | e) Unit\n```";
 const bowerMissing = "* ERROR: No bower.json found in current or parent directories. Are you in a PureScript project?";
+const initWithoutForce = "* ERROR: There's already a project here. Run `pulp init --force` if you're sure you want to overwrite it."
 
 describe("integration tests", function() {
   this.timeout(60000);
@@ -24,6 +25,12 @@ describe("integration tests", function() {
   it("errors when bower.json is missing", run(function*(sh, pulp, assert) {
     const [_, err] = yield pulp("build", null, { expectedExitCode: 1 });
     assert.equal(err.trim(), bowerMissing);
+  }));
+
+  it("refuses to init without --force", run(function*(sh, pulp, assert) {
+    yield sh("touch bower.json");
+    const [_, err] = yield pulp("init", null, { expectedExitCode: 1 });
+    assert.equal(err.trim(), initWithoutForce);
   }));
 
   it("pulp run", run(function*(sh, pulp, assert) {

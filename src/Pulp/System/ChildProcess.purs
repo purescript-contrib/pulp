@@ -19,7 +19,6 @@ import Control.Monad.Eff.Class (liftEff)
 import Unsafe.Coerce (unsafeCoerce)
 
 import Pulp.System.FFI
-import Pulp.System.Process (getEnvironment)
 import Pulp.System.Stream
 
 type ChildProcess =

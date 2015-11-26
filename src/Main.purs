@@ -11,7 +11,7 @@ import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Eff.Exception
 import Data.Maybe (Maybe(..))
 import Data.Either (Either(..))
-import Data.Map (union, insert)
+import Data.Map (insert)
 import Data.Foreign (parseJSON, Foreign(), toForeign)
 import Data.Foreign.Class (readProp)
 import Data.Version (showVersion)
@@ -33,6 +33,7 @@ import Pulp.System.Process (argv, exit)
 import Pulp.Validate (validate)
 import Pulp.Version (version)
 import Pulp.Project (getProject)
+import qualified Pulp.Init as Init
 
 globals :: Array Args.Option
 globals = [
@@ -93,11 +94,11 @@ buildArgs = [
   ] ++ buildishArgs
 
 nop :: Args.Action
-nop _ = return unit
+nop = Args.Action (const (return unit))
 
 commands :: Array Args.Command
 commands = [
-  Args.command "init" "Generate an example PureScript project." nop [
+  Args.command "init" "Generate an example PureScript project." Init.action [
      Args.option "force" ["--force"] Type.flag
        "Overwrite any project found in the current directory."
      ],
@@ -172,7 +173,7 @@ main = runAff failed succeeded do
     Right opts -> do
       validate
       opts' <- tweakOpts opts
-      opts.command.action opts'
+      Args.runAction opts.command.action opts'
       -- TODO: --watch, --then
   where
   handleParseError err = go (head argv)
@@ -188,12 +189,12 @@ main = runAff failed succeeded do
 
   -- TODO: refactor. this is really quite gross, especially with _project
   tweakOpts opts =
-    let opts' = union opts.globalOpts opts.commandOpts in
     if (opts.command.name == "init")
-      then return opts'
+      then return opts
       else do
-        proj <- getProject opts'
-        return $ insert "_project" (Just (toForeign proj)) opts'
+        proj <- getProject opts.globalOpts
+        let globalOpts' = insert "_project" (Just (toForeign proj)) opts.globalOpts
+        return $ opts { globalOpts = globalOpts' }
 
 argsParserDiagnostics :: forall e. Args.Args -> AffN e Unit
 argsParserDiagnostics opts = do

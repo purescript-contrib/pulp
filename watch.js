@@ -17,39 +17,24 @@ function topLevel(directory) {
 
 function watch(directories, act) {
   var watchpack = new Watchpack();
-
   watchpack.watch([], directories, Date.now() - 10000);
-
   watchpack.on("change", act);
 }
 
 module.exports = function() {
   var mod = path.join(__dirname, "/index");
-
   var args = process.argv.filter(stripWatchArg).slice(2);
-
   var p = child.fork(mod, args);
-
   var srcPath = topLevel(index.opts.opts.srcPath);
-
   var testPath = topLevel(index.opts.opts.testPath);
-
   var dependencyPath = topLevel(index.opts.opts.dependencyPath);
-
   var directories = [srcPath, testPath, dependencyPath];
-
   var localGlobs = files.localGlobs(index.opts.opts);
-
   var testGlobs = files.testGlobs(index.opts.opts);
-
   var dependencyGlobs = files.dependencyGlobs(index.opts.opts);
-
-  var globs = localGlobs.union(testGlobs).union(dependencyGlobs)
-
+  var globs = localGlobs.union(testGlobs).union(dependencyGlobs);
   var sourceGlobs = globs.sources();
-
   var ffiGlobs = globs.ffis();
-
   var fileGlobs = sourceGlobs.concat(ffiGlobs);
 
   watch(directories, function(change){

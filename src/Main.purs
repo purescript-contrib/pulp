@@ -30,8 +30,10 @@ import Pulp.System.Process (argv, exit)
 import Pulp.Validate (validate)
 import Pulp.Version (version)
 import Pulp.Project (getProject)
+
 import qualified Pulp.Init as Init
 import qualified Pulp.Build as Build
+import qualified Pulp.Run as Run
 
 globals :: Array Args.Option
 globals = [
@@ -127,7 +129,7 @@ commands = [
       Args.option "force" ["--force"] Type.flag
         "Force a non-incremental build by deleting the build cache."
       ] ++ buildishArgs,
-  Args.command "run" "Compile and run the project." nop $ [
+  Args.command "run" "Compile and run the project." Run.action $ [
     Args.optionDefault "engine" ["--engine"] Type.string
       "Run the Application on a different JavaScript engine (node, iojs)" "node"
     ] ++ buildArgs,

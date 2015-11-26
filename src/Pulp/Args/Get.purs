@@ -1,6 +1,7 @@
 -- | Functions for getting data back out of an `Options` value.
 module Pulp.Args.Get
   ( getOption
+  , getOption'
   , getFlag
   ) where
 
@@ -17,6 +18,10 @@ import Pulp.System.FFI
 import Pulp.Args
 import qualified Pulp.System.Log as Log
 
+-- | Get an option out of the `Options` value. If the option has no default and
+-- | was not specified at the command line, the result will be `Nothing`. For
+-- | options which do have defaults, you probably want the primed version
+-- | instead, `getOption'`.
 getOption :: forall e a. (IsForeign a) => String -> Options -> AffN e (Maybe a)
 getOption name opts = do
   case lookup name opts of
@@ -28,6 +33,20 @@ getOption name opts = do
     Nothing ->
       pure Nothing
 
+-- | Get an option which was declared with a default value, and therefore
+-- | should always have a value.
+getOption' :: forall e a. (IsForeign a) => String -> Options -> AffN e a
+getOption' name opts = do
+  mval <- getOption name opts
+  case mval of
+    Just val ->
+      pure val
+    Nothing ->
+      let msg = "Missing default value for option: " ++ name
+      in internalError msg (error msg)
+
+-- | Get a flag out of the `Options` value. If it was specified at the command
+-- | line, the result is `true`, otherwise, `false`.
 getFlag :: forall e. String -> Options -> AffN e Boolean
 getFlag name opts = do
   case lookup name opts of

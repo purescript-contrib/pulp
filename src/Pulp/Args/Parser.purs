@@ -13,6 +13,7 @@ import Data.Foldable (find, elem)
 import Data.List (List(..), toList)
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
+import Data.Foreign (toForeign)
 
 import qualified Data.Map as Map
 
@@ -67,6 +68,14 @@ cmd cmds = do
   case o of
     (Tuple key option) -> return option
 
+extractDefault :: Option -> Options
+extractDefault o =
+  case o.defaultValue of
+    Just def ->
+      Map.singleton o.name (Just (toForeign def))
+    Nothing ->
+      Map.empty
+
 parseArgv :: Array Option -> Array Command -> OptParser Args
 parseArgv globals commands = do
   globalOpts <- many $ try $ opt globals
@@ -74,11 +83,13 @@ parseArgv globals commands = do
   commandOpts <- many $ try $ opt command.options
   rest <- many token
   return $ {
-    globalOpts: Map.unions (toList globalOpts),
+    globalOpts: Map.unions (toList (globalOpts ++ defs globals)),
     command: command,
-    commandOpts: Map.unions (toList commandOpts),
+    commandOpts: Map.unions (toList (commandOpts ++ defs command.options)),
     remainder: rest
     }
+  where
+  defs = map extractDefault
 
 parse :: forall e. Array Option -> Array Command -> Array String -> AffN e (Either ParseError Args)
 parse globals commands s =

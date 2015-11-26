@@ -11,7 +11,7 @@ import Data.Either (either)
 import Data.Map (Map(), lookup)
 import Data.Maybe (Maybe(..), maybe)
 import Data.List (List(..))
-import Data.Foreign (Foreign())
+import Data.Foreign (Foreign(), toForeign)
 import Data.Foreign.Class (IsForeign, read)
 
 import Text.Parsing.Parser (ParserT())

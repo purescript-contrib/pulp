@@ -205,5 +205,3 @@ argsParserDiagnostics opts = do
   where
   showForeign :: Foreign -> String
   showForeign = unsafeInspect
-
-foreign import unsafeInspect :: forall a. a -> String

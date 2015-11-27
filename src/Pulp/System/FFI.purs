@@ -28,3 +28,6 @@ foreign import runNode'  :: forall a e. Fn3 (Error -> EffN e Unit) (a -> EffN e 
 
 runNode :: forall a e. (Callback a -> Unit) -> AffN e a
 runNode fn = makeAff (\err win -> runFn3 runNode' err win fn)
+
+-- | This is quite unsafe but often useful.
+foreign import unsafeInspect :: forall a. a -> String

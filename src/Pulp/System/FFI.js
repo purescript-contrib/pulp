@@ -9,3 +9,7 @@ exports["runNode'"] = function runNode$prime(error, success, fn) {
     });
   };
 }
+
+exports.unsafeInspect = function unsafeInspect(obj) {
+  return require('util').inspect(obj);
+};

@@ -1,6 +1,6 @@
 
 module Pulp.Project
-  ( Project()
+  ( Project(..)
   , getProject
   ) where
 

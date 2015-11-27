@@ -6,6 +6,8 @@ module Pulp.System.Process
        , stdout
        , stderr
        , getEnvironment
+       , getEnv
+       , setEnv
        , getPlatform
        , chdir
        , cwd
@@ -13,8 +15,9 @@ module Pulp.System.Process
 
 import Prelude
 
+import Data.Nullable (toMaybe, Nullable())
 import Data.Array (drop, (!!))
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, Maybe())
 import Data.StrMap (StrMap())
 
 import Pulp.System.FFI
@@ -36,6 +39,15 @@ foreign import stderr :: NodeStream String
 
 -- | Gets a copy of the current environment
 foreign import getEnvironment :: forall e. EffN e (StrMap String)
+
+-- | Get a specific value out of the environment
+foreign import getEnvNullable :: forall e. String -> EffN e (Nullable String)
+
+getEnv :: forall e. String -> EffN e (Maybe String) 
+getEnv var = toMaybe <$> getEnvNullable var
+
+-- | Set a specific value in the environment
+foreign import setEnv :: forall e. String -> String -> EffN e Unit
 
 foreign import getPlatform :: forall e. EffN e String
 

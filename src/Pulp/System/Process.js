@@ -31,3 +31,18 @@ exports.chdir = function chdir(dir) {
 exports.cwd = function cwd() {
   return process.cwd();
 }
+
+exports.getEnvNullable = function getEnvNullable(envvar) {
+  return function() {
+    return process.env[envvar];
+  };
+};
+
+exports.setEnv = function setEnv(envvar) {
+  return function(val) {
+    return function() {
+      process.env[envvar] = val;
+      return {};
+    };
+  };
+};

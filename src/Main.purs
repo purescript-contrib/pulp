@@ -35,6 +35,7 @@ import qualified Pulp.Init as Init
 import qualified Pulp.Build as Build
 import qualified Pulp.Run as Run
 import qualified Pulp.Test as Test
+import qualified Pulp.Browserify as Browserify
 
 globals :: Array Args.Option
 globals = [
@@ -114,7 +115,7 @@ commands = [
       "Run the Application on a different JavaScript engine (node, iojs)" "node"
     ] ++ buildishArgs,
   Args.command "browserify"
-    "Produce a deployable bundle using Browserify." nop $ [
+    "Produce a deployable bundle using Browserify." Browserify.action $ [
       Args.option "to" ["--to", "-t"] Type.string
         "Output file name for bundle (stdout if not specified).",
       Args.optionDefault "main" ["--main", "-m"] Type.string

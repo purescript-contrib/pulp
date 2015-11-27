@@ -1,7 +1,9 @@
 
 module Pulp.Build
   ( action
+  , build
   , testBuild
+  , getOutputStream
   ) where
 
 import Prelude
@@ -31,6 +33,9 @@ instance eqBuildType :: Eq BuildType where
 
 action :: Action
 action = go NormalBuild
+
+build :: forall e. Args -> AffN e Unit
+build = runAction action
 
 testBuild :: forall e. Args -> AffN e Unit
 testBuild = runAction (go TestBuild)
@@ -76,14 +81,16 @@ bundle args = do
                            ++ args.remainder)
                           Nothing
 
-  out <- getOutStream opts
+  out <- getOutputStream opts
   Stream.write out bundledJs
 
   Log.log "Bundled."
 
-  where
-  getOutStream opts = do
-    to <- getOption "to" opts
-    case to of
-      Just path -> liftEff $ Files.createWriteStream path
-      Nothing   -> pure Process.stdout
+-- | Get a writable stream which output should be written to, based on the
+-- | value of the 'to' option.
+getOutputStream :: forall e. Options -> AffN e (Stream.NodeStream String)
+getOutputStream opts = do
+  to <- getOption "to" opts
+  case to of
+    Just path -> liftEff $ Files.createWriteStream path
+    Nothing   -> pure Process.stdout

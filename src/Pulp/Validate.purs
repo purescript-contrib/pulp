@@ -7,7 +7,6 @@ import Data.List (toList, List(..))
 import Data.String (trim)
 import Data.Version.Haskell (Version(..), parseVersion, showVersion)
 import Control.Monad (when)
-import Control.Monad.Error.Class (throwError)
 import Control.Monad.Eff.Class (liftEff)
 import Text.Parsing.Parser (ParseError(..))
 

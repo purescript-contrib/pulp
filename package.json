@@ -19,7 +19,7 @@
     "pulp": "output/pulp.js"
   },
   "scripts": {
-    "build": "pulp build --optimise --to output/pulp.js",
+    "build": "pulp build --to output/pulp.js",
     "test": "mocha test-js --compilers js:babel/register"
   },
   "dependencies": {

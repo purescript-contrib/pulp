@@ -34,6 +34,7 @@ import Pulp.Project (getProject)
 import qualified Pulp.Init as Init
 import qualified Pulp.Build as Build
 import qualified Pulp.Run as Run
+import qualified Pulp.Test as Test
 
 globals :: Array Args.Option
 globals = [
@@ -104,7 +105,7 @@ commands = [
      ],
   Args.command "dep" "Invoke Bower for package management." nop [],
   Args.command "build" "Build the project." Build.action buildArgs,
-  Args.command "test" "Run project tests." nop $ [
+  Args.command "test" "Run project tests." Test.action $ [
     Args.optionDefault "main" ["--main", "-m"] Type.string
       "Test entry point." "Test.Main",
     Args.option "testRuntime" ["--runtime", "-r"] Type.string

@@ -6,6 +6,7 @@ import Data.Maybe (Maybe(..))
 import Data.List (toList, (:))
 import qualified Data.Map as Map
 import qualified Data.Set as Set
+import Data.StrMap (StrMap())
 import qualified Data.StrMap as StrMap
 import Data.String (replace)
 import Data.Traversable (sequence)
@@ -41,11 +42,6 @@ action = Action \args -> do
       Nothing
   Log.log "Build successful."
 
-  env <- liftEff Process.getEnvironment
-  let env' = StrMap.alter (prependPath (Path.resolve [] buildPath))
-                          "NODE_PATH"
-                          env
-
   main <- getOption' "main" opts
   src <- liftEff $ Buffer.fromString (makeEntry main) UTF8
 
@@ -54,7 +50,17 @@ action = Action \args -> do
   FS.fdClose info.fd
 
   engine <- getOption' "engine" opts
-  exec engine ([info.path] ++ args.remainder) (Just env')
+  env <- setupEnv buildPath
+  exec engine ([info.path] ++ args.remainder) (Just env)
+
+-- | Given a build path, create an environment that is just like this process'
+-- | environment, except with NODE_PATH set up for commands like `pulp run`.
+setupEnv :: String -> forall e. AffN e (StrMap String)
+setupEnv buildPath = do
+  env <- liftEff Process.getEnvironment
+  pure $ StrMap.alter (prependPath (Path.resolve [] buildPath))
+                      "NODE_PATH"
+                      env
 
 prependPath :: String -> Maybe String -> Maybe String
 prependPath newPath paths =

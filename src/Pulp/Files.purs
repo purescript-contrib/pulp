@@ -2,10 +2,12 @@
 module Pulp.Files where
 
 import Prelude
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Foreign.Class (IsForeign)
-import Data.List (fromList)
-import Data.Set (Set(), union, toList, singleton, empty)
+import qualified Data.List as List
+import Data.Set (Set())
+import qualified Data.Set as Set
+import Data.Traversable (sequence)
 import qualified Node.Path as Path
 
 import Pulp.System.FFI
@@ -13,17 +15,17 @@ import Pulp.Args
 import Pulp.Args.Get
 
 sources :: Set String -> Array String
-sources = toList >>> fromList >>> map (++ "/**/*.purs")
+sources = Set.toList >>> List.fromList >>> map (++ "/**/*.purs")
 
 ffis :: Set String -> Array String
-ffis = toList >>> fromList >>> map (++ "/**/*.js")
+ffis = Set.toList >>> List.fromList >>> map (++ "/**/*.js")
 
 globsFromOption' :: forall e a. (IsForeign a) => (a -> a) -> String -> Options -> AffN e (Set a)
 globsFromOption' f name opts = do
   value <- getOption name opts
   pure $ case value of
-          Just v  -> singleton (f v)
-          Nothing -> empty
+          Just v  -> Set.singleton (f v)
+          Nothing -> Set.empty
 
 globsFromOption :: forall e a. (IsForeign a) => String -> Options -> AffN e (Set a)
 globsFromOption = globsFromOption' id
@@ -39,10 +41,19 @@ dependencyGlobs =
   globsFromOption' (\path -> Path.concat [path, "purescript-*", "src"])
                    "dependencyPath"
 
-defaultGlobs :: forall e. Options -> AffN e (Set String)
-defaultGlobs args =
-  union <$> localGlobs args <*> dependencyGlobs args
+includeGlobs :: forall e. Options -> AffN e (Set String)
+includeGlobs opts = mkSet <$> getOption "includePaths" opts
+  where
+  mkSet = Set.fromList <<< List.toList <<< fromMaybe []
 
-outputModules :: String -> Set String
+defaultGlobs :: forall e. Options -> AffN e (Set String)
+defaultGlobs opts =
+  Set.unions <$> sequence (List.toList
+                            [ localGlobs opts
+                            , dependencyGlobs opts
+                            , includeGlobs opts
+                            ])
+
+outputModules :: String -> Array String
 outputModules buildPath =
-  singleton (buildPath ++ "/*/*.js")
+  [buildPath ++ "/*/*.js"]

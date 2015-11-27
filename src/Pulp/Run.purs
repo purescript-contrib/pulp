@@ -3,7 +3,7 @@ module Pulp.Run where
 
 import Prelude
 import Data.Maybe (Maybe(..))
-import Data.List (toList)
+import Data.List (toList, (:))
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.StrMap as StrMap
@@ -22,6 +22,7 @@ import Pulp.Files
 import qualified Pulp.System.Process as Process
 import qualified Pulp.System.Log as Log
 import Pulp.System.Files (openTemp)
+import Pulp.System.FFI
 
 action :: Action
 action = Action \args -> do
@@ -29,10 +30,9 @@ action = Action \args -> do
 
   cwd <- liftEff Process.cwd
   Log.log $ "Building project in" ++ cwd
-  globs <- Set.unions <$> sequence (toList
-                                     [ defaultGlobs opts
-                                     , globsFromOption "includePaths" opts
-                                     ])
+
+  globs <- defaultGlobs opts
+
   buildPath <- getOption' "buildPath" opts
 
   psc (sources globs)
@@ -55,7 +55,7 @@ action = Action \args -> do
 
   engine <- getOption' "engine" opts
   exec engine ([info.path] ++ args.remainder) (Just env')
-  
+
 prependPath :: String -> Maybe String -> Maybe String
 prependPath newPath paths =
   Just $ case paths of

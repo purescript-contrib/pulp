@@ -7,7 +7,7 @@ module Pulp.Build
 import Prelude
 import Data.Maybe
 import Data.Map (union)
-import Data.Set (unions, empty)
+import qualified Data.Set as Set
 import Data.List (toList)
 import Data.Traversable (sequence)
 import Control.Monad.Eff.Class (liftEff)
@@ -39,13 +39,12 @@ go buildType = Action \args -> do
 
   cwd <- liftEff Process.cwd
   Log.log $ "Building project in" ++ cwd
-  globs <- unions <$> sequence (toList
-                                  [ defaultGlobs opts
-                                  , globsFromOption "includePaths" opts
-                                  , if buildType == TestBuild
-                                      then testGlobs opts
-                                      else pure empty
-                                  ])
+
+  globs <- Set.union <$> defaultGlobs opts
+                     <*> (if buildType == TestBuild
+                            then testGlobs opts
+                            else pure Set.empty)
+
   buildPath <- getOption' "buildPath" args.commandOpts
 
   psc (sources globs)

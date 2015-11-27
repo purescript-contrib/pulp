@@ -52,6 +52,14 @@ describe("integration tests", function() {
     yield pulp("build");
   }));
 
+  it("pulp build --include", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+    yield sh("mkdir extras");
+    yield sh("echo 'module Extras where\n\nfoo = 1' > extras/Extras.purs");
+    yield pulp("build --include extras");
+    yield sh("test -f output/Extras/index.js");
+  }));
+
   it("pulp run", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const [out] = yield pulp("run");

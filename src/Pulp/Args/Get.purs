@@ -3,6 +3,7 @@ module Pulp.Args.Get
   ( getOption
   , getOption'
   , getFlag
+  , hasOption
   ) where
 
 import Prelude
@@ -61,6 +62,13 @@ getFlag name opts = do
       pure true
     Nothing ->
       pure false
+
+-- | True if a given option exists in the `Options` map, false otherwise.
+hasOption :: forall e. String -> Options -> AffN e Boolean
+hasOption name opts = isJust <$> opt
+  where
+  opt :: AffN e (Maybe Foreign)
+  opt = getOption name opts
 
 readForeign :: forall e a. (IsForeign a) => String -> Foreign -> AffN e a
 readForeign name thing =

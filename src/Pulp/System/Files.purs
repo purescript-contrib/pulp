@@ -2,6 +2,7 @@
 module Pulp.System.Files
   ( mkdirIfNotExist
   , openTemp
+  , createWriteStream
   ) where
 
 import Prelude
@@ -14,6 +15,7 @@ import Node.FS (FileDescriptor())
 import Node.FS.Aff (mkdir)
 
 import Pulp.System.FFI
+import Pulp.System.Stream
 
 foreign import isEEXIST :: Error -> Boolean
 
@@ -30,3 +32,5 @@ foreign import openTemp' :: Fn2 TempOptions (Callback TempFileInfo) Unit
 
 openTemp :: forall e. TempOptions -> AffN e TempFileInfo
 openTemp opts = runNode $ runFn2 openTemp' opts
+
+foreign import createWriteStream :: forall e. String -> EffN e (NodeStream String)

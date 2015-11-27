@@ -20,7 +20,6 @@ import Control.Monad.Eff.Exception (Error(), error)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Aff
 import Control.Monad.Aff.AVar (takeVar, putVar, makeVar)
-import Unsafe.Coerce (unsafeCoerce)
 
 import Pulp.System.Process
 import Pulp.System.Stream

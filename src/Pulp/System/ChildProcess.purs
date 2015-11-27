@@ -7,15 +7,9 @@ module Pulp.System.ChildProcess
   ) where
 
 import Prelude
-import Data.Maybe (Maybe(..), maybe)
-import Data.Profunctor.Strong (first)
-import Data.Tuple (Tuple(..))
-import qualified Data.Map as Map
 import Data.StrMap (StrMap())
 import Data.Nullable (Nullable())
-import qualified Data.List as List
 import Data.Function
-import Control.Monad.Eff.Class (liftEff)
 import Unsafe.Coerce (unsafeCoerce)
 
 import Pulp.System.FFI

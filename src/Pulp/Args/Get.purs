@@ -13,10 +13,7 @@ import Data.String (joinWith)
 import Data.Foreign
 import Data.Foreign.Class
 import Data.Map (lookup)
-import Control.Monad.Error.Class (throwError)
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff.Exception (error, Error())
-import Control.Monad.Eff.Console.Unsafe (logAny)
 
 import Pulp.System.FFI
 import Pulp.System.Process (exit)

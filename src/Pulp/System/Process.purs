@@ -13,12 +13,8 @@ module Pulp.System.Process
 
 import Prelude
 
-import Control.Monad.Eff (Eff())
-
 import Data.Array (drop, (!!))
-import Data.Function
 import Data.Maybe (fromMaybe)
-import Data.Either (Either(..))
 import Data.StrMap (StrMap())
 
 import Pulp.System.FFI

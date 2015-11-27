@@ -2,15 +2,13 @@ module Pulp.Args.Parser where
 
 import Prelude
 
-import Control.Alt
-import Control.Monad.Aff
 import Control.Monad.Eff.Exception
 import Control.Monad.Error.Class
 import Control.Monad.Trans
 import Data.Array (many)
-import Data.Either (Either(..))
+import Data.Either (Either())
 import Data.Foldable (find, elem)
-import Data.List (List(..), toList)
+import Data.List (List(), toList)
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Foreign (toForeign)

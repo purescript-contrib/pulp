@@ -18,7 +18,7 @@ import qualified Pulp.Args.Types as Type
 import Pulp.Data.Foldable (max)
 import Pulp.System.Ansi
 import Pulp.System.FFI
-import Pulp.System.Process (stderr, commandName)
+import Pulp.System.Process (commandName)
 import Pulp.System.Stream (write)
 
 foreign import pad :: Int -> String

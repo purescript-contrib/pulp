@@ -9,7 +9,6 @@ import Data.Version.Haskell (Version(..), parseVersion, showVersion)
 import Control.Monad (when)
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff.Exception (error)
 import Text.Parsing.Parser (ParseError(..))
 
 import Pulp.Exec (execQuiet)

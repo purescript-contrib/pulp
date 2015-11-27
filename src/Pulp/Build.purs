@@ -10,11 +10,7 @@ import Data.Maybe
 import Data.Map (union)
 import Data.String (split)
 import qualified Data.Set as Set
-import Data.List (toList)
-import Data.Traversable (sequence)
 import Control.Monad.Eff.Class (liftEff)
-import Node.Encoding (Encoding(UTF8))
-import Node.FS.Aff (writeTextFile)
 
 import Pulp.System.FFI
 import qualified Pulp.System.Stream as Stream

@@ -2,7 +2,6 @@ module Pulp.Data.Monoid.Max where
 
 import Prelude
 
-import Data.Foldable
 import Data.Maybe (Maybe(..))
 import Data.Monoid
 

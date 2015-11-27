@@ -3,13 +3,10 @@ module Pulp.Run where
 
 import Prelude
 import Data.Maybe (Maybe(..))
-import Data.List (toList, (:))
 import qualified Data.Map as Map
-import qualified Data.Set as Set
 import Data.StrMap (StrMap())
 import qualified Data.StrMap as StrMap
 import Data.String (replace)
-import Data.Traversable (sequence)
 import Control.Monad.Eff.Class (liftEff)
 import qualified Node.Path as Path
 import qualified Node.FS.Aff as FS

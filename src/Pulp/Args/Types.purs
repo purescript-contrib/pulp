@@ -9,23 +9,17 @@ module Pulp.Args.Types
 
 import Prelude
 
-import Control.Monad (when, unless)
-import Control.Monad.Aff (Aff())
-import Control.Monad.Aff.AVar (AVAR())
+import Control.Monad (unless)
 import Control.Alt
 import Control.Monad.Trans
 import Data.String (split)
-import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.List (List(..))
 import Data.Int (fromString)
-import Data.Foldable (elem, for_)
+import Data.Foldable (for_)
 import Data.Foreign (toForeign)
 
-import Text.Parsing.Parser (ParserT(..))
-import Node.FS (FS())
 import Node.FS.Stats (Stats(), isFile, isDirectory)
-import Node.FS.Aff (exists, stat)
+import Node.FS.Aff (stat)
 import qualified Node.Path as Path
 
 import Pulp.Args

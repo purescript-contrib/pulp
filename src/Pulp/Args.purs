@@ -2,23 +2,17 @@ module Pulp.Args where
 
 import Prelude
 
-import Control.Bind (join)
-import Control.Monad.Error.Class (throwError)
-import Control.Monad.Eff.Exception (error, Error())
 import Control.Monad.Aff
 import Control.Monad.Aff.AVar
-import Data.Either (either)
-import Data.Map (Map(), lookup)
-import Data.Maybe (Maybe(..), maybe)
-import Data.List (List(..))
-import Data.Foreign (Foreign(), toForeign)
-import Data.Foreign.Class (IsForeign, read)
+import Data.Map (Map())
+import Data.Maybe (Maybe(..))
+import Data.List (List())
+import Data.Foreign (Foreign())
 
 import Text.Parsing.Parser (ParserT())
 import Node.FS (FS())
 
 import Pulp.System.FFI
-import qualified Pulp.System.Log as Log
 
 type Options = Map String (Maybe Foreign)
 

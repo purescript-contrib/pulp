@@ -49,6 +49,7 @@
   "devDependencies": {
     "babel": "^5.8.9",
     "co": "^4.6.0",
-    "mocha": "^2.2.5"
+    "mocha": "^2.2.5",
+    "semver": "^5.1.0"
   }
 }

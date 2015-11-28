@@ -36,6 +36,7 @@ import qualified Pulp.Build as Build
 import qualified Pulp.Run as Run
 import qualified Pulp.Test as Test
 import qualified Pulp.Browserify as Browserify
+import qualified Pulp.Docs as Docs
 
 globals :: Array Args.Option
 globals = [
@@ -135,7 +136,7 @@ commands = [
     Args.optionDefault "engine" ["--engine"] Type.string
       "Run the Application on a different JavaScript engine (node, iojs)" "node"
     ] ++ buildArgs,
-  Args.command "docs" "Generate project documentation." nop $ [
+  Args.command "docs" "Generate project documentation." Docs.action $ [
     Args.option "withTests" ["--with-tests", "-t"] Type.flag
       "Include tests.",
     Args.option "withDeps" ["--with-deps", "-d"] Type.flag

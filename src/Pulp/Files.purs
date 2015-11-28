@@ -1,13 +1,26 @@
 
-module Pulp.Files where
+module Pulp.Files
+  ( sources
+  , ffis
+  , localGlobs
+  , testGlobs
+  , dependencyGlobs
+  , includeGlobs
+  , defaultGlobs
+  , outputModules
+  , resolveGlobs
+  , glob
+  ) where
 
 import Prelude
+import Data.Array (concat)
 import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Function
 import Data.Foreign.Class (IsForeign)
 import qualified Data.List as List
 import Data.Set (Set())
 import qualified Data.Set as Set
-import Data.Traversable (sequence)
+import Data.Traversable (sequence, traverse)
 import qualified Node.Path as Path
 
 import Pulp.System.FFI
@@ -57,3 +70,11 @@ defaultGlobs opts =
 outputModules :: String -> Array String
 outputModules buildPath =
   [buildPath ++ "/*/*.js"]
+
+resolveGlobs :: forall e. Array String -> AffN e (Array String)
+resolveGlobs patterns = concat <$> traverse glob patterns
+
+foreign import glob' :: Fn2 String (Callback (Array String)) Unit
+
+glob :: forall e. String -> AffN e (Array String)
+glob pattern = runNode $ runFn2 glob' pattern

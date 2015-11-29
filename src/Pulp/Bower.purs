@@ -1,6 +1,6 @@
 
 module Pulp.Bower
-  ( bower
+  ( action
   , launchBower
   ) where
 
@@ -13,8 +13,8 @@ import Pulp.Args
 import Pulp.Exec (exec)
 import Pulp.System.FFI
 
-bower :: Action
-bower = Action \args -> launchBower args.remainder
+action :: Action
+action = Action \args -> launchBower args.remainder
 
 launchBower :: forall e. Array String -> AffN e Unit
 launchBower args = do

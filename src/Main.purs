@@ -48,7 +48,7 @@ globals = [
     "Don't colourise log output.",
   Args.option "then" ["--then"] Type.string
     "Run a shell command after the operation finishes. Useful with `--watch`.",
-  Args.option "version" ["--version", "v"] Type.flag
+  Args.option "version" ["--version", "-v"] Type.flag
     "Show current pulp version."
   ]
 

@@ -184,4 +184,24 @@ describe("integration tests", function() {
     assert.file("docs/Control/Monad/Eff/Console.md", (c) =>
       assert.equal(c.split("\n")[0], consoleDocLine1));
   }));
+
+  it("pulp psci includes dependencies", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+    yield pulp("psci");
+
+    assert.file(".psci", (c) => true);
+    const [out] = yield pulp("psci", "import Prelude\n\"hello, \" ++ \"world\"");
+    assert.ok(out.indexOf("\"hello, world\"") > -1,
+      "output did not contain \"hello, world\"");
+  }));
+
+  it("pulp psci includes local files", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+    yield pulp("psci");
+
+    assert.file(".psci", (c) => true);
+    const [out] = yield pulp("psci", "import Main as Main\nMain.main");
+    assert.ok(out.indexOf(hello) > -1,
+      "output did not contain \"" + hello + "\"");
+  }));
 });

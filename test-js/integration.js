@@ -10,6 +10,8 @@ const bowerMissing = "* ERROR: No bower.json found in current or parent director
 const initWithoutForce = "* ERROR: There's already a project here. Run `pulp init --force` if you're sure you want to overwrite it."
 const testDocLine1 = "## Module Test.Main"
 const consoleDocLine1 = "## Module Control.Monad.Eff.Console"
+const buildHelp = ["Command: build", "Build the project."]
+const docsHelp = ["Command: docs", "Generate project documentation."]
 
 describe("integration tests", function() {
   this.timeout(60000);
@@ -27,6 +29,22 @@ describe("integration tests", function() {
   it("errors when bower.json is missing", run(function*(sh, pulp, assert) {
     const [_, err] = yield pulp("build", null, { expectedExitCode: 1 });
     assert.equal(err.trim(), bowerMissing);
+  }));
+
+  it("pulp build --help", run(function*(sh, pulp, assert) {
+    const [_, err] = yield pulp("build --help");
+    buildHelp.forEach(function(h) {
+      assert.ok(err.indexOf(h) > -1,
+          "output did not contain '" + h + "'\noutput was:\n" + err)
+    });
+  }));
+
+  it("pulp docs --help", run(function*(sh, pulp, assert) {
+    const [_, err] = yield pulp("docs --help");
+    docsHelp.forEach(function(h) {
+      assert.ok(err.indexOf(h) > -1,
+          "output did not contain '" + h + "'\noutput was:\n" + err)
+    });
   }));
 
   it("refuses to init without --force", run(function*(sh, pulp, assert) {

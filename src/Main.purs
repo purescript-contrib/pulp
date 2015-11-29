@@ -174,9 +174,13 @@ main = runAff failed succeeded do
     Left (ParseError { message: err }) ->
       handleParseError err
     Right opts -> do
-      validate
-      opts' <- tweakOpts opts
-      Args.runAction opts.command.action opts'
+      if "--help" `elem` opts.remainder
+        then
+          printCommandHelp Log.out globals opts.command
+        else do
+          validate
+          opts' <- addProject opts
+          Args.runAction opts.command.action opts'
       -- TODO: --watch, --then
   where
   handleParseError err = go (head argv)
@@ -190,8 +194,9 @@ main = runAff failed succeeded do
       Log.err $ "Error: " ++ err
       printHelp Log.out globals commands
 
-  -- TODO: refactor. this is really quite gross, especially with _project
-  tweakOpts opts =
+  -- This is really quite gross, especially with _project. Not sure exactly
+  -- how to go about improving this.
+  addProject opts =
     if (opts.command.name == "init")
       then return opts
       else do

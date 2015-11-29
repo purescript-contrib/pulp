@@ -1,5 +1,6 @@
 module Pulp.Args.Help
        ( printHelp
+       , printCommandHelp
        ) where
 
 import Prelude
@@ -10,11 +11,11 @@ import Data.Foldable (foldr)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
 import Data.StrMap (StrMap(), keys, lookup, insert, empty)
-import qualified Data.String as Str
+import Data.String as Str
 import Data.Traversable (sequence)
 
 import Pulp.Args
-import qualified Pulp.Args.Types as Type
+import Pulp.Args.Types as Type
 import Pulp.Data.Foldable (max)
 import Pulp.System.Ansi
 import Pulp.System.FFI
@@ -68,15 +69,29 @@ printHelp :: forall e. Ansi -> Array Option -> Array Command -> AffN e Unit
 printHelp stream globals commands = do
   write stream $ "Usage: " ++ commandName ++ " [global-options] <command> [command-options]\n"
   -- if context print command docs
-  bold stream
-  write stream "\nGlobal options:\n"
-  reset stream
+  bolded stream "\nGlobal options:\n"
   formatOpts (globals ++ [helpOpt]) >>= write stream
-  bold stream
-  write stream "\nCommands:\n"
-  reset stream
+  bolded stream "\nCommands:\n"
   formatCmds commands >>= write stream
   helpText <- liftEff $ wrap ("Use `" ++ commandName ++
                               " <command> --help` to " ++
                               "learn about command specific options.") 2
   write stream $ "\n" ++ helpText ++ "\n\n"
+
+printCommandHelp :: forall e. Ansi -> Array Option -> Command -> AffN e Unit
+printCommandHelp stream globals command = do
+  write stream $ "Usage: " ++ commandName ++ " [global-options] " ++
+                  command.name ++ " [command-options]\n"
+  bolded stream $ "\nCommand: " ++ command.name ++ "\n"
+  write stream $ "  " ++ command.desc ++ "\n"
+  bolded stream "\nCommand options:\n"
+  formatOpts (command.options) >>= write stream
+  bolded stream "\nGlobal options:\n"
+  formatOpts (globals ++ [helpOpt]) >>= write stream
+  write stream "\n"
+
+bolded :: forall e. Ansi -> String -> AffN e Unit
+bolded stream str = do
+  bold stream
+  write stream str
+  reset stream

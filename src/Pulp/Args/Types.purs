@@ -76,7 +76,7 @@ file = {
 
 directory :: OptionParser
 directory = {
-  name: Just "<directory>",
+  name: Just "<dir>",
   parser: \arg -> do
     path <- token <|> argErr arg "Needs a directory argument."
     requireDirectory path
@@ -85,7 +85,7 @@ directory = {
 
 directories :: OptionParser
 directories = {
-  name: Just "<directories>",
+  name: Just "<dir:dir:...>",
   parser: \arg -> do
     paths <- token <|> argErr arg "Needs a directory argument."
     let paths' = split Path.delimiter paths

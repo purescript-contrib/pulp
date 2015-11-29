@@ -3,7 +3,7 @@ node_js:
   - "node"
   - "iojs"
 before_install:
-  - npm install -g purescript
+  - npm install -g purescript pulp
 script:
   - npm run build
   - npm run test

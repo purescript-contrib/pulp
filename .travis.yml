@@ -4,4 +4,7 @@ node_js:
   - "iojs"
 before_install:
   - npm install -g purescript
+script:
+  - npm run build
+  - npm run test
 sudo: false

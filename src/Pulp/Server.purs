@@ -4,11 +4,9 @@ module Pulp.Server
   ) where
 
 import Prelude
-import Control.Monad (when)
 import Data.Maybe
 import Data.Map as Map
 import Data.String as String
-import Data.Set as Set
 import Data.Foreign (toForeign, Foreign())
 import Data.String.Regex (regex, noFlags)
 import Data.Function
@@ -18,13 +16,10 @@ import Node.FS.Aff as FS
 import Node.Encoding (Encoding(..))
 
 import Pulp.System.FFI
-import Pulp.System.Stream as Stream
 import Pulp.System.Process as Process
 import Pulp.System.Log as Log
-import Pulp.System.Files as Files
 import Pulp.Args
 import Pulp.Args.Get
-import Pulp.Exec (psc, pscBundle)
 import Pulp.Files
 import Pulp.Run (makeEntry)
 
@@ -67,7 +62,7 @@ getDefaultConfig buildPath sources ffis = do
   let context = Path.resolve [cwd] "src"
   pure $ defaultConfig { dir: cwd, buildPath, sources, ffis, nodeModulesPath, context }
 
-defaultConfig :: _ -> Foreign
+defaultConfig :: WebpackConfigOptions -> Foreign
 defaultConfig opts = toForeign $
   { 
     cache: true,
@@ -102,6 +97,16 @@ defaultConfig opts = toForeign $
     }
   }
 
+type WebpackConfigOptions =
+  { sources :: Array String
+  , ffis :: Array String
+  , buildPath :: String
+  , dir :: String
+  , context :: String
+  , nodeModulesPath :: String
+  }
+
+getWebpackOptions :: forall e. Options -> AffN e WebpackOptions
 getWebpackOptions opts = do
   noInfo     <- getFlag "noInfo" opts
   quiet      <- getFlag "quiet" opts
@@ -120,7 +125,7 @@ foreign import webpackOptions :: forall e. WebpackOptionsArgs -> EffN e WebpackO
 foreign import data DevServer :: *
 foreign import makeDevServer :: forall e. Foreign -> WebpackOptions -> EffN e DevServer
 
-foreign import listen' :: forall e. Fn4 DevServer String Int (Callback Unit) Unit
+foreign import listen' :: Fn4 DevServer String Int (Callback Unit) Unit
 
 listen :: forall e. DevServer -> String -> Int -> AffN e Unit
 listen server host port = runNode $ runFn4 listen' server host port

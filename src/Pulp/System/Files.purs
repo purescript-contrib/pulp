@@ -3,6 +3,7 @@ module Pulp.System.Files
   ( mkdirIfNotExist
   , openTemp
   , createWriteStream
+  , isENOENT
   ) where
 
 import Prelude
@@ -34,3 +35,5 @@ openTemp :: forall e. TempOptions -> AffN e TempFileInfo
 openTemp opts = runNode $ runFn2 openTemp' opts
 
 foreign import createWriteStream :: forall e. String -> EffN e (NodeStream String)
+
+foreign import isENOENT :: Error -> Boolean

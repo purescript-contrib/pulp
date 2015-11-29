@@ -16,3 +16,7 @@ exports.createWriteStream = function createWriteStream(path) {
     return require('fs').createWriteStream(path);
   };
 };
+
+exports.isENOENT = function isENOENT(error) {
+  return error.code === "ENOENT";
+};

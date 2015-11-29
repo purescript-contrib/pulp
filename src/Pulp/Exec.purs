@@ -25,6 +25,7 @@ import Pulp.System.Process
 import Pulp.System.Stream
 import Pulp.System.FFI
 import Pulp.System.ChildProcess
+import Pulp.System.Files
 
 psc :: forall e. Array String -> Array String -> Array String -> Maybe (StrMap String) -> AffN e String
 psc deps ffi args env =
@@ -103,8 +104,6 @@ handleErrors cmd retry err
            "`" <> cmd <> "` executable not found."
   | otherwise =
      throwError err
-
-foreign import isENOENT :: Error -> Boolean
 
 concatStream :: forall e. NodeStream String -> AffN e String
 concatStream stream = runNode $ runFn2 concatStream' stream

@@ -3,10 +3,6 @@
 
 "use strict";
 
-exports.isENOENT = function isENOENT(error) {
-  return error.code === "ENOENT";
-};
-
 exports["concatStream'"] = function concatStream$prime(stream, callback) {
   var concat = require("concat-stream");
 

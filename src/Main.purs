@@ -99,9 +99,6 @@ buildArgs = [
     "Additional modules to be included in the output bundle (comma-separated list)."
   ] ++ buildishArgs
 
-nop :: Args.Action
-nop = Args.Action (const (return unit))
-
 commands :: Array Args.Command
 commands = [
   Args.command "init" "Generate an example PureScript project." Init.action [

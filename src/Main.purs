@@ -39,6 +39,7 @@ import Pulp.Test as Test
 import Pulp.Browserify as Browserify
 import Pulp.Docs as Docs
 import Pulp.Psci as Psci
+import Pulp.Server as Server
 
 globals :: Array Args.Option
 globals = [
@@ -143,7 +144,7 @@ commands = [
       "Include external dependencies."
     ] ++ pathArgs,
   Args.command "psci" "Launch a PureScript REPL configured for the project." Psci.action pathArgs,
-  Args.command "server" "Launch a Webpack development server." nop $ [
+  Args.command "server" "Launch a Webpack development server." Server.action $ [
       Args.optionDefault "main" ["--main", "-m"] Type.string
         "Application's entry point." "Main",
       Args.option "config" ["--config", "-c"] Type.file

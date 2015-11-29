@@ -32,6 +32,7 @@ import Pulp.Version (version)
 import Pulp.Project (getProject)
 
 import Pulp.Init as Init
+import Pulp.Bower as Bower
 import Pulp.Build as Build
 import Pulp.Run as Run
 import Pulp.Test as Test
@@ -106,7 +107,7 @@ commands = [
      Args.option "force" ["--force"] Type.flag
        "Overwrite any project found in the current directory."
      ],
-  Args.command "dep" "Invoke Bower for package management." nop [],
+  Args.command "dep" "Invoke Bower for package management." Bower.action [],
   Args.command "build" "Build the project." Build.action buildArgs,
   Args.command "test" "Run project tests." Test.action $ [
     Args.optionDefault "main" ["--main", "-m"] Type.string

@@ -13,12 +13,12 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Foreign (toForeign)
 
-import qualified Data.Map as Map
+import Data.Map as Map
 
 import Text.Parsing.Parser
 import Text.Parsing.Parser.Combinators ((<?>), try)
-import qualified Text.Parsing.Parser.Token as Token
-import qualified Text.Parsing.Parser.Pos as Pos
+import Text.Parsing.Parser.Token as Token
+import Text.Parsing.Parser.Pos as Pos
 
 import Pulp.Args
 import Pulp.System.FFI (AffN())

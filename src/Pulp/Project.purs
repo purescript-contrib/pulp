@@ -15,11 +15,11 @@ import Data.Foreign.Class (IsForeign, readProp)
 
 import Node.FS.Aff (exists, readTextFile)
 import Node.Encoding (Encoding(UTF8))
-import qualified Node.Path as P
+import Node.Path as P
 
 import Pulp.System.FFI
 import Pulp.System.Files (mkdirIfNotExist)
-import qualified Pulp.System.Process as Process
+import Pulp.System.Process as Process
 import Pulp.Args (Options())
 import Pulp.Args.Get (getOption)
 

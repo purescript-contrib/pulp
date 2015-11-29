@@ -7,7 +7,7 @@ module Pulp.Bower
 import Prelude
 import Data.Maybe (Maybe(..))
 import Control.Monad.Eff.Class (liftEff)
-import qualified Node.Path as Path
+import Node.Path as Path
 
 import Pulp.Args
 import Pulp.Exec (exec)

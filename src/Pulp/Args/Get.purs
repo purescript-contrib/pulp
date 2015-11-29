@@ -18,7 +18,7 @@ import Control.Monad.Eff.Class (liftEff)
 import Pulp.System.FFI
 import Pulp.System.Process (exit)
 import Pulp.Args
-import qualified Pulp.System.Log as Log
+import Pulp.System.Log as Log
 
 -- | Get an option out of the `Options` value. If the option has no default and
 -- | was not specified at the command line, the result will be `Nothing`. For

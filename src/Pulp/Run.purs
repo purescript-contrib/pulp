@@ -3,22 +3,22 @@ module Pulp.Run where
 
 import Prelude
 import Data.Maybe (Maybe(..))
-import qualified Data.Map as Map
+import Data.Map as Map
 import Data.StrMap (StrMap())
-import qualified Data.StrMap as StrMap
+import Data.StrMap as StrMap
 import Data.String (replace)
 import Control.Monad.Eff.Class (liftEff)
-import qualified Node.Path as Path
-import qualified Node.FS.Aff as FS
-import qualified Node.Buffer as Buffer
+import Node.Path as Path
+import Node.FS.Aff as FS
+import Node.Buffer as Buffer
 import Node.Encoding (Encoding(UTF8))
 
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec
 import Pulp.Files
-import qualified Pulp.System.Process as Process
-import qualified Pulp.System.Log as Log
+import Pulp.System.Process as Process
+import Pulp.System.Log as Log
 import Pulp.System.Files (openTemp)
 import Pulp.System.FFI
 

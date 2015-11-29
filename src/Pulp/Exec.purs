@@ -12,7 +12,7 @@ import Data.Function
 import Data.String (stripSuffix)
 import Data.StrMap (StrMap())
 import Data.Maybe (Maybe(..))
-import qualified Data.Array as Array
+import Data.Array as Array
 import Data.Nullable (toNullable)
 import Control.Monad (when)
 import Control.Monad.Error.Class (MonadError, throwError)

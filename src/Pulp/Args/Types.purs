@@ -20,7 +20,7 @@ import Data.Foreign (toForeign)
 
 import Node.FS.Stats (Stats(), isFile, isDirectory)
 import Node.FS.Aff (stat)
-import qualified Node.Path as Path
+import Node.Path as Path
 
 import Pulp.Args
 import Pulp.Args.Parser

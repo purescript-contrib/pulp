@@ -2,7 +2,7 @@
 module Pulp.Version ( version ) where
 
 import Prelude
-import qualified Data.Version as Version
+import Data.Version as Version
 import Data.List (List(..))
 
 -- | TODO: get this from package.json or git tags or something.

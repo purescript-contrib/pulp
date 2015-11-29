@@ -13,7 +13,7 @@ import Text.Parsing.Parser (ParseError(..))
 import Pulp.Exec (execQuiet)
 import Pulp.System.Process (exit)
 import Pulp.System.FFI
-import qualified Pulp.System.Log as Log
+import Pulp.System.Log as Log
 
 validate :: forall e. AffN e Unit
 validate = do

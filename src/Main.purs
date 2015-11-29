@@ -4,7 +4,7 @@ import Prelude
 
 import Control.Monad.Aff
 import Control.Monad.Eff.Class
-import qualified Control.Monad.Eff.Console as Console
+import Control.Monad.Eff.Console as Console
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Eff.Exception
 import Data.Maybe (Maybe(..))
@@ -18,25 +18,25 @@ import Data.Foldable (elem)
 import Text.Parsing.Parser (ParseError(..))
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Sync (readTextFile)
-import qualified Node.Path as Path
+import Node.Path as Path
 
-import qualified Pulp.Args as Args
+import Pulp.Args as Args
 import Pulp.Args.Help
-import qualified Pulp.Args.Types as Type
+import Pulp.Args.Types as Type
 import Pulp.Args.Parser (parse)
 import Pulp.System.FFI
-import qualified Pulp.System.Log as Log
+import Pulp.System.Log as Log
 import Pulp.System.Process (argv, exit)
 import Pulp.Validate (validate)
 import Pulp.Version (version)
 import Pulp.Project (getProject)
 
-import qualified Pulp.Init as Init
-import qualified Pulp.Build as Build
-import qualified Pulp.Run as Run
-import qualified Pulp.Test as Test
-import qualified Pulp.Browserify as Browserify
-import qualified Pulp.Docs as Docs
+import Pulp.Init as Init
+import Pulp.Build as Build
+import Pulp.Run as Run
+import Pulp.Test as Test
+import Pulp.Browserify as Browserify
+import Pulp.Docs as Docs
 
 globals :: Array Args.Option
 globals = [

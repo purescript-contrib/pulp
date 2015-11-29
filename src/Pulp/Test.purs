@@ -5,14 +5,14 @@ module Pulp.Test
 
 import Prelude
 import Data.Maybe
-import qualified Data.Map as Map
+import Data.Map as Map
 import Data.Foreign (toForeign)
 
-import qualified Pulp.System.Log as Log
+import Pulp.System.Log as Log
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec (exec)
-import qualified Pulp.Build as Build
+import Pulp.Build as Build
 import Pulp.Run (setupEnv)
 
 action :: Action

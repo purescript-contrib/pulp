@@ -17,11 +17,11 @@ import Data.Array (concat)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Function
 import Data.Foreign.Class (IsForeign)
-import qualified Data.List as List
+import Data.List as List
 import Data.Set (Set())
-import qualified Data.Set as Set
+import Data.Set as Set
 import Data.Traversable (sequence, traverse)
-import qualified Node.Path as Path
+import Node.Path as Path
 
 import Pulp.System.FFI
 import Pulp.Args

@@ -4,10 +4,10 @@ module Pulp.Docs where
 import Prelude
 import Data.Tuple (Tuple(..))
 import Data.Maybe (Maybe(..))
-import qualified Data.Array as Array
-import qualified Data.Set as Set
-import qualified Data.Map as Map
-import qualified Data.String as String
+import Data.Array as Array
+import Data.Set as Set
+import Data.Map as Map
+import Data.String as String
 import Data.Foldable (mconcat, for_, elem)
 import Data.Traversable (traverse)
 import Control.Monad
@@ -19,8 +19,8 @@ import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec
 import Pulp.Files
-import qualified Pulp.System.Process as Process
-import qualified Pulp.System.Log as Log
+import Pulp.System.Process as Process
+import Pulp.System.Log as Log
 import Pulp.System.FFI
 
 action :: Action

@@ -8,11 +8,11 @@ import Data.String (joinWith)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Eff.Class (liftEff)
-import qualified Node.Path as Path
+import Node.Path as Path
 import Node.FS.Aff (writeTextFile, exists)
 import Node.Encoding (Encoding(UTF8))
 
-import qualified Pulp.System.Log as Log
+import Pulp.System.Log as Log
 import Pulp.System.FFI
 import Pulp.Args
 import Pulp.Args.Get (getFlag)

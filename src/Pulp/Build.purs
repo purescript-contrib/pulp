@@ -11,14 +11,14 @@ import Control.Monad (when)
 import Data.Maybe
 import Data.Map (union)
 import Data.String (split)
-import qualified Data.Set as Set
+import Data.Set as Set
 import Control.Monad.Eff.Class (liftEff)
 
 import Pulp.System.FFI
-import qualified Pulp.System.Stream as Stream
-import qualified Pulp.System.Process as Process
-import qualified Pulp.System.Log as Log
-import qualified Pulp.System.Files as Files
+import Pulp.System.Stream as Stream
+import Pulp.System.Process as Process
+import Pulp.System.Log as Log
+import Pulp.System.Files as Files
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec (psc, pscBundle)

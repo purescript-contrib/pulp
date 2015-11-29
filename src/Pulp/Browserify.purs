@@ -5,23 +5,23 @@ import Prelude
 import Control.Monad (when)
 import Data.Function
 import Data.Maybe
-import qualified Data.Map as Map
+import Data.Map as Map
 import Data.Nullable (Nullable(), toNullable)
 import Control.Monad.Eff.Class (liftEff)
-import qualified Node.Path as Path
+import Node.Path as Path
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff (unlink, writeTextFile)
-import qualified Node.Path as Path
+import Node.Path as Path
 
 import Pulp.System.FFI
-import qualified Pulp.System.Stream as Stream
-import qualified Pulp.System.Process as Process
-import qualified Pulp.System.Log as Log
+import Pulp.System.Stream as Stream
+import Pulp.System.Process as Process
+import Pulp.System.Log as Log
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec (pscBundle)
 import Pulp.Files
-import qualified Pulp.Build as Build
+import Pulp.Build as Build
 import Pulp.Run (makeEntry)
 import Pulp.Project
 

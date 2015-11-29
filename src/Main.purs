@@ -139,7 +139,7 @@ commands = [
   Args.command "docs" "Generate project documentation." Docs.action $ [
     Args.option "withTests" ["--with-tests", "-t"] Type.flag
       "Include tests.",
-    Args.option "withDeps" ["--with-deps", "-d"] Type.flag
+    Args.option "withDependencies" ["--with-dependencies", "--with-deps", "-d"] Type.flag
       "Include external dependencies."
     ] ++ pathArgs,
   Args.command "psci" "Launch a PureScript REPL configured for the project." nop pathArgs,

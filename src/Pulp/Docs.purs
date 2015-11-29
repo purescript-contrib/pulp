@@ -31,7 +31,7 @@ action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
 
   withTests <- getFlag "withTests" opts
-  withDeps <- getFlag "withDeps" opts
+  withDeps <- getFlag "withDependencies" opts
 
   let includeWhen b act = if b then act else pure Set.empty
   optionalExtras <- Set.union <$> includeWhen withTests (testGlobs opts)

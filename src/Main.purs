@@ -127,8 +127,6 @@ commands = [
         "Generate source maps.",
       Args.option "skipEntryPoint" ["--skip-entry-point"] Type.flag
         "Don't add code to automatically invoke Main.",
-      Args.option "skipCompile" ["--skip-compile"] Type.flag
-        "Don't run `pulp build` before browserifying.",
       Args.option "force" ["--force"] Type.flag
         "Force a non-incremental build by deleting the build cache."
       ] ++ buildishArgs,

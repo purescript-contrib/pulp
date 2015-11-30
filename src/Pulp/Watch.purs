@@ -6,7 +6,6 @@ module Pulp.Watch
   ) where
 
 import Prelude
-import Data.Function
 import Data.Maybe (fromMaybe)
 import Data.Array as Array
 import Data.Set as Set
@@ -16,7 +15,6 @@ import Control.Monad (when)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Aff (launchAff)
 import Control.Monad.Aff.AVar as AVar
-import Control.Monad.Eff.Console (log)
 
 import Pulp.Args
 import Pulp.Args.Get
@@ -24,7 +22,7 @@ import Pulp.Files
 import Pulp.System.FFI
 import Pulp.System.Log as Log
 import Pulp.System.Process as Process
-import Pulp.System.ChildProcess (ChildProcess(), fork, treeKill)
+import Pulp.System.ChildProcess (fork, treeKill)
 
 foreign import watch :: forall e.
   Array String

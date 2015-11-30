@@ -34,6 +34,7 @@
     "string-stream": "0.0.7",
     "temp": "^0.8.1",
     "watch": "^0.11.0",
+    "watchpack": "^0.2.9",
     "wordwrap": "0.0.2"
   },
   "devDependencies": {

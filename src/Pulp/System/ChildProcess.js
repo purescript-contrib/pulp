@@ -13,3 +13,15 @@ exports["wait'"] = function wait$prime(child, callback) {
     callback(null, r);
   });
 };
+
+exports.fork = function fork(args) {
+  return function() {
+    return require("child_process").fork(__filename, args);
+  };
+};
+
+exports.treeKill = function treeKill(pid, signal) {
+  return function() {
+    require("tree-kill")(pid, signal);
+  };
+};

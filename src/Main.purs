@@ -5,7 +5,8 @@ import Prelude
 import Control.Monad.Aff
 import Control.Monad.Eff.Class
 import Control.Monad.Eff.Console as Console
-import Control.Monad.Eff.Unsafe (unsafePerformEff)
+import Control.Monad.Eff.Console.Unsafe as Console
+import Control.Monad.Eff.Unsafe (unsafePerformEff, unsafeInterleaveEff)
 import Control.Monad.Eff.Exception
 import Data.Maybe (Maybe(..))
 import Data.Either (Either(..))
@@ -21,6 +22,7 @@ import Node.FS.Sync (readTextFile)
 import Node.Path as Path
 
 import Pulp.Args as Args
+import Pulp.Args.Get
 import Pulp.Args.Help
 import Pulp.Args.Types as Type
 import Pulp.Args.Parser (parse)
@@ -40,6 +42,7 @@ import Pulp.Browserify as Browserify
 import Pulp.Docs as Docs
 import Pulp.Psci as Psci
 import Pulp.Server as Server
+import Pulp.Watch as Watch
 
 globals :: Array Args.Option
 globals = [
@@ -160,26 +163,22 @@ commands = [
 failed :: forall e a. Error -> EffN e a
 failed err = do
   Console.error $ "* ERROR: " ++ message err
+  logStack err
   exit 1
+
+foreign import logStack :: forall e. Error -> EffN e Unit
 
 succeeded :: forall e. Unit -> EffN e Unit
 succeeded _ = exit 0
 
 main :: forall e. EffN e Unit
 main = runAff failed succeeded do
-  opts <- parse globals commands argv
-  case opts of
+  args <- parse globals commands argv
+  case args of
     Left (ParseError { message: err }) ->
       handleParseError err
-    Right opts -> do
-      if "--help" `elem` opts.remainder
-        then
-          printCommandHelp Log.out globals opts.command
-        else do
-          validate
-          opts' <- addProject opts
-          Args.runAction opts.command.action opts'
-      -- TODO: --watch, --then
+    Right args -> do
+      runArgs args
   where
   handleParseError err = go (head argv)
     where
@@ -192,15 +191,29 @@ main = runAff failed succeeded do
       Log.err $ "Error: " ++ err
       printHelp Log.out globals commands
 
+-- TODO: --then
+runArgs :: forall e. Args.Args -> AffN e Unit
+runArgs args = do
+  if "--help" `elem` args.remainder
+    then printCommandHelp Log.out globals args.command
+    else do
+      validate
+      watch <- getFlag "watch" args.globalOpts
+      if watch
+        then Args.runAction Watch.action args
+        else do
+          args' <- addProject args
+          Args.runAction args.command.action args'
+  where
   -- This is really quite gross, especially with _project. Not sure exactly
   -- how to go about improving this.
-  addProject opts =
-    if (opts.command.name == "init")
-      then return opts
+  addProject args =
+    if args.command.name == "init"
+      then return args
       else do
-        proj <- getProject opts.globalOpts
-        let globalOpts' = insert "_project" (Just (toForeign proj)) opts.globalOpts
-        return $ opts { globalOpts = globalOpts' }
+        proj <- getProject args.globalOpts
+        let globalOpts' = insert "_project" (Just (toForeign proj)) args.globalOpts
+        return $ args { globalOpts = globalOpts' }
 
 argsParserDiagnostics :: forall e. Args.Args -> AffN e Unit
 argsParserDiagnostics opts = do

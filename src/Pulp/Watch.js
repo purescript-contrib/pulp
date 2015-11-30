@@ -15,4 +15,8 @@ exports.watch = function watch(directories) {
   };
 };
 
-exports.minimatch = require("minimatch");
+exports.minimatch = function(str) {
+  return function(glob) {
+    return require("minimatch")(str, glob);
+  };
+};

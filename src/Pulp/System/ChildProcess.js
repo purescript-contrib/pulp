@@ -20,8 +20,10 @@ exports.fork = function fork(args) {
   };
 };
 
-exports.treeKill = function treeKill(pid, signal) {
-  return function() {
-    require("tree-kill")(pid, signal);
+exports.treeKill = function treeKill(pid) {
+  return function(signal) {
+    return function() {
+      require("tree-kill")(pid, signal);
+    };
   };
 };

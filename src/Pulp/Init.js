@@ -1,6 +1,4 @@
-
 // module Pulp.Init
-
 "use strict";
 
 exports.bowerFile = function bowerFile(name) {
@@ -18,4 +16,4 @@ exports.bowerFile = function bowerFile(name) {
       "purescript-console": "^0.1.0"
     }
   }, null, 2) + "\n";
-}
+};

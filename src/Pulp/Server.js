@@ -1,5 +1,5 @@
-
 // module Pulp.Server
+"use strict";
 
 exports.__dirname = __dirname;
 
@@ -35,4 +35,4 @@ exports.makeDevServer = function makeDevServer(config) {
 
 exports["listen'"] = function listen$prime(server, host, port, callback) {
   server.listen(port, host, callback);
-}
+};

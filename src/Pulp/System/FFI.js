@@ -8,7 +8,7 @@ exports["runNode'"] = function runNode$prime(error, success, fn) {
       if (err) { error(err)(); } else { success(val)(); }
     });
   };
-}
+};
 
 exports.unsafeInspect = function unsafeInspect(obj) {
   return require('util').inspect(obj);

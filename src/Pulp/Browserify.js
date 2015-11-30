@@ -3,12 +3,12 @@
 "use strict";
 
 exports["browserifyBundle'"] = function browserifyBundle$prime(opts, callback) {
-  var stringStream = require("string-stream");
+  var StringStream = require("string-stream");
   var browserify = require("browserify");
 
   var b = browserify({
     basedir: opts.basedir,
-    entries: new stringStream(opts.src)
+    entries: new StringStream(opts.src)
   });
   if (opts.transform) b.transform(opts.transform);
   b.bundle().pipe(opts.out).on("close", callback);

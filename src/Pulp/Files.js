@@ -4,4 +4,4 @@
 
 exports["glob'"] = function glob$prime(pat, callback) {
   require("glob")(pat, {}, callback);
-}
+};

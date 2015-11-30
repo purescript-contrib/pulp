@@ -1,6 +1,4 @@
-
 // module Pulp.Exec
-
 "use strict";
 
 exports["concatStream'"] = function concatStream$prime(stream, callback) {
@@ -12,8 +10,8 @@ exports["concatStream'"] = function concatStream$prime(stream, callback) {
 
   var onError = function(err) {
     callback(err, null);
-  }
+  };
 
   stream.on('error', onError);
   stream.pipe(concat(onSuccess));
-}
+};

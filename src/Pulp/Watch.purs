@@ -1,5 +1,9 @@
 
-module Pulp.Watch where
+module Pulp.Watch
+  ( watch
+  , watchAff
+  , action
+  ) where
 
 import Prelude
 import Data.Function
@@ -10,7 +14,9 @@ import Data.Map as Map
 import Data.Foldable (any, notElem)
 import Control.Monad (when)
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Aff (runAff)
+import Control.Monad.Aff (launchAff)
+import Control.Monad.Aff.AVar as AVar
+import Control.Monad.Eff.Console (log)
 
 import Pulp.Args
 import Pulp.Args.Get
@@ -25,6 +31,10 @@ foreign import watch :: forall e.
   -> (String -> EffN e Unit)
   -> EffN e Unit
 
+watchAff :: forall e. Array String -> (String -> AffN e Unit) -> AffN e Unit
+watchAff dirs callback =
+  liftEff (watch dirs (\path -> launchAff (callback path)))
+
 foreign import minimatch :: String -> String -> Boolean
 
 action :: Action
@@ -32,7 +42,8 @@ action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
 
   let argv' = Array.filter (`notElem` ["-w", "--watch"]) Process.argv
-  child <- liftEff $ fork argv'
+  childV <- AVar.makeVar
+  liftEff (fork argv') >>= AVar.putVar childV
 
   srcPath        <- getOption' "srcPath" opts
   testPath       <- getOption' "testPath" opts
@@ -43,11 +54,10 @@ action = Action \args -> do
   globs <- Set.union <$> defaultGlobs opts <*> testGlobs opts
   let fileGlobs = sources globs ++ ffis globs
 
-  liftEff $ watch directories $ \path ->
+  watchAff directories $ \path -> do
+    Log.log $ "changed: " ++ path
     when (any (minimatch path) fileGlobs) do
-      treeKill child.pid "SIGTERM"
-      goAff $ Log.log "Source tree changed; restarting:"
-      void $ liftEff $ fork argv'
-
-  where
-  goAff = runAff (const (pure unit)) (const (pure unit))
+      child <- AVar.takeVar childV
+      liftEff $ treeKill child.pid "SIGTERM"
+      Log.log "Source tree changed; restarting:"
+      liftEff (fork argv') >>= AVar.putVar childV

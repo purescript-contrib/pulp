@@ -5,8 +5,7 @@ import Prelude
 import Control.Monad.Aff
 import Control.Monad.Eff.Class
 import Control.Monad.Eff.Console as Console
-import Control.Monad.Eff.Console.Unsafe as Console
-import Control.Monad.Eff.Unsafe (unsafePerformEff, unsafeInterleaveEff)
+import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Eff.Exception
 import Data.Maybe (Maybe(..))
 import Data.Either (Either(..))

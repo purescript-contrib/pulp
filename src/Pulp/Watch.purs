@@ -55,7 +55,6 @@ action = Action \args -> do
   let fileGlobs = sources globs ++ ffis globs
 
   watchAff directories $ \path -> do
-    Log.log $ "changed: " ++ path
     when (any (minimatch path) fileGlobs) do
       child <- AVar.takeVar childV
       liftEff $ treeKill child.pid "SIGTERM"

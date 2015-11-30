@@ -169,7 +169,7 @@ failed err = do
 foreign import logStack :: forall e. Error -> EffN e Unit
 
 succeeded :: forall e. Unit -> EffN e Unit
-succeeded _ = exit 0
+succeeded = const (pure unit)
 
 main :: forall e. EffN e Unit
 main = runAff failed succeeded do

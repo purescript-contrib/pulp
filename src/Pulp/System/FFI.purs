@@ -5,7 +5,7 @@ import Prelude
 import Control.Monad.Aff (Aff(), makeAff)
 import Control.Monad.Aff.AVar (AVAR())
 import Control.Monad.Eff (Eff())
-import Control.Monad.Eff.Exception (Error())
+import Control.Monad.Eff.Exception (Error(), EXCEPTION())
 import Control.Monad.Eff.Console (CONSOLE())
 import Data.Function
 
@@ -15,7 +15,7 @@ import Node.Buffer (BUFFER())
 foreign import data Node :: !
 foreign import data NodeError :: *
 
-type PulpEffects e = (node :: Node, console :: CONSOLE, buffer :: BUFFER, fs :: FS, avar :: AVAR | e)
+type PulpEffects e = (node :: Node, console :: CONSOLE, buffer :: BUFFER, fs :: FS, avar :: AVAR, err :: EXCEPTION | e)
 type EffN e a = Eff (PulpEffects e) a
 type AffN e a = Aff (PulpEffects e) a
 

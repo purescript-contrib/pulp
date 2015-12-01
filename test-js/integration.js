@@ -178,9 +178,9 @@ describe("integration tests", function() {
       assert.equal(c.split("\n")[0], testDocLine1));
   }));
 
-  it("pulp docs --with-deps", run(function*(sh, pulp, assert) {
+  it("pulp docs --with-dependencies", run(function*(sh, pulp, assert) {
     yield pulp("init");
-    yield pulp("docs --with-deps");
+    yield pulp("docs --with-dependencies");
     assert.file("docs/Control/Monad/Eff/Console.md", (c) =>
       assert.equal(c.split("\n")[0], consoleDocLine1));
   }));

@@ -39,7 +39,7 @@ function asserts(path) {
 
 function pulpFn(path, pulpPath) {
   return (cmd, input, opts) =>
-    sh(path, `node ${pulpPath} ${cmd}`, input, opts);
+    sh(path, `node "${pulpPath}" ${cmd}`, input, opts);
 }
 
 export default function run(fn) {

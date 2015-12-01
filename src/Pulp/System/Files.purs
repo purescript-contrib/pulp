@@ -4,6 +4,7 @@ module Pulp.System.Files
   , openTemp
   , createWriteStream
   , isENOENT
+  , touch
   ) where
 
 import Prelude
@@ -37,3 +38,8 @@ openTemp opts = runNode $ runFn2 openTemp' opts
 foreign import createWriteStream :: forall e. String -> EffN e (NodeStream String)
 
 foreign import isENOENT :: Error -> Boolean
+
+foreign import touch' :: Fn2 String (Callback Unit) Unit
+
+touch :: forall e. String -> AffN e Unit
+touch path = runNode $ runFn2 touch' path

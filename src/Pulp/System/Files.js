@@ -20,3 +20,7 @@ exports.createWriteStream = function createWriteStream(path) {
 exports.isENOENT = function isENOENT(error) {
   return error.code === "ENOENT";
 };
+
+exports["touch'"] = function touch$prime(path, callback) {
+  require("touch")(path, callback);
+};

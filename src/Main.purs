@@ -191,7 +191,6 @@ main = runAff failed succeeded do
       Log.err $ "Error: " ++ err
       printHelp Log.out globals commands
 
--- TODO: --then
 runArgs :: forall e. Args.Args -> AffN e Unit
 runArgs args = do
   if "--help" `elem` args.remainder

@@ -4,6 +4,7 @@ module Pulp.Server
   ) where
 
 import Prelude
+import Control.Monad (when)
 import Data.Maybe
 import Data.Map as Map
 import Data.String as String
@@ -18,10 +19,12 @@ import Node.Encoding (Encoding(..))
 import Pulp.System.FFI
 import Pulp.System.Process as Process
 import Pulp.System.Log as Log
+import Pulp.System.Files (touch)
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Files
 import Pulp.Run (makeEntry)
+import Pulp.Watch (watchAff, minimatch)
 
 action :: Action
 action = Action \args -> do
@@ -53,7 +56,9 @@ action = Action \args -> do
 
   Log.log $ "Server listening on http://" ++ host ++ ":" ++ show port ++ "/"
 
-  -- TODO: watch["src"] ...
+  watchAff ["src"] \path ->
+    when (minimatch path "src/**/*.js")
+      (touch (Path.concat ["src", main]))
 
 getDefaultConfig :: forall e. String -> Array String -> Array String -> EffN e Foreign
 getDefaultConfig buildPath sources ffis = do

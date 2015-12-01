@@ -3,6 +3,7 @@ module Pulp.Watch
   ( watch
   , watchAff
   , action
+  , minimatch
   ) where
 
 import Prelude

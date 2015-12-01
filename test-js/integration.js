@@ -204,4 +204,12 @@ describe("integration tests", function() {
     assert.ok(out.indexOf(hello) > -1,
       "output did not contain \"" + hello + "\"");
   }));
+
+  it("pulp --then something build", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+    yield pulp("--then 'mv out.js out2.js' build --to out.js");
+
+    const [out] = yield sh("node out2.js");
+    assert.equal(out.trim(), hello);
+  }));
 });

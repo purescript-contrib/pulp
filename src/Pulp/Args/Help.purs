@@ -88,9 +88,3 @@ printCommandHelp stream globals command = do
   bolded stream "\nGlobal options:\n"
   formatOpts (globals ++ [helpOpt]) >>= write stream
   write stream "\n"
-
-bolded :: forall e. Ansi -> String -> AffN e Unit
-bolded stream str = do
-  bold stream
-  write stream str
-  reset stream

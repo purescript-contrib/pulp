@@ -194,7 +194,9 @@ main = runAff failed succeeded do
 runArgs :: forall e. Args.Args -> AffN e Unit
 runArgs args = do
   if "--help" `elem` args.remainder
-    then printCommandHelp Log.out globals args.command
+    then if args.command.name == "dep"
+      then Bower.printHelp Log.out
+      else printCommandHelp Log.out globals args.command
     else do
       validate
       watch <- getFlag "watch" args.globalOpts

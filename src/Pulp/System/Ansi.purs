@@ -7,6 +7,7 @@ module Pulp.System.Ansi
        , bold
        , underline
        , reset
+       , bolded
        ) where
 
 import Prelude
@@ -51,3 +52,9 @@ foreign import reset' :: Fn2 Ansi (Callback Unit) Unit
 
 reset :: forall e. Ansi -> AffN e Unit
 reset s = runNode $ runFn2 reset' s
+
+bolded :: forall e. Ansi -> String -> AffN e Unit
+bolded stream str = do
+  bold stream
+  write stream str
+  reset stream

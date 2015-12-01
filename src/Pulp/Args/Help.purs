@@ -7,7 +7,7 @@ import Prelude
 
 import Control.Monad.Eff.Class (liftEff)
 import Data.Array (sort)
-import Data.Foldable (foldr)
+import Data.Foldable (foldr, maximum)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
 import Data.StrMap (StrMap(), keys, lookup, insert, empty)
@@ -16,7 +16,6 @@ import Data.Traversable (sequence)
 
 import Pulp.Args
 import Pulp.Args.Types as Type
-import Pulp.Data.Foldable (max)
 import Pulp.System.Ansi
 import Pulp.System.FFI
 import Pulp.System.Process (commandName)
@@ -29,7 +28,7 @@ foreign import wrap :: forall e. String -> Int -> EffN e String
 formatTable :: forall e. StrMap String -> EffN e String
 formatTable table =
   let headers = sort $ keys table
-      longest = fromMaybe 0 $ max $ headers <#> Str.length
+      longest = fromMaybe 0 $ maximum $ headers <#> Str.length
       formatEntry key = fromJust (lookup key table) # \entry ->
           let padding = longest - Str.length key
           in do

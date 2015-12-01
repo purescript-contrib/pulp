@@ -14,7 +14,7 @@
     "purescript-parsing": "~0.7.1",
     "purescript-maps": "~0.5.2",
     "purescript-aff": "~0.13.0",
-    "purescript-foldable-traversable": "~0.4.1",
+    "purescript-foldable-traversable": "~0.4.2",
     "purescript-maybe": "~0.3.4",
     "purescript-monoid": "~0.3.2",
     "purescript-strings": "~0.7.0",

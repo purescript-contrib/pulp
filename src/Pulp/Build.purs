@@ -23,6 +23,7 @@ import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec (psc, pscBundle)
 import Pulp.Files
+import Pulp.Rebuild as Rebuild
 
 data BuildType = NormalBuild | TestBuild
 
@@ -32,7 +33,17 @@ instance eqBuildType :: Eq BuildType where
   eq _ _                     = false
 
 action :: Action
-action = go NormalBuild
+action = Action \args -> do
+  let opts = union args.globalOpts args.commandOpts
+  srcPath        <- getOption' "srcPath" opts
+  dependencyPath <- getOption' "dependencyPath" opts
+  includePaths   <- fromMaybe [] <$> getOption "includePaths" opts
+  let paths = [ srcPath, dependencyPath ] ++ includePaths
+
+  needsRebuild <- Rebuild.needs args paths
+  if needsRebuild
+    then runAction (go NormalBuild) args
+    else Log.log "Project unchanged; skipping build step."
 
 build :: forall e. Args -> AffN e Unit
 build = runAction action
@@ -58,6 +69,9 @@ go buildType = Action \args -> do
       (ffis globs)
       (["-o", buildPath] ++ args.remainder)
       Nothing
+
+  Rebuild.touch args
+
   Log.log "Build successful."
 
   shouldBundle <- (||) <$> getFlag "optimise" opts <*> hasOption "to" opts

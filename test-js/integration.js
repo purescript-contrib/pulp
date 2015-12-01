@@ -12,6 +12,7 @@ const testDocLine1 = "## Module Test.Main"
 const consoleDocLine1 = "## Module Control.Monad.Eff.Console"
 const buildHelp = ["Command: build", "Build the project."]
 const docsHelp = ["Command: docs", "Generate project documentation."]
+const skipped = "* Project unchanged; skipping build step."
 
 describe("integration tests", function() {
   this.timeout(60000);
@@ -211,5 +212,34 @@ describe("integration tests", function() {
 
     const [out] = yield sh("node out2.js");
     assert.equal(out.trim(), hello);
+  }));
+
+  it("pulp build skips when possible", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+    yield pulp("build");
+    const [_, err] = yield pulp("build");
+    assert.equal(err.trim(), skipped);
+  }));
+
+  it("changed args force rebuild", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+    yield pulp("build");
+    const [_, err] = yield pulp("build --to out.js");
+    assert.notEqual(err.trim(), skipped);
+  }));
+
+  it("changed files force rebuild", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+    yield pulp("build");
+    yield sh("touch src/Main.purs");
+    const [_, err] = yield pulp("build");
+    assert.notEqual(err.trim(), skipped);
+  }));
+
+  it("--force flag forces rebuild", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+    yield pulp("build --force");
+    const [_, err] = yield pulp("build --force");
+    assert.notEqual(err.trim(), skipped);
   }));
 });

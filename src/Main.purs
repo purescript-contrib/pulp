@@ -42,6 +42,7 @@ import Pulp.Docs as Docs
 import Pulp.Psci as Psci
 import Pulp.Server as Server
 import Pulp.Watch as Watch
+import Pulp.Shell as Shell
 
 globals :: Array Args.Option
 globals = [
@@ -199,10 +200,16 @@ runArgs args = do
       validate
       watch <- getFlag "watch" args.globalOpts
       if watch
-        then Args.runAction Watch.action args
+        then
+          Args.runAction Watch.action args
         else do
           args' <- addProject args
           Args.runAction args.command.action args'
+
+          then_ <- getOption "then" args'.globalOpts
+          case then_ of
+            Just cmd -> Shell.shell cmd
+            Nothing  -> pure unit
   where
   -- This is really quite gross, especially with _project. Not sure exactly
   -- how to go about improving this.

@@ -6,13 +6,16 @@ module Pulp.Args.Help
 import Prelude
 
 import Control.Monad.Eff.Class (liftEff)
+import Data.Either (Either(..))
 import Data.Array (sort)
 import Data.Foldable (foldr, maximum)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Maybe.Unsafe (fromJust)
 import Data.StrMap (StrMap(), keys, lookup, insert, empty)
 import Data.String as Str
 import Data.Traversable (sequence)
+import Data.Foreign (F())
+import Data.Foreign.Class (read)
 
 import Pulp.Args
 import Pulp.Args.Types as Type
@@ -41,7 +44,18 @@ formatTable table =
 describeOpt :: Option -> String
 describeOpt opt = opt.desc ++ case opt.defaultValue of
   Nothing -> ""
-  Just def -> " [Default: \"" ++ def ++ "\"]"
+  Just def -> maybe "" (\d -> " [Default: " ++ d ++ "]") (tryDefault def)
+  where
+  tryDefault def =
+    case read def :: F String of
+      Right str ->
+        Just (show str)
+      Left _ ->
+        case read def :: F Int of
+          Right int ->
+            Just (show int)
+          Left _ ->
+            Nothing
 
 prepareOpts :: Array Option -> StrMap String
 prepareOpts = foldr foldOpts empty

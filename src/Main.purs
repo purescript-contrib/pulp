@@ -71,8 +71,9 @@ defaultDependencyPath =
 -- | Options for any command requiring paths
 pathArgs :: Array Args.Option
 pathArgs = [
-  Args.option "includePaths" ["--include", "-I"] Type.directories
-    ("Additional directories for PureScript source files, separated by `" ++ Path.delimiter ++ "`."),
+  Args.optionDefault "includePaths" ["--include", "-I"] Type.directories
+    ("Additional directories for PureScript source files, separated by `" ++ Path.delimiter ++ "`.")
+    ([] :: Array String),
   Args.optionDefault "srcPath" ["--src-path"] Type.directory
     "Directory for PureScript source files." "src",
   Args.optionDefault "testPath" ["--test-path"] Type.directory
@@ -150,7 +151,7 @@ commands = [
       Args.option "config" ["--config", "-c"] Type.file
         "Override the default Webpack config.",
       Args.optionDefault "port" ["--port", "-p"] Type.int
-        "Port number to listen on." "1337",
+        "Port number to listen on." 1337,
       Args.optionDefault "host" ["--host"] Type.string
         "IP address to bind the server to." "localhost",
       Args.option "noInfo" ["--no-info"] Type.flag

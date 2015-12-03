@@ -7,7 +7,7 @@ import Control.Monad.Aff.AVar
 import Data.Map (Map())
 import Data.Maybe (Maybe(..))
 import Data.List (List())
-import Data.Foreign (Foreign())
+import Data.Foreign (Foreign(), toForeign)
 
 import Text.Parsing.Parser (ParserT())
 import Node.FS (FS())
@@ -41,7 +41,7 @@ type Option = {
   match :: Array String,
   parser :: OptionParser,
   desc :: String,
-  defaultValue :: Maybe String
+  defaultValue :: Maybe Foreign
   }
 
 type Command = {
@@ -67,9 +67,9 @@ option name match parser desc = {
   defaultValue: Nothing
   }
 
-optionDefault :: String -> Array String -> OptionParser -> String -> String -> Option
+optionDefault :: forall a. String -> Array String -> OptionParser -> String -> a -> Option
 optionDefault n m p d defaultValue =
-  (option n m p d) { defaultValue = Just defaultValue }
+  (option n m p d) { defaultValue = Just (toForeign defaultValue) }
 
 command :: String -> String -> Action -> Array Option -> Command
 command name desc action options = {

@@ -23,6 +23,7 @@ function bowerFile(name) {
 var gitignore = [
   "/bower_components/",
   "/node_modules/",
+  "/.pulp-cache/",
   "/output/",
   "/.psci*",
   "/src/.webpack.js"

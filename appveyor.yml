@@ -5,21 +5,12 @@ environment:
 # Install scripts. (runs after repo cloning)
 install:
   - ps: Install-Product node $env:nodejs_version
-  - npm install -g purescript pulp bower
-  - bower install
   - npm install
 
 # Post-install test scripts.
 test_script:
   - node --version
   - npm --version
-  - psc --version
-
-  # temporary workaround for #111
-  # - npm run build
-  - pulp build
-  - psc-bundle "output/**/*.js" --module Main --main Main --output index.js
-
   - npm run test
 
 # "build" means "build using the project or solution file", which we don't

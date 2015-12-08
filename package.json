@@ -18,9 +18,15 @@
   "bin": {
     "pulp": "index.js"
   },
+  "main": "index.js",
   "scripts": {
-    "build": "jshint src && pulp build --to index.js",
-    "test": "mocha test-js --compilers js:babel/register"
+    "lint": "jshint src",
+    "compile": "psc -c -f 'src/**/*.js' -f 'bower_components/purescript-*/src/**/*.js' 'src/**/*.purs' 'bower_components/purescript-*/src/**/*.purs'",
+    "bundle": "psc-bundle 'output/*/*.js' -o $npm_package_main --module Main --main Main",
+    "build": "npm run lint && npm run compile && npm run bundle",
+    "test": "npm run build && mocha test-js --compilers js:babel/register",
+    "prepublish": "bower install && npm run build",
+    "postinstall": "bower install"
   },
   "dependencies": {
     "ansi": "^0.3.0",
@@ -46,6 +52,7 @@
     "co": "^4.6.0",
     "jshint": "^2.8.0",
     "mocha": "^2.2.5",
+    "purescript": "^0.7.6",
     "semver": "^5.1.0",
     "touch": "^1.0.0"
   }

@@ -41,7 +41,7 @@ findIn path file = do
       let parent = P.dirname path
       in if path == parent
            then return Nothing
-           else go parent file
+           else findIn parent file
 
 -- | Read a project's bower file at the given path and construct a Project
 -- | value.

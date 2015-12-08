@@ -254,7 +254,7 @@ describe("integration tests", function() {
   it("changed files force rebuild", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield pulp("build");
-    yield sleep(500);
+    yield sleep(1000);
     touch.sync(path.join(temp, "src", "Main.purs"));
     const [_, err] = yield pulp("build");
     assert.notEqual(err.trim(), skipped);

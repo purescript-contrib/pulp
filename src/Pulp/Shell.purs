@@ -18,10 +18,22 @@ shell :: forall e. Outputter e -> String -> AffN e Unit
 shell out cmd = do
   platform <- liftEff getPlatform
   if platform == "win32"
-    then shell' out cmd { extension: ".cmd", executable: "cmd" }
-    else shell' out cmd { extension: ".sh", executable: "sh" }
+    then shell' out cmd
+            { extension: ".cmd"
+            , executable: "cmd"
+            , extraArgs: ["/s", "/c"]
+            }
+    else shell' out cmd
+            { extension: ".sh"
+            , executable: "sh"
+            , extraArgs: []
+            }
 
-type ShellOptions = { extension :: String, executable :: String }
+type ShellOptions =
+  { extension :: String
+  , executable :: String
+  , extraArgs :: Array String
+  }
 
 shell' :: forall e. Outputter e -> String -> ShellOptions -> AffN e Unit
 shell' out cmd opts = do
@@ -30,5 +42,5 @@ shell' out cmd opts = do
   info <- openTemp { prefix: "pulp-cmd-", suffix: opts.extension }
   FS.fdAppend info.fd cmdBuf
   FS.fdClose info.fd
-  exec opts.executable [info.path] Nothing
+  exec opts.executable (opts.extraArgs ++ [info.path]) Nothing
   out.log "Done."

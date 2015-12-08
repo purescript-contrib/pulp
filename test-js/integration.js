@@ -225,7 +225,7 @@ describe("integration tests", function() {
   it("pulp --then something build", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const mv = process.platform === "win32" ? "rename" : "mv"
-    yield pulp(`--then '${mv} out.js out2.js' build --to out.js`);
+    yield pulp(`--then "${mv} out.js out2.js" build --to out.js`);
 
     const [out] = yield sh("node out2.js");
     assert.equal(out.trim(), hello);

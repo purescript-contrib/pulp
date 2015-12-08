@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import run from "./sh";
 import semver from "semver";
+import touch from "touch";
 
 const hello = "Hello sailor!";
 const test = "You should add some tests.";
@@ -15,11 +16,6 @@ const docsHelp = ["Command: docs", "Generate project documentation."]
 const skipped = "* Project unchanged; skipping build step."
 
 const newlines = /\r?\n/g
-
-function touchSync(path) {
-  var fd = fs.openSync(path, 'a');
-  fs.closeSync(fd);
-}
 
 describe("integration tests", function() {
   this.timeout(60000);
@@ -56,7 +52,7 @@ describe("integration tests", function() {
   }));
 
   it("refuses to init without --force", run(function*(sh, pulp, assert, temp) {
-    touchSync(path.join(temp, "bower.json"));
+    touch.sync(path.join(temp, "bower.json"));
     const [_, err] = yield pulp("init", null, { expectedExitCode: 1 });
     assert.equal(err.trim(), initWithoutForce);
   }));
@@ -252,9 +248,7 @@ describe("integration tests", function() {
   it("changed files force rebuild", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield pulp("build");
-
-    touchSync(path.join(temp, "src", "Main.purs"));
-
+    touch.sync(path.join(temp, "src", "Main.purs"));
     const [_, err] = yield pulp("build");
     assert.notEqual(err.trim(), skipped);
   }));

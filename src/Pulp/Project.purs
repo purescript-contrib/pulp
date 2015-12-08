@@ -37,9 +37,11 @@ findIn path file = do
 
   if doesExist
     then return (Just fullPath)
-    else if path == "/"
-            then return Nothing
-            else findIn (P.dirname path) file
+    else
+      let parent = P.dirname path
+      in if path == parent
+           then return Nothing
+           else go parent file
 
 -- | Read a project's bower file at the given path and construct a Project
 -- | value.

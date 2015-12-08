@@ -67,6 +67,12 @@ describe("integration tests", function() {
     yield sh("test -f output/Main/index.js");
   }));
 
+  it("finds bower.json in parent directories", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+    yield pulp("build", null, { cwd: path.join(temp, "src") });
+    yield sh("test -f output/Main/index.js");
+  }));
+
   it("handles .pulp-cache already existing", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield sh("mkdir .pulp-cache");

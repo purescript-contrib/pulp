@@ -8,8 +8,9 @@ import fs from "fs";
 const temp = _temp.track();
 
 function sh(cwd, cmd, input, opts) {
+  var opts = opts || {};
   return new Promise((resolve, reject) => {
-    const proc = exec(cmd, { cwd }, (error, stdout, stderr) => {
+    const proc = exec(cmd, { cwd: opts.cwd || cwd }, (error, stdout, stderr) => {
       resolve({ error, stdout, stderr });
     });
     proc.stdin.end(input || "");

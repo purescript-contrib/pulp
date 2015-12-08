@@ -13,6 +13,7 @@ import Node.Path as Path
 import Pulp.Args
 import Pulp.Exec (exec)
 import Pulp.System.FFI
+import Pulp.System.Require (requireResolve)
 import Pulp.Outputter
 
 action :: Action
@@ -32,5 +33,3 @@ printHelp out = do
   out.write "Consult Bower's help page for the available commands:\n"
 
   launchBower (["--help"] ++ if out.monochrome then ["--no-color"] else [])
-
-foreign import requireResolve :: forall e. String -> EffN e String

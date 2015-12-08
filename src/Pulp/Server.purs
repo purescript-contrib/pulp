@@ -17,6 +17,7 @@ import Node.FS.Aff as FS
 import Node.Encoding (Encoding(..))
 
 import Pulp.System.FFI
+import Pulp.System.Require (unsafeRequire)
 import Pulp.System.Process as Process
 import Pulp.Outputter
 import Pulp.System.Files (touch)
@@ -137,4 +138,3 @@ listen :: forall e. DevServer -> String -> Int -> AffN e Unit
 listen server host port = runNode $ runFn4 listen' server host port
 
 foreign import __dirname :: String
-foreign import unsafeRequire :: forall e a. String -> EffN e a

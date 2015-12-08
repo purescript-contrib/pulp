@@ -3,12 +3,6 @@
 
 exports.__dirname = __dirname;
 
-exports.unsafeRequire = function unsafeRequire(path) {
-  return function() {
-    return require(path);
-  };
-};
-
 exports.webpackOptions = function webpackOptions(args) {
   return function() {
     return {

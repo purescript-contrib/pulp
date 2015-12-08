@@ -5,3 +5,4 @@
 /output/
 .psci
 .psci_modules/
+/index.js

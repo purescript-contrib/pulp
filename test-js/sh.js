@@ -30,12 +30,14 @@ function sh(cwd, cmd, input, opts) {
 }
 
 function asserts(path) {
-  return Object.assign({}, assert, {
-    file(filename, pred) {
+  var file = (filename, pred) => {
       const data = fs.readFileSync(resolve(path, filename), "utf-8");
       pred(data);
-    }
-  });
+    };
+
+  var exists = (filename) => file(filename, (data) => true);
+
+  return Object.assign({}, assert, { file, exists });
 }
 
 function pulpFn(path, pulpPath) {

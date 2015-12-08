@@ -16,6 +16,11 @@ const skipped = "* Project unchanged; skipping build step."
 
 const newlines = /\r?\n/g
 
+function touchSync(path) {
+  var fd = fs.openSync(path, 'a');
+  fs.closeSync(fd);
+}
+
 describe("integration tests", function() {
   this.timeout(60000);
 
@@ -50,29 +55,32 @@ describe("integration tests", function() {
     });
   }));
 
-  it("refuses to init without --force", run(function*(sh, pulp, assert) {
-    yield sh("touch bower.json");
+  it("refuses to init without --force", run(function*(sh, pulp, assert, temp) {
+    touchSync(path.join(temp, "bower.json"));
     const [_, err] = yield pulp("init", null, { expectedExitCode: 1 });
     assert.equal(err.trim(), initWithoutForce);
   }));
 
-  it("init overwrites existing files with --force", run(function*(sh, pulp, assert) {
-    yield sh("echo 'hello' > bower.json");
+  it("init overwrites existing files with --force", run(function*(sh, pulp, assert, temp) {
+    const bowerPath = path.join(temp, "bower.json");
+    fs.writeFileSync(bowerPath, "hello");
     yield pulp("init --force");
-    const [out] = yield sh("cat bower.json");
-    assert.notEqual(out.trim(), "hello");
+    const out = fs.readFileSync(bowerPath);
+    assert.notEqual(out, "hello");
   }));
 
-  it("pulp build", run(function*(sh, pulp, assert) {
+  it("pulp build", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield pulp("build");
-    yield sh("test -f output/Main/index.js");
+
+    assert.exists(path.join("output", "Main", "index.js"));
   }));
 
   it("finds bower.json in parent directories", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield pulp("build", null, { cwd: path.join(temp, "src") });
-    yield sh("test -f output/Main/index.js");
+
+    assert.exists(path.join("output", "Main", "index.js"));
   }));
 
   it("handles .pulp-cache already existing", run(function*(sh, pulp, assert) {
@@ -81,12 +89,16 @@ describe("integration tests", function() {
     yield pulp("build");
   }));
 
-  it("pulp build --include", run(function*(sh, pulp, assert) {
+  it("pulp build --include", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield sh("mkdir extras");
-    yield sh("echo 'module Extras where\n\nfoo = 1' > extras/Extras.purs");
+
+    fs.writeFileSync(path.join(temp, "extras", "Extras.purs"),
+                     "module Extras where\n\nfoo = 1");
+
     yield pulp("build --include extras");
-    yield sh("test -f output/Extras/index.js");
+
+    assert.exists(path.join("output", "Extras", "index.js"));
   }));
 
   it("pulp run", run(function*(sh, pulp, assert) {
@@ -95,9 +107,9 @@ describe("integration tests", function() {
     assert.equal(out.trim(), hello);
   }));
 
-  it("pulp --bower-file FILE run", run(function*(sh, pulp, assert) {
+  it("pulp --bower-file FILE run", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
-    yield sh("mv bower.json lol.json");
+    fs.renameSync(path.join(temp, "bower.json"), path.join(temp, "lol.json"));
     const [out] = yield pulp("--bower-file lol.json run");
     assert.equal(out.trim(), hello);
   }));
@@ -126,7 +138,7 @@ describe("integration tests", function() {
 
   it("pulp build -O --src-path alt", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
-    yield sh("mv src alt");
+    fs.renameSync(path.join(temp, "src"), path.join(temp, "alt"));
     const [src] = yield pulp("build -O --src-path alt");
     const [out] = yield sh("node", src);
     assert.equal(out.trim(), hello);
@@ -140,7 +152,7 @@ describe("integration tests", function() {
 
   it("pulp test --test-path alt", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
-    yield sh("mv test alt");
+    fs.renameSync(path.join(temp, "test"), path.join(temp, "alt"));
     const [out] = yield pulp("test --src-path alt");
     assert.equal(out.trim(), test);
   }));
@@ -230,17 +242,19 @@ describe("integration tests", function() {
     assert.equal(err.trim(), skipped);
   }));
 
-  it("changed args force rebuild", run(function*(sh, pulp, assert) {
+  it("changed args force rebuild", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield pulp("build");
     const [_, err] = yield pulp("build --to out.js");
     assert.notEqual(err.trim(), skipped);
   }));
 
-  it("changed files force rebuild", run(function*(sh, pulp, assert) {
+  it("changed files force rebuild", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield pulp("build");
-    yield sh("touch src/Main.purs");
+
+    touchSync(path.join(temp, "src", "Main.purs"));
+
     const [_, err] = yield pulp("build");
     assert.notEqual(err.trim(), skipped);
   }));

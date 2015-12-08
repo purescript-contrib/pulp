@@ -1,4 +1,3 @@
-
 module Pulp.Build
   ( action
   , build
@@ -17,7 +16,7 @@ import Control.Monad.Eff.Class (liftEff)
 import Pulp.System.FFI
 import Pulp.System.Stream as Stream
 import Pulp.System.Process as Process
-import Pulp.System.Log as Log
+import Pulp.Outputter
 import Pulp.System.Files as Files
 import Pulp.Args
 import Pulp.Args.Get
@@ -35,6 +34,8 @@ instance eqBuildType :: Eq BuildType where
 action :: Action
 action = Action \args -> do
   let opts = union args.globalOpts args.commandOpts
+  out <- getOutputter args
+
   srcPath        <- getOption' "srcPath" opts
   dependencyPath <- getOption' "dependencyPath" opts
   includePaths   <- fromMaybe [] <$> getOption "includePaths" opts
@@ -43,7 +44,7 @@ action = Action \args -> do
   needsRebuild <- Rebuild.needs args paths
   if needsRebuild
     then runAction (go NormalBuild) args
-    else Log.log "Project unchanged; skipping build step."
+    else out.log "Project unchanged; skipping build step."
 
 build :: forall e. Args -> AffN e Unit
 build = runAction action
@@ -54,9 +55,10 @@ testBuild = runAction (go TestBuild)
 go :: BuildType -> Action
 go buildType = Action \args -> do
   let opts = union args.globalOpts args.commandOpts
+  out <- getOutputter args
 
   cwd <- liftEff Process.cwd
-  Log.log $ "Building project in" ++ cwd
+  out.log $ "Building project in" ++ cwd
 
   globs <- Set.union <$> defaultGlobs opts
                      <*> (if buildType == TestBuild
@@ -72,18 +74,17 @@ go buildType = Action \args -> do
 
   Rebuild.touch args
 
-  Log.log "Build successful."
+  out.log "Build successful."
 
   shouldBundle <- (||) <$> getFlag "optimise" opts <*> hasOption "to" opts
   when shouldBundle (bundle args)
 
-  -- TODO: rebuild
-
 bundle :: forall e. Args -> AffN e Unit
 bundle args = do
   let opts = union args.globalOpts args.commandOpts
+  out <- getOutputter args
 
-  Log.log "Optimising JavaScript..."
+  out.log "Optimising JavaScript..."
 
   main      <- getOption' "main" opts
   modules   <- fromMaybe [] <<< map (split ",") <$> getOption "modules" opts
@@ -95,10 +96,10 @@ bundle args = do
                            ++ args.remainder)
                           Nothing
 
-  out <- getOutputStream opts
-  Stream.write out bundledJs
+  out' <- getOutputStream opts
+  Stream.write out' bundledJs
 
-  Log.log "Bundled."
+  out.log "Bundled."
 
 -- | Get a writable stream which output should be written to, based on the
 -- | value of the 'to' option.

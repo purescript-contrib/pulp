@@ -18,7 +18,7 @@ import Node.Encoding (Encoding(..))
 
 import Pulp.System.FFI
 import Pulp.System.Process as Process
-import Pulp.System.Log as Log
+import Pulp.Outputter
 import Pulp.System.Files (touch)
 import Pulp.Args
 import Pulp.Args.Get
@@ -29,6 +29,7 @@ import Pulp.Watch (watchAff, minimatch)
 action :: Action
 action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
+  out <- getOutputter args
 
   buildPath <- Path.resolve [] <$> getOption' "buildPath" opts
   globs <- defaultGlobs opts
@@ -47,14 +48,14 @@ action = Action \args -> do
               Just path -> liftEff $ unsafeRequire $ Path.resolve [] path
               Nothing   -> liftEff $ getDefaultConfig buildPath sources' ffis'
 
-  options <- getWebpackOptions opts
+  options <- getWebpackOptions opts out
 
   server <- liftEff $ makeDevServer config options
   host <- getOption' "host" opts
   port <- getOption' "port" opts
   listen server host port
 
-  Log.log $ "Server listening on http://" ++ host ++ ":" ++ show port ++ "/"
+  out.log $ "Server listening on http://" ++ host ++ ":" ++ show port ++ "/"
 
   watchAff ["src"] \path ->
     when (minimatch path "src/**/*.js")
@@ -111,17 +112,17 @@ type WebpackConfigOptions =
   , nodeModulesPath :: String
   }
 
-getWebpackOptions :: forall e. Options -> AffN e WebpackOptions
-getWebpackOptions opts = do
+getWebpackOptions :: forall e. Options -> Outputter e -> AffN e WebpackOptions
+getWebpackOptions opts out = do
   noInfo     <- getFlag "noInfo" opts
   quiet      <- getFlag "quiet" opts
-  monochrome <- getFlag "monochrome" opts
-  liftEff $ webpackOptions { noInfo, quiet, monochrome }
+  let colors = not out.monochrome
+  liftEff $ webpackOptions { noInfo, quiet, colors }
 
 type WebpackOptionsArgs =
   { noInfo :: Boolean
   , quiet :: Boolean
-  , monochrome :: Boolean
+  , colors :: Boolean
   }
 
 foreign import data WebpackOptions :: *

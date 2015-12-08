@@ -17,8 +17,9 @@ import Control.Monad.Eff.Class (liftEff)
 
 import Pulp.System.FFI
 import Pulp.System.Process (exit)
+import Pulp.System.Stream (write)
+import Pulp.System.Process (stderr)
 import Pulp.Args
-import Pulp.System.Log as Log
 
 -- | Get an option out of the `Options` value. If the option has no default and
 -- | was not specified at the command line, the result will be `Nothing`. For
@@ -81,6 +82,6 @@ readForeign name thing =
 
 internalError :: forall e b. String -> AffN e b
 internalError msg = do
-  Log.err $ "Internal error in Pulp.Args.Get: " ++ msg
-  Log.err "This is a bug. Please report it."
+  write stderr $ "Internal error in Pulp.Args.Get: " ++ msg ++ "\n"
+  write stderr "This is a bug. Please report it.\n"
   liftEff $ exit 1

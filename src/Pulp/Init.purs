@@ -12,7 +12,7 @@ import Node.Path as Path
 import Node.FS.Aff (writeTextFile, exists)
 import Node.Encoding (Encoding(UTF8))
 
-import Pulp.System.Log as Log
+import Pulp.Outputter
 import Pulp.System.FFI
 import Pulp.Args
 import Pulp.Args.Get (getFlag)
@@ -60,11 +60,11 @@ testFile = unlines [
   "  log \"You should add some tests.\""
   ]
 
-init :: forall e. AffN e Unit
-init = do
+init :: forall e. Outputter e -> AffN e Unit
+init out = do
   cwd <- liftEff Process.cwd
   let name = Path.basename cwd
-  Log.log $ "Generating project skeleton in " ++ cwd
+  out.log $ "Generating project skeleton in " ++ cwd
 
   writeFile (Path.concat [cwd, ".gitignore"]) gitignore
   writeFile (Path.concat [cwd, "bower.json"]) (bowerFile name)
@@ -81,8 +81,8 @@ init = do
   writeFile = writeTextFile UTF8
 
 action :: Action
-action = Action \opts -> do
-  force     <- getFlag "force" opts.commandOpts
+action = Action \args -> do
+  force     <- getFlag "force" args.commandOpts
   cwd       <- liftEff Process.cwd
   doesExist <- exists $ Path.concat [cwd, "bower.json"]
 
@@ -91,5 +91,6 @@ action = Action \opts -> do
       throwError $ error $
         "There's already a project here. Run `pulp init --force` if you're "
         ++ "sure you want to overwrite it."
-    else
-      init
+    else do
+      out <- getOutputter args
+      init out

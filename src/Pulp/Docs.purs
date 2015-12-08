@@ -20,13 +20,15 @@ import Pulp.Args.Get
 import Pulp.Exec
 import Pulp.Files
 import Pulp.System.Process as Process
-import Pulp.System.Log as Log
+import Pulp.Outputter
 import Pulp.System.FFI
 
 action :: Action
 action = Action \args -> do
+  out <- getOutputter args
+
   cwd <- liftEff Process.cwd
-  Log.log $ "Generating documentation in " ++ cwd
+  out.log $ "Generating documentation in " ++ cwd
 
   let opts = Map.union args.globalOpts args.commandOpts
 
@@ -45,13 +47,13 @@ action = Action \args -> do
   Tuple docgen fails <- mconcat <$> traverse makeDocgen genFiles
 
   unless (Array.null fails) $ do
-    Log.err $ "Unable to extract module name from the following modules:"
-    for_ fails (Log.log <<< ("  " ++))
-    Log.err $ "This may be a bug."
+    out.err $ "Unable to extract module name from the following modules:"
+    for_ fails (out.log <<< ("  " ++))
+    out.err $ "This may be a bug."
 
   _ <- execQuiet "psc-docs" (args.remainder ++ sources globSrc ++ docgen) Nothing
 
-  Log.log "Documentation generated."
+  out.log "Documentation generated."
 
 -- | Given a file path to be included in the documentation, return a --docgen
 -- | argument for it, to be passsed to psc-docs.

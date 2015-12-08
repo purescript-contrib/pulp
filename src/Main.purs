@@ -26,7 +26,7 @@ import Pulp.Args.Help
 import Pulp.Args.Types as Type
 import Pulp.Args.Parser (parse)
 import Pulp.System.FFI
-import Pulp.System.Log as Log
+import Pulp.Outputter
 import Pulp.System.Process (argv, exit)
 import Pulp.Validate (validate)
 import Pulp.Version (version)
@@ -187,19 +187,22 @@ main = runAff failed succeeded do
     -- repeated
     go (Just x)
       | x `elem` ["--version", "-v"] = liftEff $ Console.log $ showVersion version
-      | x `elem` ["--help", "-h"]    = printHelp Log.out globals commands
+      | x `elem` ["--help", "-h"]    = printHelp out globals commands
     go _ = do
-      Log.err $ "Error: " ++ err
-      printHelp Log.out globals commands
+      out.err $ "Error: " ++ err
+      printHelp out globals commands
+
+  out = makeOutputter false
 
 runArgs :: forall e. Args.Args -> AffN e Unit
 runArgs args = do
+  out <- getOutputter args
   if "--help" `elem` args.remainder
     then if args.command.name == "dep"
-      then Bower.printHelp Log.out
-      else printCommandHelp Log.out globals args.command
+      then Bower.printHelp out
+      else printCommandHelp out globals args.command
     else do
-      validate
+      validate out
       watch <- getFlag "watch" args.globalOpts
       if watch
         then
@@ -210,7 +213,7 @@ runArgs args = do
 
           then_ <- getOption "then" args'.globalOpts
           case then_ of
-            Just cmd -> Shell.shell cmd
+            Just cmd -> Shell.shell out cmd
             Nothing  -> pure unit
   where
   -- This is really quite gross, especially with _project. Not sure exactly
@@ -225,10 +228,11 @@ runArgs args = do
 
 argsParserDiagnostics :: forall e. Args.Args -> AffN e Unit
 argsParserDiagnostics opts = do
-  Log.log $ "Globals: " ++ show ((map <<< map) showForeign opts.globalOpts)
-  Log.log $ "Command: " ++ opts.command.name
-  Log.log $ "Locals: " ++ show ((map <<< map) showForeign opts.commandOpts)
-  Log.log $ "Remainder: " ++ show opts.remainder
+  let out = makeOutputter false
+  out.log $ "Globals: " ++ show ((map <<< map) showForeign opts.globalOpts)
+  out.log $ "Command: " ++ opts.command.name
+  out.log $ "Locals: " ++ show ((map <<< map) showForeign opts.commandOpts)
+  out.log $ "Remainder: " ++ show opts.remainder
   where
   showForeign :: Foreign -> String
   showForeign = unsafeInspect

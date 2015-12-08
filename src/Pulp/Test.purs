@@ -8,7 +8,7 @@ import Data.Maybe
 import Data.Map as Map
 import Data.Foreign (toForeign)
 
-import Pulp.System.Log as Log
+import Pulp.Outputter
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec (exec)
@@ -18,6 +18,7 @@ import Pulp.Run (setupEnv)
 action :: Action
 action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
+  out <- getOutputter args
 
   engine <- getOption' "engine" opts
   let isNode = engine == "node"
@@ -30,7 +31,7 @@ action = Action \args -> do
                        }
   Build.testBuild buildArgs
 
-  Log.log "Running tests..."
+  out.log "Running tests..."
   if isNode
     then do
       main <- getOption' "main" opts
@@ -43,4 +44,4 @@ action = Action \args -> do
       to <- getOption' "to" buildArgs.commandOpts
       exec engine ([to] ++ args.remainder) Nothing
 
-  Log.log "Tests OK."
+  out.log "Tests OK."

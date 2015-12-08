@@ -13,8 +13,7 @@ import Node.Path as Path
 import Pulp.Args
 import Pulp.Exec (exec)
 import Pulp.System.FFI
-import Pulp.System.Ansi
-import Pulp.System.Stream
+import Pulp.Outputter
 
 action :: Action
 action = Action \args -> launchBower args.remainder
@@ -25,13 +24,13 @@ launchBower args = do
   let executable = Path.concat [bowerPath, "..", "..", "bin", "bower"]
   exec executable args Nothing
 
-printHelp :: forall e. Ansi -> AffN e Unit
-printHelp stream = do
-  bolded stream "Dependency Management with Bower\n\n"
-  write stream "The `pulp dep` command invokes the Bower package manager.\n"
-  write stream "Run Bower commands like eg. `pulp dep install` instead of `bower install`.\n\n"
-  write stream "Consult Bower's help page for the available commands:\n"
+printHelp :: forall e. Outputter e -> AffN e Unit
+printHelp out = do
+  out.bolded "Dependency Management with Bower\n\n"
+  out.write "The `pulp dep` command invokes the Bower package manager.\n"
+  out.write "Run Bower commands like eg. `pulp dep install` instead of `bower install`.\n\n"
+  out.write "Consult Bower's help page for the available commands:\n"
 
-  launchBower ["--help"]
+  launchBower (["--help"] ++ if out.monochrome then ["--no-color"] else [])
 
 foreign import requireResolve :: forall e. String -> EffN e String

@@ -19,10 +19,9 @@ import Data.Foreign.Class (read)
 
 import Pulp.Args
 import Pulp.Args.Types as Type
-import Pulp.System.Ansi
+import Pulp.Outputter
 import Pulp.System.FFI
 import Pulp.System.Process (commandName)
-import Pulp.System.Stream (write)
 
 foreign import pad :: Int -> String
 
@@ -78,27 +77,27 @@ helpOpt :: Option
 helpOpt = option "help" ["--help", "-h"] Type.flag
             "Show this help message."
 
-printHelp :: forall e. Ansi -> Array Option -> Array Command -> AffN e Unit
-printHelp stream globals commands = do
-  write stream $ "Usage: " ++ commandName ++ " [global-options] <command> [command-options]\n"
+printHelp :: forall e. Outputter e -> Array Option -> Array Command -> AffN e Unit
+printHelp out globals commands = do
+  out.write $ "Usage: " ++ commandName ++ " [global-options] <command> [command-options]\n"
   -- if context print command docs
-  bolded stream "\nGlobal options:\n"
-  formatOpts (globals ++ [helpOpt]) >>= write stream
-  bolded stream "\nCommands:\n"
-  formatCmds commands >>= write stream
+  out.bolded "\nGlobal options:\n"
+  formatOpts (globals ++ [helpOpt]) >>= out.write
+  out.bolded "\nCommands:\n"
+  formatCmds commands >>= out.write
   helpText <- liftEff $ wrap ("Use `" ++ commandName ++
                               " <command> --help` to " ++
                               "learn about command specific options.") 2
-  write stream $ "\n" ++ helpText ++ "\n\n"
+  out.write $ "\n" ++ helpText ++ "\n\n"
 
-printCommandHelp :: forall e. Ansi -> Array Option -> Command -> AffN e Unit
-printCommandHelp stream globals command = do
-  write stream $ "Usage: " ++ commandName ++ " [global-options] " ++
+printCommandHelp :: forall e. Outputter e -> Array Option -> Command -> AffN e Unit
+printCommandHelp out globals command = do
+  out.write $ "Usage: " ++ commandName ++ " [global-options] " ++
                   command.name ++ " [command-options]\n"
-  bolded stream $ "\nCommand: " ++ command.name ++ "\n"
-  write stream $ "  " ++ command.desc ++ "\n"
-  bolded stream "\nCommand options:\n"
-  formatOpts (command.options) >>= write stream
-  bolded stream "\nGlobal options:\n"
-  formatOpts (globals ++ [helpOpt]) >>= write stream
-  write stream "\n"
+  out.bolded $ "\nCommand: " ++ command.name ++ "\n"
+  out.write $ "  " ++ command.desc ++ "\n"
+  out.bolded "\nCommand options:\n"
+  formatOpts (command.options) >>= out.write
+  out.bolded "\nGlobal options:\n"
+  formatOpts (globals ++ [helpOpt]) >>= out.write
+  out.write "\n"

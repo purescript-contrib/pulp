@@ -17,7 +17,7 @@ exports.webpackOptions = function webpackOptions(args) {
       stats: {
         cached: false,
         cachedAssets: false,
-        colors: require("supports-color") && !args.monochrome
+        colors: args.colors
       }
     };
   };

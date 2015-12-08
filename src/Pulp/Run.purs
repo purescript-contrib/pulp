@@ -1,4 +1,3 @@
-
 module Pulp.Run where
 
 import Prelude
@@ -18,16 +17,17 @@ import Pulp.Args.Get
 import Pulp.Exec
 import Pulp.Files
 import Pulp.System.Process as Process
-import Pulp.System.Log as Log
+import Pulp.Outputter
 import Pulp.System.Files (openTemp)
 import Pulp.System.FFI
 
 action :: Action
 action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
+  out <- getOutputter args
 
   cwd <- liftEff Process.cwd
-  Log.log $ "Building project in" ++ cwd
+  out.log $ "Building project in" ++ cwd
 
   globs <- defaultGlobs opts
 
@@ -37,7 +37,7 @@ action = Action \args -> do
       (ffis globs)
       ["-o", buildPath]
       Nothing
-  Log.log "Build successful."
+  out.log "Build successful."
 
   main <- getOption' "main" opts
   src <- liftEff $ Buffer.fromString (makeEntry main) UTF8

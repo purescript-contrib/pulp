@@ -16,7 +16,7 @@ import Node.Path as Path
 import Pulp.System.FFI
 import Pulp.System.Stream as Stream
 import Pulp.System.Process as Process
-import Pulp.System.Log as Log
+import Pulp.Outputter
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec (pscBundle)
@@ -27,18 +27,22 @@ import Pulp.Project
 
 action :: Action
 action = Action \args -> do
+  out <- getOutputter args
+
   cwd <- liftEff Process.cwd
-  Log.log $ "Browserifying project in " ++ cwd
+  out.log $ "Browserifying project in " ++ cwd
 
   optimise <- getFlag "optimise" args.commandOpts
   let act = if optimise then optimising else incremental
 
   runAction act args
 
-  Log.log "Browserified."
+  out.log "Browserified."
 
 optimising :: Action
 optimising = Action \args -> do
+  out <- getOutputter args
+
   let munge = Map.delete "to" >>> Map.delete "optimise"
   Build.build $ args { commandOpts = munge args.commandOpts }
 
@@ -53,28 +57,30 @@ optimising = Action \args -> do
                           ++ args.remainder)
                          Nothing
 
-  Log.log "Browserifying..."
+  out.log "Browserifying..."
 
   liftEff $ setupNodePath buildPath
 
   transform <- getOption "transform" opts
-  out <- Build.getOutputStream opts 
+  out' <- Build.getOutputStream opts
 
   browserifyBundle
     { basedir: Path.resolve [] buildPath
     , src: bundledJs
     , transform: toNullable transform
-    , out: out
+    , out: out'
     }
 
 incremental :: Action
 incremental = Action \args -> do
+  out <- getOutputter args
+
   let munge = Map.delete "to"
   Build.build $ args { commandOpts = munge args.commandOpts }
 
   let opts = Map.union args.globalOpts args.commandOpts
 
-  Log.log "Browserifying..."
+  out.log "Browserifying..."
 
   buildPath <- getOption' "buildPath" opts
   liftEff $ setupNodePath buildPath
@@ -97,14 +103,14 @@ incremental = Action \args -> do
               pure entryPath
 
   transform <- getOption "transform" opts
-  out <- Build.getOutputStream opts
+  out' <- Build.getOutputStream opts
 
   browserifyIncBundle
     { basedir: buildPath
     , cacheFile: cachePath
     , path: path
     , transform: toNullable transform
-    , out: out
+    , out: out'
     }
 
 -- | Given the build path, modify this process' NODE_PATH environment variable

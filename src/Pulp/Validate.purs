@@ -13,27 +13,27 @@ import Text.Parsing.Parser (ParseError(..))
 
 import Pulp.Exec (execQuiet)
 import Pulp.System.FFI
-import Pulp.System.Log as Log
+import Pulp.Outputter (Outputter())
 
-validate :: forall e. AffN e Unit
-validate = do
-  ver <- getPscVersion
+validate :: forall e. Outputter e -> AffN e Unit
+validate out = do
+  ver <- getPscVersion out
   when (ver < minimumPscVersion) $ do
-    Log.err $ "This version of Pulp requires PureScript version "
+    out.err $ "This version of Pulp requires PureScript version "
               <> showVersion minimumPscVersion <> " or higher."
-    Log.err $ "Your installed version is " <> showVersion ver <> "."
-    Log.err $ "Please either upgrade PureScript or downgrade Pulp to version 3.x."
+    out.err $ "Your installed version is " <> showVersion ver <> "."
+    out.err $ "Please either upgrade PureScript or downgrade Pulp to version 3.x."
     throwError $ error "Minimum psc version not satisfied"
 
-getPscVersion :: forall e. AffN e Version
-getPscVersion = do
+getPscVersion :: forall e. Outputter e -> AffN e Version
+getPscVersion out = do
   verStr <- trim <$> execQuiet "psc" ["--version"] Nothing
   case parseVersion verStr of
     Right v ->
       pure v
     Left (ParseError { message: msg }) -> do
-      Log.err $ "Unable to parse the version from psc. (It was: " <> verStr <> ")"
-      Log.err $ "Please check that the right psc is on your PATH."
+      out.err $ "Unable to parse the version from psc. (It was: " <> verStr <> ")"
+      out.err $ "Please check that the right psc is on your PATH."
       throwError $ error "Couldn't parse version from psc"
 
 minimumPscVersion :: Version

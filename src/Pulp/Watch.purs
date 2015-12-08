@@ -1,4 +1,3 @@
-
 module Pulp.Watch
   ( watch
   , watchAff
@@ -21,9 +20,9 @@ import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Files
 import Pulp.System.FFI
-import Pulp.System.Log as Log
 import Pulp.System.Process as Process
 import Pulp.System.ChildProcess (fork, treeKill)
+import Pulp.Outputter
 
 foreign import watch :: forall e.
   Array String
@@ -39,6 +38,7 @@ foreign import minimatch :: String -> String -> Boolean
 action :: Action
 action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
+  out <- getOutputter args
 
   let argv' = Array.filter (`notElem` ["-w", "--watch"]) Process.argv
   childV <- AVar.makeVar
@@ -57,5 +57,5 @@ action = Action \args -> do
     when (any (minimatch path) fileGlobs) do
       child <- AVar.takeVar childV
       liftEff $ treeKill child.pid "SIGTERM"
-      Log.log "Source tree changed; restarting:"
+      out.log "Source tree changed; restarting:"
       liftEff (fork argv') >>= AVar.putVar childV

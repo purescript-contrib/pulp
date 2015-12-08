@@ -5,7 +5,7 @@ import semver from "semver";
 
 const hello = "Hello sailor!";
 const test = "You should add some tests.";
-const doc = "## Module Main\n\n#### `main`\n\n``` purescript\nmain :: forall e. Eff (console :: CONSOLE | e) Unit\n```";
+const docLine1 = "## Module Main"
 const bowerMissing = "* ERROR: No bower.json found in current or parent directories. Are you in a PureScript project?";
 const initWithoutForce = "* ERROR: There's already a project here. Run `pulp init --force` if you're sure you want to overwrite it."
 const testDocLine1 = "## Module Test.Main"
@@ -13,6 +13,8 @@ const consoleDocLine1 = "## Module Control.Monad.Eff.Console"
 const buildHelp = ["Command: build", "Build the project."]
 const docsHelp = ["Command: docs", "Generate project documentation."]
 const skipped = "* Project unchanged; skipping build step."
+
+const newlines = /\r?\n/g
 
 describe("integration tests", function() {
   this.timeout(60000);
@@ -175,21 +177,21 @@ describe("integration tests", function() {
     yield pulp("init");
     yield pulp("docs");
     assert.file("docs/Main.md", (c) =>
-      assert.equal(c.trim(), doc));
+      assert.equal(c.split(newlines)[0], docLine1));
   }));
 
   it("pulp docs --with-tests", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("docs --with-tests");
     assert.file("docs/Test/Main.md", (c) =>
-      assert.equal(c.split("\n")[0], testDocLine1));
+      assert.equal(c.split(newlines)[0], testDocLine1));
   }));
 
   it("pulp docs --with-dependencies", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("docs --with-dependencies");
     assert.file("docs/Control/Monad/Eff/Console.md", (c) =>
-      assert.equal(c.split("\n")[0], consoleDocLine1));
+      assert.equal(c.split(newlines)[0], consoleDocLine1));
   }));
 
   it("pulp psci includes dependencies", run(function*(sh, pulp, assert) {

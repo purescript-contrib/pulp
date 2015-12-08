@@ -58,7 +58,7 @@ go buildType = Action \args -> do
   out <- getOutputter args
 
   cwd <- liftEff Process.cwd
-  out.log $ "Building project in" ++ cwd
+  out.log $ "Building project in " ++ cwd
 
   globs <- Set.union <$> defaultGlobs opts
                      <*> (if buildType == TestBuild

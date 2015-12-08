@@ -21,8 +21,8 @@
   "main": "index.js",
   "scripts": {
     "lint": "jshint src",
-    "compile": "psc -c -f 'src/**/*.js' -f 'bower_components/purescript-*/src/**/*.js' 'src/**/*.purs' 'bower_components/purescript-*/src/**/*.purs'",
-    "bundle": "psc-bundle 'output/*/*.js' -o $npm_package_main --module Main --main Main",
+    "compile": "psc -c -f \"src/**/*.js\" -f \"bower_components/purescript-*/src/**/*.js\" \"src/**/*.purs\" \"bower_components/purescript-*/src/**/*.purs\"",
+    "bundle": "psc-bundle \"output/*/*.js\" -o $npm_package_main --module Main --main Main",
     "build": "npm run lint && npm run compile && npm run bundle",
     "test": "npm run build && mocha test-js --compilers js:babel/register",
     "prepublish": "bower install && npm run build",

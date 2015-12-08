@@ -14,9 +14,10 @@ import Data.Foreign
 import Data.Foreign.Class
 import Data.Map (lookup)
 import Control.Monad.Eff.Class (liftEff)
+import Control.Monad.Eff.Exception (error)
+import Control.Monad.Error.Class (throwError)
 
 import Pulp.System.FFI
-import Pulp.System.Process (exit)
 import Pulp.System.Stream (write)
 import Pulp.System.Process (stderr)
 import Pulp.Args
@@ -82,6 +83,7 @@ readForeign name thing =
 
 internalError :: forall e b. String -> AffN e b
 internalError msg = do
-  write stderr $ "Internal error in Pulp.Args.Get: " ++ msg ++ "\n"
+  let msg' = "Internal error in Pulp.Args.Get: " ++ msg ++ "\n"
+  write stderr msg'
   write stderr "This is a bug. Please report it.\n"
-  liftEff $ exit 1
+  throwError (error msg')

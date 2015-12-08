@@ -39,7 +39,7 @@ action = Action \args -> do
 
   sourceFiles <- resolveGlobs sources'
 
-  main <- String.replace "." Path.sep <<< (++ ".purs") <$> getOption' "main" opts
+  main <- (("." ++ Path.sep) ++) <<< (++ ".purs") <<< String.replace "." Path.sep <$> getOption' "main" opts
   let entryPath = Path.concat ["src", ".webpack.js"]
   FS.writeTextFile UTF8 entryPath (makeEntry main)
 

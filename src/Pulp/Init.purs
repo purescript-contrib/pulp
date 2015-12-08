@@ -29,6 +29,7 @@ gitignore :: String
 gitignore = unlines [
   "/bower_components/",
   "/node_modules/",
+  "/.pulp-cache/",
   "/output/",
   "/.psci*",
   "/src/.webpack.js"

@@ -164,7 +164,7 @@ commands = [
 failed :: forall e a. Error -> EffN e a
 failed err = do
   Console.error $ "* ERROR: " ++ message err
-  logStack err
+  -- logStack err
   exit 1
 
 foreign import logStack :: forall e. Error -> EffN e Unit

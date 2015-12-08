@@ -7,7 +7,7 @@ module Pulp.Exec
   ) where
 
 import Prelude
-import Data.Either (Either(..))
+import Data.Either (either)
 import Data.Function
 import Data.String (stripSuffix)
 import Data.StrMap (StrMap())
@@ -59,12 +59,8 @@ shareAllButStdout = shareAll { stdout = Pipe }
 -- | pulp, which usually means they will immediately appear in the terminal).
 exec :: forall e. String -> Array String -> Maybe (StrMap String) -> AffN e Unit
 exec cmd args env = do
-  echild <- attempt $ liftEff $ spawn cmd args (toNullable env) shareAll
-  case echild of
-    Left err ->
-      handleErrors cmd retry err
-    Right child ->
-      wait child >>= onExit
+  child <- liftEff $ spawn cmd args (toNullable env) shareAll
+  attempt (wait child) >>= either (handleErrors cmd retry) onExit
 
   where
   onExit code =
@@ -77,14 +73,10 @@ exec cmd args env = do
 -- | captured and returned as a String.
 execQuiet :: forall e. String -> Array String -> Maybe (StrMap String) -> AffN e String
 execQuiet cmd args env = do
-  echild <- attempt $ liftEff $ spawn cmd args (toNullable env) shareAllButStdout
-  case echild of
-    Left err ->
-      handleErrors cmd retry err
-    Right child -> do
-      outVar <- makeVar
-      forkAff (concatStream child.stdout >>= putVar outVar)
-      wait child >>= onExit outVar
+  child <- liftEff $ spawn cmd args (toNullable env) shareAllButStdout
+  outVar <- makeVar
+  forkAff (concatStream child.stdout >>= putVar outVar)
+  attempt (wait child) >>= either (handleErrors cmd retry) (onExit outVar)
 
   where
   onExit outVar code =

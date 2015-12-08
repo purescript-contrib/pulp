@@ -17,6 +17,12 @@ const skipped = "* Project unchanged; skipping build step."
 
 const newlines = /\r?\n/g
 
+function sleep(ms) {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 describe("integration tests", function() {
   this.timeout(60000);
 
@@ -248,6 +254,7 @@ describe("integration tests", function() {
   it("changed files force rebuild", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield pulp("build");
+    yield sleep(500);
     touch.sync(path.join(temp, "src", "Main.purs"));
     const [_, err] = yield pulp("build");
     assert.notEqual(err.trim(), skipped);

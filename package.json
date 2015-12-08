@@ -16,7 +16,7 @@
     "url": "https://github.com/bodil/pulp.git"
   },
   "bin": {
-    "pulp": "output/pulp.js"
+    "pulp": "index.js"
   },
   "scripts": {
     "build": "jshint src && pulp build --to index.js",
@@ -46,6 +46,7 @@
     "co": "^4.6.0",
     "jshint": "^2.8.0",
     "mocha": "^2.2.5",
-    "semver": "^5.1.0"
+    "semver": "^5.1.0",
+    "touch": "^1.0.0"
   }
 }

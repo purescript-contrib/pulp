@@ -13,7 +13,6 @@ import Data.String (joinWith)
 import Data.Foreign
 import Data.Foreign.Class
 import Data.Map (lookup)
-import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Error.Class (throwError)
 

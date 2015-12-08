@@ -46,3 +46,5 @@ exports.setEnv = function setEnv(envvar) {
     };
   };
 };
+
+exports.__dirname = __dirname;

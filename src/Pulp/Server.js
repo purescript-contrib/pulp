@@ -1,8 +1,6 @@
 // module Pulp.Server
 "use strict";
 
-exports.__dirname = __dirname;
-
 exports.webpackOptions = function webpackOptions(args) {
   return function() {
     return {

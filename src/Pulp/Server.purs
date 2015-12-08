@@ -65,7 +65,7 @@ action = Action \args -> do
 getDefaultConfig :: forall e. String -> Array String -> Array String -> EffN e Foreign
 getDefaultConfig buildPath sources ffis = do
   cwd <- liftEff Process.cwd
-  let nodeModulesPath = Path.resolve [__dirname] "node_modules"
+  let nodeModulesPath = Path.resolve [Process.__dirname] "node_modules"
   let context = Path.resolve [cwd] "src"
   pure $ defaultConfig { dir: cwd, buildPath, sources, ffis, nodeModulesPath, context }
 
@@ -136,5 +136,3 @@ foreign import listen' :: Fn4 DevServer String Int (Callback Unit) Unit
 
 listen :: forall e. DevServer -> String -> Int -> AffN e Unit
 listen server host port = runNode $ runFn4 listen' server host port
-
-foreign import __dirname :: String

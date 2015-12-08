@@ -11,6 +11,7 @@ module Pulp.System.Process
        , getPlatform
        , chdir
        , cwd
+       , __dirname
        ) where
 
 import Prelude
@@ -54,3 +55,5 @@ foreign import getPlatform :: forall e. EffN e String
 foreign import chdir :: forall e. String -> EffN e Unit
 
 foreign import cwd :: forall e. EffN e String
+
+foreign import __dirname :: String

@@ -12,6 +12,9 @@ exports["wait'"] = function wait$prime(child, callback) {
   child.on("exit", function(r) {
     callback(null, r);
   });
+  child.on("error", function(err) {
+    callback(err);
+  });
 };
 
 exports.fork = function fork(args) {

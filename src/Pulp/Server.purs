@@ -70,7 +70,7 @@ getDefaultConfig buildPath sources ffis = do
 
 defaultConfig :: WebpackConfigOptions -> Foreign
 defaultConfig opts = toForeign $
-  { 
+  {
     cache: true,
     context: opts.context,
     entry: "./.webpack.js",

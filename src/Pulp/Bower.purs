@@ -23,7 +23,7 @@ launchBower :: forall e. Array String -> AffN e Unit
 launchBower args = do
   bowerPath <- liftEff $ requireResolve "bower"
   let executable = Path.concat [bowerPath, "..", "..", "bin", "bower"]
-  exec executable args Nothing
+  exec "node" ([executable] ++ args) Nothing
 
 printHelp :: forall e. Outputter e -> AffN e Unit
 printHelp out = do

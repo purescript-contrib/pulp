@@ -43,7 +43,7 @@ mainFile = unlines [
   "import Control.Monad.Eff",
   "import Control.Monad.Eff.Console",
   "",
-  "main :: Eff (console :: CONSOLE | e) Unit",
+  "main :: forall e. Eff (console :: CONSOLE | e) Unit",
   "main = do",
   "  log \"Hello sailor!\""
   ]
@@ -56,7 +56,7 @@ testFile = unlines [
   "import Control.Monad.Eff",
   "import Control.Monad.Eff.Console",
   "",
-  "main :: Eff (console :: CONSOLE | e) Unit",
+  "main :: forall e. Eff (console :: CONSOLE | e) Unit",
   "main = do",
   "  log \"You should add some tests.\""
   ]

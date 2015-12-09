@@ -3,14 +3,12 @@ module Pulp.Args where
 import Prelude
 
 import Control.Monad.Aff
-import Control.Monad.Aff.AVar
 import Data.Map (Map())
 import Data.Maybe (Maybe(..))
 import Data.List (List())
 import Data.Foreign (Foreign(), toForeign)
 
 import Text.Parsing.Parser (ParserT())
-import Node.FS (FS())
 
 import Pulp.System.FFI
 
@@ -18,12 +16,12 @@ type Options = Map String (Maybe Foreign)
 
 -- | Action is a newtype because a normal type synonym would lead to a loop,
 -- | which is disallowed by the compiler.
-newtype Action = Action (forall e. Args -> AffN Unit)
+newtype Action = Action (Args -> AffN Unit)
 
-runAction :: forall e. Action -> Args -> AffN Unit
+runAction :: Action -> Args -> AffN Unit
 runAction (Action f) = f
 
-type OptParser a = forall e. ParserT (List String) (Aff (fs :: FS, node :: Node, avar :: AVAR | e)) a
+type OptParser a = ParserT (List String) (Aff PulpEffects) a
 
 -- | We use Foreign for the result of the parser because we want to be able to
 -- | put any type in at first. Then, we can use other functions in Data.Foreign

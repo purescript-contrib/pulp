@@ -43,7 +43,7 @@ mainFile = unlines [
   "import Control.Monad.Eff",
   "import Control.Monad.Eff.Console",
   "",
-  "main :: forall e. Eff (console :: CONSOLE | e) Unit",
+  "main :: Eff (console :: CONSOLE | e) Unit",
   "main = do",
   "  log \"Hello sailor!\""
   ]
@@ -56,12 +56,12 @@ testFile = unlines [
   "import Control.Monad.Eff",
   "import Control.Monad.Eff.Console",
   "",
-  "main :: forall e. Eff (console :: CONSOLE | e) Unit",
+  "main :: Eff (console :: CONSOLE | e) Unit",
   "main = do",
   "  log \"You should add some tests.\""
   ]
 
-init :: forall e. Outputter e -> AffN Unit
+init :: Outputter -> AffN Unit
 init out = do
   cwd <- liftEff Process.cwd
   let name = Path.basename cwd

@@ -62,7 +62,7 @@ action = Action \args -> do
     when (minimatch path "src/**/*.js")
       (touch (Path.concat ["src", main]))
 
-getDefaultConfig :: forall e. String -> Array String -> Array String -> EffN Foreign
+getDefaultConfig :: String -> Array String -> Array String -> EffN Foreign
 getDefaultConfig buildPath sources ffis = do
   cwd <- liftEff Process.cwd
   let nodeModulesPath = Path.resolve [Process.__dirname] "node_modules"
@@ -113,7 +113,7 @@ type WebpackConfigOptions =
   , nodeModulesPath :: String
   }
 
-getWebpackOptions :: forall e. Options -> Outputter e -> AffN WebpackOptions
+getWebpackOptions :: Options -> Outputter -> AffN WebpackOptions
 getWebpackOptions opts out = do
   noInfo     <- getFlag "noInfo" opts
   quiet      <- getFlag "quiet" opts
@@ -127,12 +127,12 @@ type WebpackOptionsArgs =
   }
 
 foreign import data WebpackOptions :: *
-foreign import webpackOptions :: forall e. WebpackOptionsArgs -> EffN WebpackOptions
+foreign import webpackOptions :: WebpackOptionsArgs -> EffN WebpackOptions
 
 foreign import data DevServer :: *
-foreign import makeDevServer :: forall e. Foreign -> WebpackOptions -> EffN DevServer
+foreign import makeDevServer :: Foreign -> WebpackOptions -> EffN DevServer
 
 foreign import listen' :: Fn4 DevServer String Int (Callback Unit) Unit
 
-listen :: forall e. DevServer -> String -> Int -> AffN Unit
+listen :: DevServer -> String -> Int -> AffN Unit
 listen server host port = runNode $ runFn4 listen' server host port

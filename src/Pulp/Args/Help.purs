@@ -25,9 +25,9 @@ import Pulp.System.Process (commandName)
 
 foreign import pad :: Int -> String
 
-foreign import wrap :: forall e. String -> Int -> EffN String
+foreign import wrap :: String -> Int -> EffN String
 
-formatTable :: forall e. StrMap String -> EffN String
+formatTable :: StrMap String -> EffN String
 formatTable table =
   let headers = sort $ keys table
       longest = fromMaybe 0 $ maximum $ headers <#> Str.length
@@ -63,21 +63,21 @@ prepareOpts = foldr foldOpts empty
           Just arg -> " " ++ arg
         foldOpts n = insert (formatKey n) (describeOpt n)
 
-formatOpts :: forall e. Array Option -> AffN String
+formatOpts :: Array Option -> AffN String
 formatOpts = liftEff <<< formatTable <<< prepareOpts
 
 prepareCmds :: Array Command -> StrMap String
 prepareCmds = foldr foldCmds empty
   where foldCmds n = insert n.name n.desc
 
-formatCmds :: forall e. Array Command -> AffN String
+formatCmds :: Array Command -> AffN String
 formatCmds = liftEff <<< formatTable <<< prepareCmds
 
 helpOpt :: Option
 helpOpt = option "help" ["--help", "-h"] Type.flag
             "Show this help message."
 
-printHelp :: forall e. Outputter e -> Array Option -> Array Command -> AffN Unit
+printHelp :: Outputter -> Array Option -> Array Command -> AffN Unit
 printHelp out globals commands = do
   out.write $ "Usage: " ++ commandName ++ " [global-options] <command> [command-options]\n"
   -- if context print command docs
@@ -90,7 +90,7 @@ printHelp out globals commands = do
                               "learn about command specific options.") 2
   out.write $ "\n" ++ helpText ++ "\n\n"
 
-printCommandHelp :: forall e. Outputter e -> Array Option -> Command -> AffN Unit
+printCommandHelp :: Outputter -> Array Option -> Command -> AffN Unit
 printCommandHelp out globals command = do
   out.write $ "Usage: " ++ commandName ++ " [global-options] " ++
                   command.name ++ " [command-options]\n"

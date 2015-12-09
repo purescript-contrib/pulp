@@ -24,9 +24,9 @@ type AffN a = Aff PulpEffects a
 -- | the same as the type parameter.
 foreign import data Callback :: * -> *
 
-foreign import runNode'  :: forall a e. Fn3 (Error -> EffN Unit) (a -> EffN Unit) (Callback a -> Unit) (EffN Unit)
+foreign import runNode'  :: forall a. Fn3 (Error -> EffN Unit) (a -> EffN Unit) (Callback a -> Unit) (EffN Unit)
 
-runNode :: forall a e. (Callback a -> Unit) -> AffN a
+runNode :: forall a. (Callback a -> Unit) -> AffN a
 runNode fn = makeAff (\err win -> runFn3 runNode' err win fn)
 
 -- | This is quite unsafe but often useful.

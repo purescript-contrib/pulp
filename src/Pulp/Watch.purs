@@ -24,12 +24,12 @@ import Pulp.System.Process as Process
 import Pulp.System.ChildProcess (fork, treeKill)
 import Pulp.Outputter
 
-foreign import watch :: forall e.
+foreign import watch ::
   Array String
   -> (String -> EffN Unit)
   -> EffN Unit
 
-watchAff :: forall e. Array String -> (String -> AffN Unit) -> AffN Unit
+watchAff :: Array String -> (String -> AffN Unit) -> AffN Unit
 watchAff dirs callback =
   liftEff (watch dirs (\path -> launchAff (callback path)))
 

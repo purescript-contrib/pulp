@@ -15,7 +15,7 @@ import Pulp.Exec (execQuiet)
 import Pulp.System.FFI
 import Pulp.Outputter (Outputter())
 
-validate :: forall e. Outputter e -> AffN Unit
+validate :: Outputter -> AffN Unit
 validate out = do
   ver <- getPscVersion out
   when (ver < minimumPscVersion) $ do
@@ -25,7 +25,7 @@ validate out = do
     out.err $ "Please either upgrade PureScript or downgrade Pulp to version 3.x."
     throwError $ error "Minimum psc version not satisfied"
 
-getPscVersion :: forall e. Outputter e -> AffN Version
+getPscVersion :: Outputter -> AffN Version
 getPscVersion out = do
   verStr <- trim <$> execQuiet "psc" ["--version"] Nothing
   case parseVersion verStr of

@@ -25,7 +25,7 @@ import Pulp.Args
 -- | was not specified at the command line, the result will be `Nothing`. For
 -- | options which do have defaults, you probably want the primed version
 -- | instead, `getOption'`.
-getOption :: forall e a. (IsForeign a) => String -> Options -> AffN (Maybe a)
+getOption :: forall a. (IsForeign a) => String -> Options -> AffN (Maybe a)
 getOption name opts = do
   case lookup name opts of
     Just (Just thing) ->
@@ -38,7 +38,7 @@ getOption name opts = do
 
 -- | Get an option which was declared with a default value, and therefore
 -- | should always have a value.
-getOption' :: forall e a. (IsForeign a) => String -> Options -> AffN a
+getOption' :: forall a. (IsForeign a) => String -> Options -> AffN a
 getOption' name opts = do
   mval <- getOption name opts
   case mval of
@@ -50,7 +50,7 @@ getOption' name opts = do
 
 -- | Get a flag out of the `Options` value. If it was specified at the command
 -- | line, the result is `true`, otherwise, `false`.
-getFlag :: forall e. String -> Options -> AffN Boolean
+getFlag :: String -> Options -> AffN Boolean
 getFlag name opts = do
   case lookup name opts of
     Just (Just _) ->
@@ -62,13 +62,13 @@ getFlag name opts = do
       pure false
 
 -- | True if a given option exists in the `Options` map, false otherwise.
-hasOption :: forall e. String -> Options -> AffN Boolean
+hasOption :: String -> Options -> AffN Boolean
 hasOption name opts = isJust <$> opt
   where
   opt :: AffN (Maybe Foreign)
   opt = getOption name opts
 
-readForeign :: forall e a. (IsForeign a) => String -> Foreign -> AffN a
+readForeign :: forall a. (IsForeign a) => String -> Foreign -> AffN a
 readForeign name thing =
   case read thing of
     Left e ->
@@ -80,7 +80,7 @@ readForeign name thing =
     Right x ->
       pure x
 
-internalError :: forall e b. String -> AffN b
+internalError :: forall b. String -> AffN b
 internalError msg = do
   let msg' = "Internal error in Pulp.Args.Get: " ++ msg ++ "\n"
   write stderr msg'

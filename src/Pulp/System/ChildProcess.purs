@@ -24,10 +24,10 @@ type ChildProcess =
   , pid    :: Int
   }
 
-spawn :: forall e. String -> Array String -> Nullable (StrMap String) -> StdIOOptions -> EffN ChildProcess
+spawn :: String -> Array String -> Nullable (StrMap String) -> StdIOOptions -> EffN ChildProcess
 spawn cmd args env stdio = runFn4 spawn' cmd args env (toActualStdIOOptions stdio)
 
-foreign import spawn' :: forall e.
+foreign import spawn' ::
   Fn4 String
       (Array String)
       (Nullable (StrMap String))
@@ -36,14 +36,14 @@ foreign import spawn' :: forall e.
 
 -- | Fork a child Node.js process using the current module and the provided
 -- | argv (command line arguments).
-foreign import fork :: forall e. Array String -> EffN ChildProcess
+foreign import fork :: Array String -> EffN ChildProcess
 
-wait :: forall e. ChildProcess -> AffN Int
+wait :: ChildProcess -> AffN Int
 wait child = runNode $ runFn2 wait' child
 
 foreign import wait' :: Fn2 ChildProcess (Callback Int) Unit
 
-foreign import treeKill :: forall e. Int -> String -> EffN Unit
+foreign import treeKill :: Int -> String -> EffN Unit
 
 data StdIOBehaviour
   = Pipe

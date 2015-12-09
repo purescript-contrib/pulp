@@ -161,18 +161,18 @@ commands = [
     ] ++ buildishArgs
   ]
 
-failed :: forall e a. Error -> EffN a
+failed :: forall a. Error -> EffN a
 failed err = do
   Console.error $ "* ERROR: " ++ message err
   -- logStack err
   exit 1
 
-foreign import logStack :: forall e. Error -> EffN Unit
+foreign import logStack :: Error -> EffN Unit
 
-succeeded :: forall e. Unit -> EffN Unit
+succeeded :: Unit -> EffN Unit
 succeeded = const (pure unit)
 
-main :: forall e. EffN Unit
+main :: EffN Unit
 main = runAff failed succeeded do
   args <- parse globals commands argv
   case args of
@@ -194,7 +194,7 @@ main = runAff failed succeeded do
 
   out = makeOutputter false
 
-runArgs :: forall e. Args.Args -> AffN Unit
+runArgs :: Args.Args -> AffN Unit
 runArgs args = do
   out <- getOutputter args
   if "--help" `elem` args.remainder
@@ -226,7 +226,7 @@ runArgs args = do
         let globalOpts' = insert "_project" (Just (toForeign proj)) args.globalOpts
         return $ args { globalOpts = globalOpts' }
 
-argsParserDiagnostics :: forall e. Args.Args -> AffN Unit
+argsParserDiagnostics :: Args.Args -> AffN Unit
 argsParserDiagnostics opts = do
   let out = makeOutputter false
   out.log $ "Globals: " ++ show ((map <<< map) showForeign opts.globalOpts)

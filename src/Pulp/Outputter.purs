@@ -15,7 +15,7 @@ import Pulp.System.FFI
 import Pulp.Args
 import Pulp.Args.Get
 
-type Outputter e =
+type Outputter =
   { log :: String -> AffN Unit
   , err :: String -> AffN Unit
   , write  :: String -> AffN Unit
@@ -24,7 +24,7 @@ type Outputter e =
   }
 
 -- | Get an outputter, with monochrome based on the command line arguments.
-getOutputter :: forall e. Args -> AffN (Outputter e)
+getOutputter :: Args -> AffN Outputter
 getOutputter args =
   makeOutputter <$> getFlag "monochrome" args.globalOpts
 
@@ -33,13 +33,13 @@ getOutputter args =
 -- | not colour is used depends on the "supports-color" module. Note that the
 -- | `monochrome` attribute of the returned outputter might not necessarily
 -- | be the same as the argument supplied.
-makeOutputter :: forall e. Boolean -> Outputter e
+makeOutputter :: Boolean -> Outputter
 makeOutputter monochrome =
   if not monochrome && Color.hasBasic
     then ansiOutputter
     else monochromeOutputter
 
-monochromeOutputter :: forall e. Outputter e
+monochromeOutputter :: Outputter
 monochromeOutputter =
   { log: monobullet
   , err: monobullet
@@ -50,7 +50,7 @@ monochromeOutputter =
   where
   monobullet text = write stderr ("* " ++ text ++ "\n")
 
-ansiOutputter :: forall e. Outputter e
+ansiOutputter :: Outputter
 ansiOutputter =
   { log: bullet ansiOut "green"
   , err: bullet ansiOut "red"
@@ -62,7 +62,7 @@ ansiOutputter =
 ansiOut :: Ansi
 ansiOut = ansi stderr
 
-bullet :: forall e. Ansi -> String -> String -> AffN Unit
+bullet :: Ansi -> String -> String -> AffN Unit
 bullet out colour text = do
   col out colour
   bold out

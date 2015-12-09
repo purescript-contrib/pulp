@@ -44,7 +44,7 @@ foreign import getEnvironment :: forall e. EffN e (StrMap String)
 -- | Get a specific value out of the environment
 foreign import getEnvNullable :: forall e. String -> EffN e (Nullable String)
 
-getEnv :: forall e. String -> EffN e (Maybe String) 
+getEnv :: forall e. String -> EffN e (Maybe String)
 getEnv var = toMaybe <$> getEnvNullable var
 
 -- | Set a specific value in the environment

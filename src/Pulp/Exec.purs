@@ -38,9 +38,9 @@ pscBundle files args env =
 
 shareAll :: StdIOOptions
 shareAll =
-  { stdin: ShareStream stdin
-  , stdout: ShareStream stdout
-  , stderr: ShareStream stderr
+  { stdin: ShareStream  (forget stdin)
+  , stdout: ShareStream (forget stdout)
+  , stderr: ShareStream (forget stderr)
   }
 
 shareAllButStdout :: StdIOOptions
@@ -105,7 +105,7 @@ handleErrors cmd retry err
   | otherwise =
      throwError err
 
-concatStream :: NodeStream String -> AffN String
+concatStream :: ReadableStream String -> AffN String
 concatStream stream = runNode $ runFn2 concatStream' stream
 
-foreign import concatStream' :: Fn2 (NodeStream String) (Callback String) Unit
+foreign import concatStream' :: Fn2 (ReadableStream String) (Callback String) Unit

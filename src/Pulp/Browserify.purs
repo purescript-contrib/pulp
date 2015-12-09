@@ -14,7 +14,7 @@ import Node.FS.Aff (unlink, writeTextFile)
 import Node.Path as Path
 
 import Pulp.System.FFI
-import Pulp.System.Stream as Stream
+import Pulp.System.Stream (WritableStream())
 import Pulp.System.Process as Process
 import Pulp.Outputter
 import Pulp.Args
@@ -128,7 +128,7 @@ type BrowserifyOptions =
   { basedir   :: String
   , src       :: String
   , transform :: Nullable String
-  , out       :: Stream.NodeStream String
+  , out       :: WritableStream String
   }
 
 foreign import browserifyBundle' :: Fn2 BrowserifyOptions
@@ -143,7 +143,7 @@ type BrowserifyIncOptions =
   , cacheFile :: String
   , path      :: String
   , transform :: Nullable String
-  , out       :: Stream.NodeStream String
+  , out       :: WritableStream String
   }
 
 foreign import browserifyIncBundle' :: Fn2 BrowserifyIncOptions

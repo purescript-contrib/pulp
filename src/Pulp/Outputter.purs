@@ -5,11 +5,12 @@ module Pulp.Outputter
   ) where
 
 import Prelude
+import Ansi.Codes (Color(..))
+import Ansi.Output (withGraphics, foreground, bold)
 
-import Pulp.System.Ansi
 import Pulp.System.FFI
 import Pulp.System.Process (stderr)
-import Pulp.System.Stream (write)
+import Pulp.System.Stream (write, WritableStream())
 import Pulp.System.SupportsColor as Color
 import Pulp.System.FFI
 import Pulp.Args
@@ -52,20 +53,14 @@ monochromeOutputter =
 
 ansiOutputter :: Outputter
 ansiOutputter =
-  { log: bullet ansiOut "green"
-  , err: bullet ansiOut "red"
-  , write: write ansiOut
-  , bolded: bolded ansiOut
+  { log: bullet stderr Green
+  , err: bullet stderr Red
+  , write: write stderr
+  , bolded: withGraphics (write stderr) bold
   , monochrome: false
   }
 
-ansiOut :: Ansi
-ansiOut = ansi stderr
-
-bullet :: Ansi -> String -> String -> AffN Unit
-bullet out colour text = do
-  col out colour
-  bold out
-  write out "* "
-  reset out
-  write out $ text ++ "\n"
+bullet :: WritableStream String -> Color -> String -> AffN Unit
+bullet stream color text = do
+  withGraphics (write stream) (foreground color) "* "
+  write stream (text <> "\n")

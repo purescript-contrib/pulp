@@ -14,7 +14,7 @@ import Data.Set as Set
 import Control.Monad.Eff.Class (liftEff)
 
 import Pulp.System.FFI
-import Pulp.System.Stream as Stream
+import Pulp.System.Stream (write, WritableStream())
 import Pulp.System.Process as Process
 import Pulp.Outputter
 import Pulp.System.Files as Files
@@ -97,13 +97,13 @@ bundle args = do
                           Nothing
 
   out' <- getOutputStream opts
-  Stream.write out' bundledJs
+  write out' bundledJs
 
   out.log "Bundled."
 
 -- | Get a writable stream which output should be written to, based on the
 -- | value of the 'to' option.
-getOutputStream :: Options -> AffN (Stream.NodeStream String)
+getOutputStream :: Options -> AffN (WritableStream String)
 getOutputStream opts = do
   to <- getOption "to" opts
   case to of

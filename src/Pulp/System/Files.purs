@@ -17,7 +17,7 @@ import Node.FS (FileDescriptor())
 import Node.FS.Aff (mkdir)
 
 import Pulp.System.FFI
-import Pulp.System.Stream
+import Pulp.System.Stream (WritableStream())
 
 foreign import isEEXIST :: Error -> Boolean
 
@@ -35,7 +35,7 @@ foreign import openTemp' :: Fn2 TempOptions (Callback TempFileInfo) Unit
 openTemp :: TempOptions -> AffN TempFileInfo
 openTemp opts = runNode $ runFn2 openTemp' opts
 
-foreign import createWriteStream :: String -> EffN (NodeStream String)
+foreign import createWriteStream :: String -> EffN (WritableStream String)
 
 foreign import isENOENT :: Error -> Boolean
 

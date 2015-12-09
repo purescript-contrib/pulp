@@ -20,6 +20,7 @@ import Data.Nullable (toMaybe, Nullable())
 import Data.Array (drop, (!!))
 import Data.Maybe (fromMaybe, Maybe())
 import Data.StrMap (StrMap())
+import Node.Stream (Writable(), Readable())
 
 import Pulp.System.FFI
 import Pulp.System.Stream
@@ -34,9 +35,9 @@ argv = drop 2 argv'
 
 foreign import exit :: forall a. Int -> EffN a
 
-foreign import stdin :: NodeStream String
-foreign import stdout :: NodeStream String
-foreign import stderr :: NodeStream String
+foreign import stdin  :: ReadableStream String
+foreign import stdout :: WritableStream String
+foreign import stderr :: WritableStream String
 
 -- | Gets a copy of the current environment
 foreign import getEnvironment :: EffN (StrMap String)

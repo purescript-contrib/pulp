@@ -18,9 +18,9 @@ import Pulp.System.FFI
 import Pulp.System.Stream
 
 type ChildProcess =
-  { stdin  :: NodeStream String
-  , stdout :: NodeStream String
-  , stderr :: NodeStream String
+  { stdin  :: WritableStream String
+  , stdout :: ReadableStream String
+  , stderr :: ReadableStream String
   , pid    :: Int
   }
 

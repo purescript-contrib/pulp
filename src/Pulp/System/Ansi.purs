@@ -30,30 +30,30 @@ instance ansiStream :: Stream AnsiStream String where
 
 foreign import col' :: Fn3 Ansi String (Callback Unit) Unit
 
-col :: forall e. Ansi -> String -> AffN e Unit
+col :: forall e. Ansi -> String -> AffN Unit
 col s c= runNode $ runFn3 col' s c
 
 foreign import bgCol' :: Fn3 Ansi String (Callback Unit) Unit
 
-bgCol :: forall e. Ansi -> String -> AffN e Unit
+bgCol :: forall e. Ansi -> String -> AffN Unit
 bgCol s c= runNode $ runFn3 bgCol' s c
 
 foreign import bold' :: Fn2 Ansi (Callback Unit) Unit
 
-bold :: forall e. Ansi -> AffN e Unit
+bold :: forall e. Ansi -> AffN Unit
 bold s = runNode $ runFn2 bold' s
 
 foreign import underline' :: Fn2 Ansi (Callback Unit) Unit
 
-underline :: forall e. Ansi -> AffN e Unit
+underline :: forall e. Ansi -> AffN Unit
 underline s = runNode $ runFn2 underline' s
 
 foreign import reset' :: Fn2 Ansi (Callback Unit) Unit
 
-reset :: forall e. Ansi -> AffN e Unit
+reset :: forall e. Ansi -> AffN Unit
 reset s = runNode $ runFn2 reset' s
 
-bolded :: forall e. Ansi -> String -> AffN e Unit
+bolded :: forall e. Ansi -> String -> AffN Unit
 bolded stream str = do
   bold stream
   write stream str

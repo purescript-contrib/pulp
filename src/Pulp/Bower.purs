@@ -19,13 +19,13 @@ import Pulp.Outputter
 action :: Action
 action = Action \args -> launchBower args.remainder
 
-launchBower :: forall e. Array String -> AffN e Unit
+launchBower :: forall e. Array String -> AffN Unit
 launchBower args = do
   bowerPath <- liftEff $ requireResolve "bower"
   let executable = Path.concat [bowerPath, "..", "..", "bin", "bower"]
   exec "node" ([executable] ++ args) Nothing
 
-printHelp :: forall e. Outputter e -> AffN e Unit
+printHelp :: forall e. Outputter e -> AffN Unit
 printHelp out = do
   out.bolded "Dependency Management with Bower\n\n"
   out.write "The `pulp dep` command invokes the Bower package manager.\n"

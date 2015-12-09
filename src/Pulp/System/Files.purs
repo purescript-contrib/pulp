@@ -21,7 +21,7 @@ import Pulp.System.Stream
 
 foreign import isEEXIST :: Error -> Boolean
 
-mkdirIfNotExist :: forall e. String -> AffN e Unit
+mkdirIfNotExist :: forall e. String -> AffN Unit
 mkdirIfNotExist dir =
   catchJust (\e -> if isEEXIST e then Just unit else Nothing)
             (mkdir dir)
@@ -32,14 +32,14 @@ type TempFileInfo = { path :: String, fd :: FileDescriptor }
 
 foreign import openTemp' :: Fn2 TempOptions (Callback TempFileInfo) Unit
 
-openTemp :: forall e. TempOptions -> AffN e TempFileInfo
+openTemp :: forall e. TempOptions -> AffN TempFileInfo
 openTemp opts = runNode $ runFn2 openTemp' opts
 
-foreign import createWriteStream :: forall e. String -> EffN e (NodeStream String)
+foreign import createWriteStream :: forall e. String -> EffN (NodeStream String)
 
 foreign import isENOENT :: Error -> Boolean
 
 foreign import touch' :: Fn2 String (Callback Unit) Unit
 
-touch :: forall e. String -> AffN e Unit
+touch :: forall e. String -> AffN Unit
 touch path = runNode $ runFn2 touch' path

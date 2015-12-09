@@ -16,15 +16,15 @@ import Pulp.Args
 import Pulp.Args.Get
 
 type Outputter e =
-  { log :: String -> AffN e Unit
-  , err :: String -> AffN e Unit
-  , write  :: String -> AffN e Unit
-  , bolded :: String -> AffN e Unit
+  { log :: String -> AffN Unit
+  , err :: String -> AffN Unit
+  , write  :: String -> AffN Unit
+  , bolded :: String -> AffN Unit
   , monochrome :: Boolean
   }
 
 -- | Get an outputter, with monochrome based on the command line arguments.
-getOutputter :: forall e. Args -> AffN e (Outputter e)
+getOutputter :: forall e. Args -> AffN (Outputter e)
 getOutputter args =
   makeOutputter <$> getFlag "monochrome" args.globalOpts
 
@@ -62,7 +62,7 @@ ansiOutputter =
 ansiOut :: Ansi
 ansiOut = ansi stderr
 
-bullet :: forall e. Ansi -> String -> String -> AffN e Unit
+bullet :: forall e. Ansi -> String -> String -> AffN Unit
 bullet out colour text = do
   col out colour
   bold out

@@ -115,7 +115,7 @@ incremental = Action \args -> do
 
 -- | Given the build path, modify this process' NODE_PATH environment variable
 -- | for browserify.
-setupNodePath :: forall e. String -> EffN e Unit
+setupNodePath :: forall e. String -> EffN Unit
 setupNodePath buildPath = do
   nodePath <- Process.getEnv "NODE_PATH"
   let buildPath' = Path.resolve [] buildPath
@@ -135,7 +135,7 @@ foreign import browserifyBundle' :: Fn2 BrowserifyOptions
                                         (Callback Unit)
                                         Unit
 
-browserifyBundle :: forall e. BrowserifyOptions -> AffN e Unit
+browserifyBundle :: forall e. BrowserifyOptions -> AffN Unit
 browserifyBundle opts = runNode $ runFn2 browserifyBundle' opts
 
 type BrowserifyIncOptions =
@@ -150,5 +150,5 @@ foreign import browserifyIncBundle' :: Fn2 BrowserifyIncOptions
                                           (Callback Unit)
                                           Unit
 
-browserifyIncBundle :: forall e. BrowserifyIncOptions -> AffN e Unit
+browserifyIncBundle :: forall e. BrowserifyIncOptions -> AffN Unit
 browserifyIncBundle opts = runNode $ runFn2 browserifyIncBundle' opts

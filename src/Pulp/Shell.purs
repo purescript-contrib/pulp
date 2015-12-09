@@ -14,7 +14,7 @@ import Pulp.System.Files (openTemp)
 import Pulp.System.Process (getPlatform)
 import Pulp.Outputter
 
-shell :: forall e. Outputter e -> String -> AffN e Unit
+shell :: forall e. Outputter e -> String -> AffN Unit
 shell out cmd = do
   platform <- liftEff getPlatform
   if platform == "win32"
@@ -35,7 +35,7 @@ type ShellOptions =
   , extraArgs :: Array String
   }
 
-shell' :: forall e. Outputter e -> String -> ShellOptions -> AffN e Unit
+shell' :: forall e. Outputter e -> String -> ShellOptions -> AffN Unit
 shell' out cmd opts = do
   out.log $ "Executing " ++ cmd
   cmdBuf <- liftEff $ Buffer.fromString cmd UTF8

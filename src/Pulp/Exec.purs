@@ -27,12 +27,12 @@ import Pulp.System.FFI
 import Pulp.System.ChildProcess
 import Pulp.System.Files
 
-psc :: forall e. Array String -> Array String -> Array String -> Maybe (StrMap String) -> AffN e String
+psc :: forall e. Array String -> Array String -> Array String -> Maybe (StrMap String) -> AffN String
 psc deps ffi args env =
   let allArgs = args <> deps <> (Array.concatMap (\path -> ["--ffi", path]) ffi)
   in  execQuiet "psc" allArgs env
 
-pscBundle :: forall e. Array String -> Array String -> Maybe (StrMap String) -> AffN e String
+pscBundle :: forall e. Array String -> Array String -> Maybe (StrMap String) -> AffN String
 pscBundle files args env =
   execQuiet "psc-bundle" (files <> args) env
 
@@ -57,7 +57,7 @@ shareAllButStdout = shareAll { stdout = Pipe }
 -- | process (that is, data on stdin from pulp is relayed to the child process,
 -- | and any stdout and stderr from the child process are relayed back out by
 -- | pulp, which usually means they will immediately appear in the terminal).
-exec :: forall e. String -> Array String -> Maybe (StrMap String) -> AffN e Unit
+exec :: forall e. String -> Array String -> Maybe (StrMap String) -> AffN Unit
 exec cmd args env = do
   child <- liftEff $ spawn cmd args (toNullable env) shareAll
   attempt (wait child) >>= either (handleErrors cmd retry) onExit
@@ -71,7 +71,7 @@ exec cmd args env = do
 
 -- | Same as exec, except instead of relaying stdout immediately, it is
 -- | captured and returned as a String.
-execQuiet :: forall e. String -> Array String -> Maybe (StrMap String) -> AffN e String
+execQuiet :: forall e. String -> Array String -> Maybe (StrMap String) -> AffN String
 execQuiet cmd args env = do
   child <- liftEff $ spawn cmd args (toNullable env) shareAllButStdout
   outVar <- makeVar
@@ -89,7 +89,7 @@ execQuiet cmd args env = do
 
   retry newCmd = execQuiet newCmd args env
 
-handleErrors :: forall e a. String -> (String -> AffN e a) -> Error -> AffN e a
+handleErrors :: forall e a. String -> (String -> AffN a) -> Error -> AffN a
 handleErrors cmd retry err
   | isENOENT err = do
      platformWin32 <- ("win32" ==) <$> liftEff getPlatform
@@ -105,7 +105,7 @@ handleErrors cmd retry err
   | otherwise =
      throwError err
 
-concatStream :: forall e. NodeStream String -> AffN e String
+concatStream :: forall e. NodeStream String -> AffN String
 concatStream stream = runNode $ runFn2 concatStream' stream
 
 foreign import concatStream' :: Fn2 (NodeStream String) (Callback String) Unit

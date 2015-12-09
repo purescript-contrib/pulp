@@ -20,12 +20,12 @@ import Pulp.System.FFI
 -- | Scan a path recursively and return the time of the most recent
 -- | modification of any file within. If an error occurs, this function just
 -- | returns Nothing.
-maxMtime :: forall e. String -> AffN e (Maybe Date)
+maxMtime :: forall e. String -> AffN (Maybe Date)
 maxMtime path =
   maxMtime' path <|> pure Nothing
 
 -- | A version of maxMtime which does not ignore errors.
-maxMtime' :: forall e. String -> AffN e (Maybe Date)
+maxMtime' :: forall e. String -> AffN (Maybe Date)
 maxMtime' =
   map (map runMax)
     <<< scanDirectoryRecursive (Just <<< Max <<< FS.modifiedTime)
@@ -33,7 +33,7 @@ maxMtime' =
 -- | Scan a directory recursively, calling the provided function on every file
 -- | encountered, and collecting the results in some monoid.
 scanDirectoryRecursive :: forall e a. (Monoid a) =>
-  (FS.Stats -> a) -> String -> AffN e a
+  (FS.Stats -> a) -> String -> AffN a
 scanDirectoryRecursive f path = do
   stat <- FS.stat path
   if FS.isFile stat

@@ -61,7 +61,7 @@ testFile = unlines [
   "  log \"You should add some tests.\""
   ]
 
-init :: forall e. Outputter e -> AffN e Unit
+init :: forall e. Outputter e -> AffN Unit
 init out = do
   cwd <- liftEff Process.cwd
   let name = Path.basename cwd

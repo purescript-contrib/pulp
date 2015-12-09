@@ -7,7 +7,7 @@ import Data.Function
 import Pulp.System.FFI
 
 class Stream s a where
-  write :: forall e. s a -> a -> AffN e Unit
+  write :: forall e. s a -> a -> AffN Unit
 
 foreign import data NodeStream :: * -> *
 

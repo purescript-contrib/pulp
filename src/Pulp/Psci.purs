@@ -24,7 +24,7 @@ action = Action \args -> do
   updateConfig args
   exec "psci" args.remainder Nothing
 
-updateConfig :: forall e. Args -> AffN e Unit
+updateConfig :: forall e. Args -> AffN Unit
 updateConfig args = do
   mpsci <- suppressENOENT (FS.readTextFile UTF8 ".psci")
   let entries = case mpsci of

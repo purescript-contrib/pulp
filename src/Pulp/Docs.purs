@@ -57,7 +57,7 @@ action = Action \args -> do
 
 -- | Given a file path to be included in the documentation, return a --docgen
 -- | argument for it, to be passsed to psc-docs.
-makeDocgen :: forall e. String -> AffN e (Tuple (Array String) (Array String))
+makeDocgen :: forall e. String -> AffN (Tuple (Array String) (Array String))
 makeDocgen path = do
   maybeModName <- extractModuleName path
   pure $ case maybeModName of
@@ -78,7 +78,7 @@ showModuleName = String.joinWith "."
 
 -- | Given a PureScript source file path, extract its module name (or throw
 -- | an error).
-extractModuleName :: forall e. String -> AffN e (Maybe ModuleName)
+extractModuleName :: forall e. String -> AffN (Maybe ModuleName)
 extractModuleName path = go <$> FS.readTextFile UTF8 path
   where
   go = String.split "\n"

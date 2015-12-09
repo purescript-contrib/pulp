@@ -52,7 +52,7 @@ action = Action \args -> do
 
 -- | Given a build path, create an environment that is just like this process'
 -- | environment, except with NODE_PATH set up for commands like `pulp run`.
-setupEnv :: forall e. String -> AffN e (StrMap String)
+setupEnv :: forall e. String -> AffN (StrMap String)
 setupEnv buildPath = do
   env <- liftEff Process.getEnvironment
   pure $ StrMap.alter (prependPath (Path.resolve [] buildPath))

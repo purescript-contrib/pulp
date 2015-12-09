@@ -46,10 +46,10 @@ action = Action \args -> do
     then runAction (go NormalBuild) args
     else out.log "Project unchanged; skipping build step."
 
-build :: forall e. Args -> AffN e Unit
+build :: forall e. Args -> AffN Unit
 build = runAction action
 
-testBuild :: forall e. Args -> AffN e Unit
+testBuild :: forall e. Args -> AffN Unit
 testBuild = runAction (go TestBuild)
 
 go :: BuildType -> Action
@@ -79,7 +79,7 @@ go buildType = Action \args -> do
   shouldBundle <- (||) <$> getFlag "optimise" opts <*> hasOption "to" opts
   when shouldBundle (bundle args)
 
-bundle :: forall e. Args -> AffN e Unit
+bundle :: forall e. Args -> AffN Unit
 bundle args = do
   let opts = union args.globalOpts args.commandOpts
   out <- getOutputter args
@@ -103,7 +103,7 @@ bundle args = do
 
 -- | Get a writable stream which output should be written to, based on the
 -- | value of the 'to' option.
-getOutputStream :: forall e. Options -> AffN e (Stream.NodeStream String)
+getOutputStream :: forall e. Options -> AffN (Stream.NodeStream String)
 getOutputStream opts = do
   to <- getOption "to" opts
   case to of

@@ -89,7 +89,7 @@ parseArgv globals commands = do
   where
   defs = map extractDefault
 
-parse :: forall e. Array Option -> Array Command -> Array String -> AffN e (Either ParseError Args)
+parse :: forall e. Array Option -> Array Command -> Array String -> AffN (Either ParseError Args)
 parse globals commands s =
   runParserT initialState $ parseArgv globals commands
   where

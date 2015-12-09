@@ -21,7 +21,7 @@ import Pulp.System.FFI
 import Pulp.Project
 import Pulp.Mtime
 
-needs :: forall e. Args -> Array String -> AffN e Boolean
+needs :: forall e. Args -> Array String -> AffN Boolean
 needs args paths = do
   let opts = Map.union args.globalOpts args.commandOpts
 
@@ -39,16 +39,16 @@ needs args paths = do
       pure (liveStamp > cacheStamp || not hasSameArgs)
 
   where
-  mtime :: String -> AffN e (Maybe (Max Date))
+  mtime :: String -> AffN (Maybe (Max Date))
   mtime = map (map Max) <<< maxMtime
 
-touch :: forall e. Args -> AffN e Unit
+touch :: forall e. Args -> AffN Unit
 touch args = do
   let opts = Map.union args.globalOpts args.commandOpts
   proj <- getOption' "_project" opts
   FS.writeTextFile UTF8 (buildStampPath proj) (hashAny args)
 
-sameArgs :: forall e. Project -> Args -> AffN e Boolean
+sameArgs :: forall e. Project -> Args -> AffN Boolean
 sameArgs proj args = go <|> pure false
   where
   go = do

@@ -30,7 +30,7 @@ newtype Project = Project
   }
 
 -- | Attempt to find a file in the given directory or any parent of it.
-findIn :: forall e. String -> String -> AffN e (Maybe String)
+findIn :: forall e. String -> String -> AffN (Maybe String)
 findIn path file = do
   let fullPath = P.concat [path, file]
   doesExist <- exists fullPath
@@ -45,7 +45,7 @@ findIn path file = do
 
 -- | Read a project's bower file at the given path and construct a Project
 -- | value.
-readConfig :: forall e. String -> AffN e Project
+readConfig :: forall e. String -> AffN Project
 readConfig configFilePath = do
   json <- readTextFile UTF8 configFilePath
   case parseJSON json of
@@ -59,7 +59,7 @@ readConfig configFilePath = do
 
 -- | Use the provided bower file, or if it is Nothing, try to find a bower file
 -- | path in this or any parent directory.
-getBowerFile :: forall e. Maybe String -> AffN e String
+getBowerFile :: forall e. Maybe String -> AffN String
 getBowerFile = maybe search pure
   where
   search = do
@@ -70,7 +70,7 @@ getBowerFile = maybe search pure
       Nothing -> throwError <<< error $
         "No bower.json found in current or parent directories. Are you in a PureScript project?"
 
-getProject :: forall e. Options -> AffN e Project
+getProject :: forall e. Options -> AffN Project
 getProject args =
   getOption "bowerFile" args >>= getBowerFile >>= readConfig
 

@@ -15,18 +15,18 @@ import Node.Buffer (BUFFER())
 foreign import data Node :: !
 foreign import data NodeError :: *
 
-type PulpEffects e = (node :: Node, console :: CONSOLE, buffer :: BUFFER, fs :: FS, avar :: AVAR, err :: EXCEPTION | e)
-type EffN e a = Eff (PulpEffects e) a
-type AffN e a = Aff (PulpEffects e) a
+type PulpEffects = (node :: Node, console :: CONSOLE, buffer :: BUFFER, fs :: FS, avar :: AVAR, err :: EXCEPTION)
+type EffN a = Eff PulpEffects a
+type AffN a = Aff PulpEffects a
 
 -- | A normal side-effecting node callback, taking 2 parameters: the first for
 -- | an error, the second for success. The type of the success value should be
 -- | the same as the type parameter.
 foreign import data Callback :: * -> *
 
-foreign import runNode'  :: forall a e. Fn3 (Error -> EffN e Unit) (a -> EffN e Unit) (Callback a -> Unit) (EffN e Unit)
+foreign import runNode'  :: forall a e. Fn3 (Error -> EffN Unit) (a -> EffN Unit) (Callback a -> Unit) (EffN Unit)
 
-runNode :: forall a e. (Callback a -> Unit) -> AffN e a
+runNode :: forall a e. (Callback a -> Unit) -> AffN a
 runNode fn = makeAff (\err win -> runFn3 runNode' err win fn)
 
 -- | This is quite unsafe but often useful.

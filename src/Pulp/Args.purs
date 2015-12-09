@@ -18,9 +18,9 @@ type Options = Map String (Maybe Foreign)
 
 -- | Action is a newtype because a normal type synonym would lead to a loop,
 -- | which is disallowed by the compiler.
-newtype Action = Action (forall e. Args -> AffN e Unit)
+newtype Action = Action (forall e. Args -> AffN Unit)
 
-runAction :: forall e. Action -> Args -> AffN e Unit
+runAction :: forall e. Action -> Args -> AffN Unit
 runAction (Action f) = f
 
 type OptParser a = forall e. ParserT (List String) (Aff (fs :: FS, node :: Node, avar :: AVAR | e)) a

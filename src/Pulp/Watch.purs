@@ -26,10 +26,10 @@ import Pulp.Outputter
 
 foreign import watch :: forall e.
   Array String
-  -> (String -> EffN e Unit)
-  -> EffN e Unit
+  -> (String -> EffN Unit)
+  -> EffN Unit
 
-watchAff :: forall e. Array String -> (String -> AffN e Unit) -> AffN e Unit
+watchAff :: forall e. Array String -> (String -> AffN Unit) -> AffN Unit
 watchAff dirs callback =
   liftEff (watch dirs (\path -> launchAff (callback path)))
 

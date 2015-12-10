@@ -84,7 +84,7 @@ bundle args = do
   let opts = union args.globalOpts args.commandOpts
   out <- getOutputter args
 
-  out.log "Optimising JavaScript..."
+  out.log "Bundling JavaScript..."
 
   main      <- getOption' "main" opts
   modules   <- fromMaybe [] <<< map (split ",") <$> getOption "modules" opts

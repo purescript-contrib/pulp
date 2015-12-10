@@ -5,4 +5,4 @@
 /output/
 .psci
 .psci_modules/
-/index.js
+/pulp.js

@@ -18,11 +18,11 @@
   "bin": {
     "pulp": "index.js"
   },
-  "main": "index.js",
+  "main": "pulp.js",
   "scripts": {
     "lint": "jshint src",
     "compile": "psc -c -f \"src/**/*.js\" -f \"bower_components/purescript-*/src/**/*.js\" \"src/**/*.purs\" \"bower_components/purescript-*/src/**/*.purs\"",
-    "bundle": "psc-bundle \"output/*/*.js\" --output index.js --module Main --main Main",
+    "bundle": "psc-bundle \"output/*/*.js\" --output pulp.js --module Main --main Main",
     "build": "npm run lint && npm run compile && npm run bundle",
     "test": "npm run build && mocha test-js --compilers js:babel/register",
     "prepublish": "bower install && npm run build",

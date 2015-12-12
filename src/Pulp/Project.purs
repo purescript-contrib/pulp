@@ -49,7 +49,7 @@ readConfig :: String -> AffN Project
 readConfig configFilePath = do
   json <- readTextFile UTF8 configFilePath
   case parseJSON json of
-    Left err -> throwError (error (show err))
+    Left err -> throwError (error ("Unable to parse bower.json: " <> show err))
     Right pro -> do
       let path = P.dirname configFilePath
       let cachePath = P.resolve [path] ".pulp-cache"

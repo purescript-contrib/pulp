@@ -32,7 +32,6 @@
     "purescript-node-path": "~0.4.0",
     "purescript-sets": "~0.5.3",
     "purescript-node-streams": "~0.2.0",
-    "purescript-ansi": "~0.1.2",
-    "purescript-node-child-process": "~0.2.0"
+    "purescript-ansi": "~0.1.2"
   }
 }

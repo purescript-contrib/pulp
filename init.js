@@ -6,13 +6,14 @@ var bower = require("./bower");
 function bowerFile(name) {
   return JSON.stringify({
     name: name,
-    version: "1.0.0",
-    moduleType: ["node"],
     ignore: [
       "**/.*",
       "node_modules",
       "bower_components",
-      "output"
+      "output",
+      "test",
+      "bower.json",
+      "package.json",
     ],
     dependencies: {
       "purescript-console": "^0.1.0"

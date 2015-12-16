@@ -1,0 +1,26 @@
+{
+  "bitwise": true,
+  "eqeqeq": true,
+  "forin": true,
+  "freeze": true,
+  "funcscope": true,
+  "futurehostile": true,
+  "globalstrict": true,
+  "latedef": true,
+  "noarg": true,
+  "nocomma": true,
+  "nonew": true,
+  "notypeof": true,
+  "singleGroups": true,
+  "undef": true,
+  "unused": true,
+  "eqnull": true,
+  "globals": {
+    "exports": true,
+    "process": true,
+    "console": false,
+    "require": false,
+    "__dirname": false,
+    "__filename": false
+  }
+}

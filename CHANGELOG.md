@@ -1,5 +1,14 @@
 # Pulp Release History
 
+## 6.0.0
+
+* Pulp has been ported to PureScript :)
+
+* The `--with-deps` flag for `pulp docs` has been renamed to
+  `--with-dependencies`.
+
+* Bugs fixed: #123, #122, #121, #111, #108, #92.
+
 ## 5.0.2
 
 Bugs fixed: #109.

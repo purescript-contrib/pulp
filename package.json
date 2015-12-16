@@ -1,0 +1,59 @@
+{
+  "name": "pulp",
+  "version": "4.2.0",
+  "description": "A build system and package manager for PureScript projects",
+  "keywords": [
+    "purescript",
+    "make",
+    "build",
+    "cabal"
+  ],
+  "author": "Bodil Stokke",
+  "license": "LGPL-3.0+",
+  "homepage": "https://github.com/bodil/pulp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bodil/pulp.git"
+  },
+  "bin": {
+    "pulp": "index.js"
+  },
+  "main": "pulp.js",
+  "scripts": {
+    "lint": "jshint src",
+    "compile": "psc -c -f \"src/**/*.js\" -f \"bower_components/purescript-*/src/**/*.js\" \"src/**/*.purs\" \"bower_components/purescript-*/src/**/*.purs\"",
+    "bundle": "psc-bundle \"output/*/*.js\" --output pulp.js --module Main --main Main",
+    "build": "npm run lint && npm run compile && npm run bundle",
+    "test": "npm run build && mocha test-js --compilers js:babel/register",
+    "prepublish": "bower install && npm run build",
+    "postinstall": "bower install"
+  },
+  "dependencies": {
+    "ansi": "^0.3.0",
+    "bower": "*",
+    "browserify": "^11.0.0",
+    "browserify-incremental": "^3.0.1",
+    "concat-stream": "^1.4.6",
+    "glob": "^4.0.2",
+    "minimatch": "^1.0.0",
+    "purs-loader": "^0.4.0",
+    "string-stream": "0.0.7",
+    "supports-color": "^3.1.2",
+    "temp": "^0.8.1",
+    "tree-kill": "^1.0.0",
+    "watch": "^0.11.0",
+    "watchpack": "^0.2.9",
+    "webpack": "^1.12.9",
+    "webpack-dev-server": "^1.14.0",
+    "wordwrap": "0.0.2"
+  },
+  "devDependencies": {
+    "babel": "^5.8.9",
+    "co": "^4.6.0",
+    "jshint": "^2.8.0",
+    "mocha": "^2.2.5",
+    "purescript": "^0.7.6",
+    "semver": "^5.1.0",
+    "touch": "^1.0.0"
+  }
+}

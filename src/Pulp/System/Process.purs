@@ -20,7 +20,6 @@ import Data.Nullable (toMaybe, Nullable())
 import Data.Array (drop, (!!))
 import Data.Maybe (fromMaybe, Maybe())
 import Data.StrMap (StrMap())
-import Node.Stream (Writable(), Readable())
 
 import Pulp.System.FFI
 import Pulp.System.Stream

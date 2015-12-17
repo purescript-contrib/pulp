@@ -105,7 +105,7 @@ handleErrors cmd retry err
   | otherwise =
      throwError err
 
-concatStream :: ReadableStream String -> AffN String
+concatStream :: ReadableStream -> AffN String
 concatStream stream = runNode $ runFn2 concatStream' stream
 
-foreign import concatStream' :: Fn2 (ReadableStream String) (Callback String) Unit
+foreign import concatStream' :: Fn2 ReadableStream (Callback String) Unit

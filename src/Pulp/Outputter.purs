@@ -60,7 +60,7 @@ ansiOutputter =
   , monochrome: false
   }
 
-bullet :: WritableStream String -> Color -> String -> AffN Unit
+bullet :: WritableStream -> Color -> String -> AffN Unit
 bullet stream color text = do
   withGraphics (write stream) (foreground color) "* "
   write stream (text <> "\n")

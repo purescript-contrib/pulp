@@ -1,7 +1,7 @@
 module Pulp.System.Stream
   ( ReadableStream()
   , WritableStream()
-  , NodeStream()
+  , AnyStream()
   , forget
   , write
   ) where
@@ -9,23 +9,20 @@ module Pulp.System.Stream
 import Prelude
 import Control.Monad.Aff (makeAff)
 import Node.Stream as Node
+import Node.Encoding (Encoding(UTF8))
 import Unsafe.Coerce (unsafeCoerce)
 
 import Pulp.System.FFI
 
-type ReadableStream a = Node.Readable () PulpEffects a
-type WritableStream a = Node.Writable () PulpEffects a
+type ReadableStream = Node.Readable () PulpEffects
+type WritableStream = Node.Writable () PulpEffects
 
 -- | A stream which might or might not be readable or writable.
-foreign import data NodeStream :: * -> *
+foreign import data AnyStream :: *
 
 -- | Forget about whether a particular stream is readable or writable.
-forget :: forall eff r a. Node.Stream r eff a -> NodeStream a
+forget :: forall eff r. Node.Stream r eff -> AnyStream
 forget = unsafeCoerce
 
-write :: forall a. WritableStream a -> a -> AffN Unit
-write stream chunk = makeAff (\_ done -> void (Node.write (workaround stream) chunk (done unit)))
-  where
-  -- temporary workaround for https://github.com/purescript-node/purescript-node-streams/issues/3
-  workaround :: WritableStream a -> WritableStream String
-  workaround = unsafeCoerce
+write :: WritableStream -> String -> AffN Unit
+write stream str = makeAff (\_ done -> void (Node.writeString stream UTF8 str (done unit)))

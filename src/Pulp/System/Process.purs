@@ -34,9 +34,9 @@ argv = drop 2 argv'
 
 foreign import exit :: forall a. Int -> EffN a
 
-foreign import stdin  :: ReadableStream String
-foreign import stdout :: WritableStream String
-foreign import stderr :: WritableStream String
+foreign import stdin  :: ReadableStream
+foreign import stdout :: WritableStream
+foreign import stderr :: WritableStream
 
 -- | Gets a copy of the current environment
 foreign import getEnvironment :: EffN (StrMap String)

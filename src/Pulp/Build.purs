@@ -103,7 +103,7 @@ bundle args = do
 
 -- | Get a writable stream which output should be written to, based on the
 -- | value of the 'to' option.
-getOutputStream :: Options -> AffN (WritableStream String)
+getOutputStream :: Options -> AffN WritableStream
 getOutputStream opts = do
   to <- getOption "to" opts
   case to of

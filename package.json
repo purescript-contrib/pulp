@@ -25,8 +25,7 @@
     "bundle": "psc-bundle \"output/*/*.js\" --output pulp.js --module Main --main Main",
     "build": "npm run lint && npm run compile && npm run bundle",
     "test": "npm run build && mocha test-js --compilers js:babel/register",
-    "prepublish": "bower install && npm run build",
-    "postinstall": "bower install"
+    "prepublish": "bower install && npm run build"
   },
   "dependencies": {
     "ansi": "^0.3.0",

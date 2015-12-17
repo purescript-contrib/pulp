@@ -18,9 +18,9 @@ import Pulp.System.FFI
 import Pulp.System.Stream
 
 type ChildProcess =
-  { stdin  :: WritableStream String
-  , stdout :: ReadableStream String
-  , stderr :: ReadableStream String
+  { stdin  :: WritableStream
+  , stdout :: ReadableStream
+  , stderr :: ReadableStream
   , pid    :: Int
   }
 
@@ -49,7 +49,7 @@ data StdIOBehaviour
   = Pipe
   | Ignore
   | FileDescriptor Int
-  | ShareStream (NodeStream String)
+  | ShareStream AnyStream
 
 foreign import data ActualStdIOBehaviour :: *
 

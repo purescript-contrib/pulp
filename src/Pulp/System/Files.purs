@@ -35,7 +35,7 @@ foreign import openTemp' :: Fn2 TempOptions (Callback TempFileInfo) Unit
 openTemp :: TempOptions -> AffN TempFileInfo
 openTemp opts = runNode $ runFn2 openTemp' opts
 
-foreign import createWriteStream :: String -> EffN (WritableStream String)
+foreign import createWriteStream :: String -> EffN WritableStream
 
 foreign import isENOENT :: Error -> Boolean
 

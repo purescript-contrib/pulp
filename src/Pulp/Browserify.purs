@@ -128,7 +128,7 @@ type BrowserifyOptions =
   { basedir   :: String
   , src       :: String
   , transform :: Nullable String
-  , out       :: WritableStream String
+  , out       :: WritableStream
   }
 
 foreign import browserifyBundle' :: Fn2 BrowserifyOptions
@@ -143,7 +143,7 @@ type BrowserifyIncOptions =
   , cacheFile :: String
   , path      :: String
   , transform :: Nullable String
-  , out       :: WritableStream String
+  , out       :: WritableStream
   }
 
 foreign import browserifyIncBundle' :: Fn2 BrowserifyIncOptions

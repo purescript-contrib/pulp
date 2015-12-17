@@ -1,5 +1,9 @@
 # Pulp Release History
 
+## 6.0.1
+
+* Remove unnecessary `postinstall` script.
+
 ## 6.0.0
 
 * Pulp has been ported to PureScript :)

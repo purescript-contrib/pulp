@@ -3,11 +3,12 @@ module Pulp.Browserify where
 
 import Prelude
 import Control.Monad (when)
+import Control.Monad.Aff (apathize)
+import Control.Monad.Eff.Class (liftEff)
 import Data.Function
 import Data.Maybe
 import Data.Map as Map
 import Data.Nullable (Nullable(), toNullable)
-import Control.Monad.Eff.Class (liftEff)
 import Node.Path as Path
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff (unlink, writeTextFile)
@@ -105,7 +106,7 @@ incremental = Action \args -> do
   Project pro <- getOption' "_project" opts
   let cachePath = Path.resolve [pro.cache] "browserify.json"
   when force
-    (unlink cachePath)
+    (apathize $ unlink cachePath)
 
   transform <- getOption "transform" opts
   standalone <- getOption "standalone" opts

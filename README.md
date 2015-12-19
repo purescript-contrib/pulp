@@ -9,7 +9,7 @@ A build tool for PureScript.
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [Installation](#installation)
+  - [Installation](#installation)
   - [Getting Started with a Pulp Project](#getting-started-with-a-pulp-project)
     - [What if I need something a bit more complicated?](#what-if-i-need-something-a-bit-more-complicated)
   - [Pulp Commands](#pulp-commands)
@@ -26,7 +26,6 @@ A build tool for PureScript.
     - [Launching a REPL](#launching-a-repl)
     - [Launching a Development Server](#launching-a-development-server)
       - [A Quick Example](#a-quick-example)
-- [Hello sailor!](#hello-sailor)
       - [I Need More](#i-need-more)
   - [Dependency Management](#dependency-management)
     - [Dependency Management Cheat Sheet](#dependency-management-cheat-sheet)

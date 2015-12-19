@@ -132,7 +132,9 @@ commands = [
       Args.option "skipEntryPoint" ["--skip-entry-point"] Type.flag
         "Don't add code to automatically invoke Main.",
       Args.option "force" ["--force"] Type.flag
-        "Force a non-incremental build by deleting the build cache."
+        "Force a non-incremental build by deleting the build cache.",
+      Args.option "standalone" ["--standalone"] Type.string
+        "Output a UMD bundle with the given external module name."
       ] ++ buildishArgs,
   Args.command "run" "Compile and run the project." Run.action $ [
     Args.optionDefault "engine" ["--engine"] Type.string

@@ -22,7 +22,7 @@ import Pulp.Args.Get
 import Pulp.Exec (pscBundle)
 import Pulp.Files
 import Pulp.Build as Build
-import Pulp.Run (makeEntry)
+import Pulp.Run (makeEntry, jsEscape)
 import Pulp.Project
 
 action :: Action
@@ -39,6 +39,15 @@ action = Action \args -> do
 
   out.log "Browserified."
 
+makeExport :: String -> Boolean -> String
+makeExport main export =
+  if export
+  then "module.exports = require(\"" ++ jsEscape main ++ "\");\n"
+  else makeEntry main
+
+makeOptExport :: String -> String
+makeOptExport main = "module.exports = PS[\"" ++ jsEscape main ++ "\"];\n"
+
 optimising :: Action
 optimising = Action \args -> do
   out <- getOutputter args
@@ -51,9 +60,16 @@ optimising = Action \args -> do
   globs     <- defaultGlobs opts
   buildPath <- getOption' "buildPath" opts
   main      <- getOption' "main" opts
+  transform <- getOption "transform" opts
+  standalone <- getOption "standalone" opts
+  skipEntryPoint' <- getFlag "skipEntryPoint" opts
+  let skipEntryPoint = skipEntryPoint' || isJust standalone
 
   bundledJs <- pscBundle (outputModules buildPath)
-                         (["--module=" ++ main, "--main=" ++ main]
+                         (["--module=" ++ main]
+                          ++ if skipEntryPoint
+                             then []
+                             else ["--main=" ++ main]
                           ++ args.remainder)
                          Nothing
 
@@ -61,13 +77,13 @@ optimising = Action \args -> do
 
   liftEff $ setupNodePath buildPath
 
-  transform <- getOption "transform" opts
   out' <- Build.getOutputStream opts
 
   browserifyBundle
     { basedir: Path.resolve [] buildPath
-    , src: bundledJs
+    , src: bundledJs ++ if isJust standalone then makeOptExport main else ""
     , transform: toNullable transform
+    , standalone: toNullable standalone
     , out: out'
     }
 
@@ -91,18 +107,20 @@ incremental = Action \args -> do
   when force
     (unlink cachePath)
 
-  skipEntryPoint <- getFlag "skipEntryPoint" opts
+  transform <- getOption "transform" opts
+  standalone <- getOption "standalone" opts
+  skipEntryPoint' <- getFlag "skipEntryPoint" opts
+  let skipEntryPoint = skipEntryPoint' && isNothing standalone
   main <- getOption' "main" opts
   path <- if skipEntryPoint
             then
               pure $ Path.concat [buildPath, main]
             else do
-              let entryJs = makeEntry main
+              let entryJs = makeExport main $ isJust standalone
               let entryPath = Path.concat [buildPath, "browserify.js"]
               writeTextFile UTF8 entryPath entryJs
               pure entryPath
 
-  transform <- getOption "transform" opts
   out' <- Build.getOutputStream opts
 
   browserifyIncBundle
@@ -110,6 +128,7 @@ incremental = Action \args -> do
     , cacheFile: cachePath
     , path: path
     , transform: toNullable transform
+    , standalone: toNullable standalone
     , out: out'
     }
 
@@ -125,10 +144,11 @@ setupNodePath buildPath = do
       Nothing       -> buildPath'
 
 type BrowserifyOptions =
-  { basedir   :: String
-  , src       :: String
-  , transform :: Nullable String
-  , out       :: WritableStream
+  { basedir    :: String
+  , src        :: String
+  , transform  :: Nullable String
+  , standalone :: Nullable String
+  , out        :: WritableStream
   }
 
 foreign import browserifyBundle' :: Fn2 BrowserifyOptions
@@ -139,11 +159,12 @@ browserifyBundle :: BrowserifyOptions -> AffN Unit
 browserifyBundle opts = runNode $ runFn2 browserifyBundle' opts
 
 type BrowserifyIncOptions =
-  { basedir   :: String
-  , cacheFile :: String
-  , path      :: String
-  , transform :: Nullable String
-  , out       :: WritableStream
+  { basedir    :: String
+  , cacheFile  :: String
+  , path       :: String
+  , transform  :: Nullable String
+  , standalone :: Nullable String
+  , out        :: WritableStream
   }
 
 foreign import browserifyIncBundle' :: Fn2 BrowserifyIncOptions

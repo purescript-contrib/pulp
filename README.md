@@ -6,6 +6,37 @@ A build tool for PureScript.
 
 ![Jarvis Cocker dancing](http://24.media.tumblr.com/77b76c557515a801a7e99ca5507b6548/tumblr_n5cx52oT831r4ba6to1_400.gif)
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Installation](#installation)
+  - [Getting Started with a Pulp Project](#getting-started-with-a-pulp-project)
+    - [What if I need something a bit more complicated?](#what-if-i-need-something-a-bit-more-complicated)
+  - [Pulp Commands](#pulp-commands)
+    - [Global, Command Specific and Pass-Through Options](#global-command-specific-and-pass-through-options)
+      - [Pass-Through Options](#pass-through-options)
+  - [Building Projects](#building-projects)
+    - [Making a JavaScript Bundle](#making-a-javascript-bundle)
+    - [Running Your PureScript Project](#running-your-purescript-project)
+    - [Running Test Suites](#running-test-suites)
+    - [CommonJS Aware Builds](#commonjs-aware-builds)
+      - [Optimising Code Size](#optimising-code-size)
+      - [Reimporting Browserified Bundles](#reimporting-browserified-bundles)
+    - [Building Documentation](#building-documentation)
+    - [Launching a REPL](#launching-a-repl)
+    - [Launching a Development Server](#launching-a-development-server)
+      - [A Quick Example](#a-quick-example)
+- [Hello sailor!](#hello-sailor)
+      - [I Need More](#i-need-more)
+  - [Dependency Management](#dependency-management)
+    - [Dependency Management Cheat Sheet](#dependency-management-cheat-sheet)
+      - [Installing Dependencies](#installing-dependencies)
+      - [Housekeeping](#housekeeping)
+    - [Releasing Packages](#releasing-packages)
+  - [Licence](#licence)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Installation
 
 Assuming you already have [Node](https://nodejs.org/en/download/) set

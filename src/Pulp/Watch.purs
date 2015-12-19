@@ -15,12 +15,12 @@ import Control.Monad (when)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Aff (launchAff)
 import Control.Monad.Aff.AVar as AVar
+import Node.Process as Process
 
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Files
 import Pulp.System.FFI
-import Pulp.System.Process as Process
 import Pulp.System.ChildProcess (fork, treeKill)
 import Pulp.Outputter
 
@@ -40,7 +40,7 @@ action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
   out <- getOutputter args
 
-  let argv' = Array.filter (`notElem` ["-w", "--watch"]) Process.argv
+  argv' <- liftEff $ Array.filter (`notElem` ["-w", "--watch"]) <<< Array.drop 2 <$> Process.argv
   childV <- AVar.makeVar
   liftEff (fork argv') >>= AVar.putVar childV
 

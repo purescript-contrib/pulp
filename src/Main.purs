@@ -13,12 +13,13 @@ import Data.Map (insert)
 import Data.Foreign (parseJSON, Foreign(), toForeign)
 import Data.Foreign.Class (readProp)
 import Data.Version (showVersion)
-import Data.Array (head)
+import Data.Array (head, drop)
 import Data.Foldable (elem)
 import Text.Parsing.Parser (ParseError(..))
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Sync (readTextFile)
 import Node.Path as Path
+import Node.Process as Process
 
 import Pulp.Args as Args
 import Pulp.Args.Get
@@ -27,7 +28,6 @@ import Pulp.Args.Types as Type
 import Pulp.Args.Parser (parse)
 import Pulp.System.FFI
 import Pulp.Outputter
-import Pulp.System.Process (argv, exit)
 import Pulp.Validate (validate)
 import Pulp.Version (version)
 import Pulp.Project (getProject)
@@ -167,7 +167,7 @@ failed :: forall a. Error -> EffN a
 failed err = do
   Console.error $ "* ERROR: " ++ message err
   -- logStack err
-  exit 1
+  Process.exit 1
 
 foreign import logStack :: Error -> EffN Unit
 
@@ -176,23 +176,23 @@ succeeded = const (pure unit)
 
 main :: EffN Unit
 main = runAff failed succeeded do
+  argv <- drop 2 <$> liftEff Process.argv
   args <- parse globals commands argv
   case args of
     Left (ParseError { message: err }) ->
-      handleParseError err
-    Right args -> do
-      runArgs args
+      handleParseError (head argv) err
+    Right args' -> do
+      runArgs args'
   where
-  handleParseError err = go (head argv)
-    where
+  handleParseError (Just x) err
     -- TODO: this is kind of gross, especially that --version and --help are
     -- repeated
-    go (Just x)
-      | x `elem` ["--version", "-v"] = liftEff $ Console.log $ showVersion version
-      | x `elem` ["--help", "-h"]    = printHelp out globals commands
-    go _ = do
-      out.err $ "Error: " ++ err
-      printHelp out globals commands
+    | x `elem` ["--version", "-v"] = liftEff $ Console.log $ showVersion version
+    | x `elem` ["--help", "-h"]    = printHelp out globals commands
+
+  handleParseError _ err = do
+    out.err $ "Error: " ++ err
+    printHelp out globals commands
 
   out = makeOutputter false
 

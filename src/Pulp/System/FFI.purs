@@ -11,11 +11,12 @@ import Data.Function
 
 import Node.FS (FS())
 import Node.Buffer (BUFFER())
+import Node.Process (PROCESS())
 
 foreign import data Node :: !
 foreign import data NodeError :: *
 
-type PulpEffects = (node :: Node, console :: CONSOLE, buffer :: BUFFER, fs :: FS, avar :: AVAR, err :: EXCEPTION)
+type PulpEffects = (node :: Node, console :: CONSOLE, buffer :: BUFFER, fs :: FS, avar :: AVAR, err :: EXCEPTION, process :: PROCESS)
 type EffN a = Eff PulpEffects a
 type AffN a = Aff PulpEffects a
 

@@ -13,10 +13,10 @@ import Node.Path as Path
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff (unlink, writeTextFile)
 import Node.Path as Path
+import Node.Process as Process
 
 import Pulp.System.FFI
 import Pulp.System.Stream (WritableStream())
-import Pulp.System.Process as Process
 import Pulp.Outputter
 import Pulp.Args
 import Pulp.Args.Get
@@ -137,7 +137,7 @@ incremental = Action \args -> do
 -- | for browserify.
 setupNodePath :: String -> EffN Unit
 setupNodePath buildPath = do
-  nodePath <- Process.getEnv "NODE_PATH"
+  nodePath <- Process.lookupEnv "NODE_PATH"
   let buildPath' = Path.resolve [] buildPath
   Process.setEnv "NODE_PATH" $
     case nodePath of

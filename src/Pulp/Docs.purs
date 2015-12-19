@@ -14,12 +14,12 @@ import Control.Monad
 import Control.Monad.Eff.Class (liftEff)
 import Node.FS.Aff as FS
 import Node.Encoding (Encoding(..))
+import Node.Process as Process
 
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec
 import Pulp.Files
-import Pulp.System.Process as Process
 import Pulp.Outputter
 import Pulp.System.FFI
 

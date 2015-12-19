@@ -7,7 +7,7 @@ import Prelude
 
 import Control.Monad.Eff.Class (liftEff)
 import Data.Either (Either(..))
-import Data.Array (sort)
+import Data.Array (sort, (!!))
 import Data.Foldable (foldr, maximum)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Maybe.Unsafe (fromJust)
@@ -16,12 +16,13 @@ import Data.String as Str
 import Data.Traversable (sequence)
 import Data.Foreign (F())
 import Data.Foreign.Class (read)
+import Node.Process as Process
+import Node.Path as Path
 
 import Pulp.Args
 import Pulp.Args.Types as Type
 import Pulp.Outputter
 import Pulp.System.FFI
-import Pulp.System.Process (commandName)
 
 foreign import pad :: Int -> String
 
@@ -79,6 +80,7 @@ helpOpt = option "help" ["--help", "-h"] Type.flag
 
 printHelp :: Outputter -> Array Option -> Array Command -> AffN Unit
 printHelp out globals commands = do
+  commandName <- liftEff getCommandName
   out.write $ "Usage: " ++ commandName ++ " [global-options] <command> [command-options]\n"
   -- if context print command docs
   out.bolded "\nGlobal options:\n"
@@ -92,6 +94,7 @@ printHelp out globals commands = do
 
 printCommandHelp :: Outputter -> Array Option -> Command -> AffN Unit
 printCommandHelp out globals command = do
+  commandName <- liftEff getCommandName
   out.write $ "Usage: " ++ commandName ++ " [global-options] " ++
                   command.name ++ " [command-options]\n"
   out.bolded $ "\nCommand: " ++ command.name ++ "\n"
@@ -101,3 +104,6 @@ printCommandHelp out globals command = do
   out.bolded "\nGlobal options:\n"
   formatOpts (globals ++ [helpOpt]) >>= out.write
   out.write "\n"
+
+getCommandName :: EffN String
+getCommandName = maybe "pulp" (_.name <<< Path.parse) <<< (!! 1) <$> Process.argv

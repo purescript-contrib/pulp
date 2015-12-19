@@ -1,5 +1,14 @@
 # Pulp Release History
 
+## 6.1.0
+
+* You can now use `pulp browserify --standalone <module-name>` to
+  produce a browserified bundle wrapped in a UMD header, which can be
+  `require()`d, and which re-exports the main module of your
+  PureScript project. It works by invoking `browserify --standalone`;
+  see
+  [the Browserify documentation](https://github.com/substack/node-browserify#usage).
+
 ## 6.0.1
 
 * Remove unnecessary `postinstall` script.
@@ -11,7 +20,7 @@
 * The `--with-deps` flag for `pulp docs` has been renamed to
   `--with-dependencies`.
 
-* Bugs fixed: #123, #122, #121, #111, #108, #92.
+Bugs fixed: #123, #122, #121, #111, #108, #92.
 
 ## 5.0.2
 

@@ -12,8 +12,7 @@ import Node.Encoding (Encoding(UTF8))
 import Node.Path as Path
 import Data.Foreign (parseJSON)
 import Data.Foreign.Class (readProp)
-
-import Pulp.System.Process (__dirname)
+import Node.Globals (__dirname)
 
 version :: Version
 version =

@@ -7,9 +7,9 @@ module Pulp.Outputter
 import Prelude
 import Ansi.Codes (Color(..))
 import Ansi.Output (withGraphics, foreground, bold)
+import Node.Process (stderr)
 
 import Pulp.System.FFI
-import Pulp.System.Process (stderr)
 import Pulp.System.Stream (write, WritableStream())
 import Pulp.System.SupportsColor as Color
 import Pulp.System.FFI

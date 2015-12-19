@@ -11,12 +11,12 @@ import Node.Path as Path
 import Node.FS.Aff as FS
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(UTF8))
+import Node.Process as Process
 
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec
 import Pulp.Files
-import Pulp.System.Process as Process
 import Pulp.Outputter
 import Pulp.System.Files (openTemp)
 import Pulp.System.FFI
@@ -54,7 +54,7 @@ action = Action \args -> do
 -- | environment, except with NODE_PATH set up for commands like `pulp run`.
 setupEnv :: String -> AffN (StrMap String)
 setupEnv buildPath = do
-  env <- liftEff Process.getEnvironment
+  env <- liftEff Process.getEnv
   pure $ StrMap.alter (prependPath (Path.resolve [] buildPath))
                       "NODE_PATH"
                       env

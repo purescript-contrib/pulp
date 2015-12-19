@@ -12,10 +12,10 @@ import Data.Map (union)
 import Data.String (split)
 import Data.Set as Set
 import Control.Monad.Eff.Class (liftEff)
+import Node.Process as Process
 
 import Pulp.System.FFI
 import Pulp.System.Stream (write, WritableStream())
-import Pulp.System.Process as Process
 import Pulp.Outputter
 import Pulp.System.Files as Files
 import Pulp.Args

@@ -7,17 +7,17 @@ import Control.Monad.Eff.Class (liftEff)
 import Node.Encoding (Encoding(UTF8))
 import Node.Buffer as Buffer
 import Node.FS.Aff as FS
+import Node.Process as Process
+import Node.Platform (Platform(Win32))
 
 import Pulp.Exec
 import Pulp.System.FFI
 import Pulp.System.Files (openTemp)
-import Pulp.System.Process (getPlatform)
 import Pulp.Outputter
 
 shell :: Outputter -> String -> AffN Unit
 shell out cmd = do
-  platform <- liftEff getPlatform
-  if platform == "win32"
+  if Process.platform == Win32
     then shell' out cmd
             { extension: ".cmd"
             , executable: "cmd"

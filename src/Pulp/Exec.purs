@@ -20,8 +20,9 @@ import Control.Monad.Eff.Exception (Error(), error)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Aff
 import Control.Monad.Aff.AVar (takeVar, putVar, makeVar)
+import Node.Process as Process
+import Node.Platform (Platform(Win32))
 
-import Pulp.System.Process
 import Pulp.System.Stream
 import Pulp.System.FFI
 import Pulp.System.ChildProcess
@@ -38,9 +39,9 @@ pscBundle files args env =
 
 shareAll :: StdIOOptions
 shareAll =
-  { stdin: ShareStream  (forget stdin)
-  , stdout: ShareStream (forget stdout)
-  , stderr: ShareStream (forget stderr)
+  { stdin: ShareStream  (forget Process.stdin)
+  , stdout: ShareStream (forget Process.stdout)
+  , stderr: ShareStream (forget Process.stderr)
   }
 
 shareAllButStdout :: StdIOOptions
@@ -84,7 +85,7 @@ execQuiet cmd args env = do
       if code == 0
         then return childOut
         else do
-          write stderr childOut
+          write Process.stderr childOut
           throwError $ error $ "Subcommand terminated with exit code " <> show code
 
   retry newCmd = execQuiet newCmd args env
@@ -92,9 +93,8 @@ execQuiet cmd args env = do
 handleErrors :: forall a. String -> (String -> AffN a) -> Error -> AffN a
 handleErrors cmd retry err
   | isENOENT err = do
-     platformWin32 <- ("win32" ==) <$> liftEff getPlatform
      -- On windows, if the executable wasn't found, try adding .cmd
-     if platformWin32
+     if Process.platform == Win32
        then case stripSuffix ".cmd" cmd of
               Nothing      -> retry (cmd <> ".cmd")
               Just bareCmd -> throwError $ error $

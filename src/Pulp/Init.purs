@@ -11,13 +11,13 @@ import Control.Monad.Eff.Class (liftEff)
 import Node.Path as Path
 import Node.FS.Aff (writeTextFile, exists)
 import Node.Encoding (Encoding(UTF8))
+import Node.Process as Process
 
 import Pulp.Outputter
 import Pulp.System.FFI
 import Pulp.Args
 import Pulp.Args.Get (getFlag)
 import Pulp.System.Files (mkdirIfNotExist)
-import Pulp.System.Process as Process
 import Pulp.Bower (launchBower)
 
 foreign import bowerFile :: String -> String

@@ -15,10 +15,11 @@ import Control.Monad.Eff.Class (liftEff)
 import Node.Path as Path
 import Node.FS.Aff as FS
 import Node.Encoding (Encoding(..))
+import Node.Process as Process
+import Node.Globals (__dirname)
 
 import Pulp.System.FFI
 import Pulp.System.Require (unsafeRequire)
-import Pulp.System.Process as Process
 import Pulp.Outputter
 import Pulp.System.Files (touch)
 import Pulp.Args
@@ -65,7 +66,7 @@ action = Action \args -> do
 getDefaultConfig :: String -> Array String -> Array String -> EffN Foreign
 getDefaultConfig buildPath sources ffis = do
   cwd <- liftEff Process.cwd
-  let nodeModulesPath = Path.resolve [Process.__dirname] "node_modules"
+  let nodeModulesPath = Path.resolve [__dirname] "node_modules"
   let context = Path.resolve [cwd] "src"
   pure $ defaultConfig { dir: cwd, buildPath, sources, ffis, nodeModulesPath, context }
 

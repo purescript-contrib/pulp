@@ -8,7 +8,8 @@ const hello = "Hello sailor!";
 const test = "You should add some tests.";
 const docLine1 = "## Module Main"
 const bowerMissing = "* ERROR: No bower.json found in current or parent directories. Are you in a PureScript project?";
-const initWithoutForce = "* ERROR: There's already a project here. Run `pulp init --force` if you're sure you want to overwrite it."
+const initWithoutForce = f => new RegExp('\\* ERROR: Found .*'+f+': There\'s already a project here. Run `pulp init --force` if you\'re sure you want to overwrite it.');
+const filesToOverwrite = ['./bower.json', './.gitignore', 'src/Main.purs', 'test/Main.purs'];
 const testDocLine1 = "## Module Test.Main"
 const consoleDocLine1 = "## Module Control.Monad.Eff.Console"
 const buildHelp = ["Command: build", "Build the project."]
@@ -58,17 +59,26 @@ describe("integration tests", function() {
   }));
 
   it("refuses to init without --force", run(function*(sh, pulp, assert, temp) {
-    touch.sync(path.join(temp, "bower.json"));
-    const [_, err] = yield pulp("init", null, { expectedExitCode: 1 });
-    assert.equal(err.trim(), initWithoutForce);
+    for (var idx in filesToOverwrite) {
+      let file = path.join(temp, filesToOverwrite[idx])
+        , dir  = path.dirname(file)
+      if (!fs.existsSync(dir)) { fs.mkdirSync(dir); }
+      touch.sync(file);
+      const [_, err] = yield pulp("init", null, { expectedExitCode: 1 });
+      assert.match(err.trim(), initWithoutForce(path.basename(file)));
+      const rm = process.platform === "win32" ? "del" : "rm"
+      fs.unlinkSync(file);
+    }
   }));
 
   it("init overwrites existing files with --force", run(function*(sh, pulp, assert, temp) {
-    const bowerPath = path.join(temp, "bower.json");
-    fs.writeFileSync(bowerPath, "hello");
-    yield pulp("init --force");
-    const out = fs.readFileSync(bowerPath);
-    assert.notEqual(out, "hello");
+    for (var idx in filesToOverwrite) {
+      let file = path.join(temp, filesToOverwrite[idx]);
+      fs.writeFileSync(file, "hello");
+      yield pulp("init --force");
+      const out = fs.readFileSync(file);
+      assert.notEqual(out, "hello");
+    }
   }));
 
   it("pulp build", run(function*(sh, pulp, assert, temp) {

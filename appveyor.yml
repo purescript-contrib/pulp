@@ -3,8 +3,8 @@ environment:
   nodejs_version: "4.2"
 
 # Cache bower packages.
-# This should speed builds up, but more importantly, reduce spurious errors
-# during `bower install` (which are unfortunately common).
+# This should speed builds up, but more importantly, reduce errors during
+# `bower install` (which are, unfortunately, quite frequent).
 cache:
   - '%LOCALAPPDATA%\bower\cache\packages -> bower.json'
 

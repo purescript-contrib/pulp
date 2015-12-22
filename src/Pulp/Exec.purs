@@ -11,7 +11,7 @@ import Data.Either (Either(..), either)
 import Data.Function
 import Data.String (stripSuffix)
 import Data.StrMap (StrMap())
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Maybe.Unsafe (fromJust)
 import Data.Array as Array
 import Control.Monad (when)
@@ -40,7 +40,7 @@ pscBundle files args env =
 inheritAllButStdout :: Array (Maybe CP.StdIOBehaviour)
 inheritAllButStdout = updateAt 1 (Just CP.Pipe) CP.inherit
   where
-  updateAt n f arr = maybe arr (Array.updateAt n f arr)
+  updateAt n f arr = fromMaybe arr (Array.updateAt n f arr)
 
 -- | Start a child process asynchronously, with the given command line
 -- | arguments and environment, and wait for it to exit.

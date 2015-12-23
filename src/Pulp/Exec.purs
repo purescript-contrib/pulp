@@ -12,9 +12,7 @@ import Data.Function
 import Data.String (stripSuffix)
 import Data.StrMap (StrMap())
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Maybe.Unsafe (fromJust)
 import Data.Array as Array
-import Control.Monad (when)
 import Control.Monad.Error.Class (MonadError, throwError)
 import Control.Monad.Eff.Exception (Error(), error)
 import Control.Monad.Eff.Class (liftEff)
@@ -62,9 +60,13 @@ exec cmd args env = do
   where
   def = CP.defaultSpawnOptions
 
-  onExit code =
-    when (code > 0) $
-      throwError $ error $ "Subcommand terminated with exit code " <> show code
+  onExit exit =
+    case exit of
+      CP.Normally 0 ->
+        pure unit
+      _ ->
+        throwError $ error $
+            "Subcommand terminated " <> showExit exit
 
   retry newCmd = exec newCmd args env
 
@@ -81,24 +83,26 @@ execQuiet cmd args env = do
   where
   def = CP.defaultSpawnOptions
 
-  onExit outVar code =
+  onExit outVar exit =
     takeVar outVar >>= \childOut ->
-      if code == 0
-        then return childOut
-        else do
+      case exit of
+        CP.Normally 0 ->
+          pure childOut
+        _ -> do
           write Process.stderr childOut
-          throwError $ error $ "Subcommand terminated with exit code " <> show code
+          throwError $ error $ "Subcommand terminated " <> showExit exit
 
   retry newCmd = execQuiet newCmd args env
 
 -- | A slightly weird combination of `onError` and `onExit` into one.
-wait :: CP.ChildProcess -> AffN (Either CP.ChildProcessError Int)
+wait :: CP.ChildProcess -> AffN (Either CP.ChildProcessError CP.ChildProcessExit)
 wait child = makeAff \_ win -> do
-  CP.onExit child (win <<< Right <<< toInt)
+  CP.onExit child (win <<< Right)
   CP.onError child (win <<< Left)
-  where
-  toInt (CP.Normally x) = x
-  toInt (CP.BySignal _) = 127
+
+showExit :: CP.ChildProcessExit -> String
+showExit (CP.Normally x) = "with exit code " <> show x
+showExit (CP.BySignal sig) = "as a result of receiving " <> show sig
 
 handleErrors :: forall a. String -> (String -> AffN a) -> CP.ChildProcessError -> AffN a
 handleErrors cmd retry err

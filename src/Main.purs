@@ -52,8 +52,10 @@ globals = [
     "Watch source directories and re-run command if something changes.",
   Args.option "monochrome" ["--monochrome"] Type.flag
     "Don't colourise log output.",
+  Args.option "before" ["--before"] Type.string
+    "Run a shell command before the operation begins. Useful with `--watch`, eg. `--watch --before clear`.",
   Args.option "then" ["--then"] Type.string
-    "Run a shell command after the operation finishes. Useful with `--watch`.",
+    "Run a shell command after the operation finishes. Useful with `--watch`, eg. `--watch --then 'say Done'`",
   Args.option "version" ["--version", "-v"] Type.flag
     "Show current pulp version."
   ]
@@ -211,12 +213,9 @@ runArgs args = do
           Args.runAction Watch.action args
         else do
           args' <- addProject args
+          runShellForOption "before" args'.globalOpts out
           Args.runAction args.command.action args'
-
-          then_ <- getOption "then" args'.globalOpts
-          case then_ of
-            Just cmd -> Shell.shell out cmd
-            Nothing  -> pure unit
+          runShellForOption "then" args'.globalOpts out
   where
   -- This is really quite gross, especially with _project. Not sure exactly
   -- how to go about improving this.
@@ -227,6 +226,11 @@ runArgs args = do
         proj <- getProject args.globalOpts
         let globalOpts' = insert "_project" (Just (toForeign proj)) args.globalOpts
         return $ args { globalOpts = globalOpts' }
+  runShellForOption option opts out = do
+    triggerCommand <- getOption option opts
+    case triggerCommand of
+      Just cmd -> Shell.shell out cmd
+      Nothing  -> pure unit
 
 argsParserDiagnostics :: Args.Args -> AffN Unit
 argsParserDiagnostics opts = do

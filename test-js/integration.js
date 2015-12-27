@@ -228,6 +228,21 @@ describe("integration tests", function() {
       "output did not contain \"" + hello + "\"");
   }));
 
+  it("pulp --before something build", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+
+    // In reality, this is likely to be a "--before clear" or something, but
+    // that's nightmarish to actually test.
+    touch.sync(path.join(temp, "before.txt"))
+    const mv = process.platform === "win32" ? "rename" : "mv"
+    yield pulp(`--before "${mv} before.txt after.txt" build --to out.js`);
+
+    const [out] = yield sh("node out.js");
+    assert.equal(out.trim(), hello);
+    assert.ok(fs.existsSync(path.join(temp, "after.txt")),
+      "test file before.txt was not found as after.txt");
+  }));
+
   it("pulp --then something build", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const mv = process.platform === "win32" ? "rename" : "mv"

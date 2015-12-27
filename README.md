@@ -261,6 +261,18 @@ To continuously run your tests when you change the source code:
 $ pulp --watch test
 ```
 
+### Running Commands Before and After an Action
+
+It's sometimes useful to kick off a command before or after an action,
+particularly in combination with the `--watch` option above. To do
+this, you can use `--before` or `--then`:
+
+```sh
+$ pulp --watch --before clear build     # Clears the screen before builds.
+$ pulp --watch --then 'say Done' build  # On OS X, announces 'Done' after a build.
+```
+
+
 ### CommonJS Aware Builds
 
 Often, you'll want to go outside PureScript and leverage some of the

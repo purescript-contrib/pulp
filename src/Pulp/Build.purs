@@ -89,12 +89,16 @@ bundle args = do
   main      <- getOption' "main" opts
   modules   <- fromMaybe [] <<< map (split ",") <$> getOption "modules" opts
   buildPath <- getOption' "buildPath" opts
+  skipEntry <- getFlag "skipEntryPoint" opts
 
   bundledJs <- pscBundle (outputModules buildPath)
-                         (["--module=" ++ main, "--main=" ++ main]
-                           ++ map (\m -> "--module=" ++ m) modules
-                           ++ args.remainder)
-                          Nothing
+                         (["--module=" ++ main]
+                          ++ if skipEntry
+                             then []
+                             else ["--main=" ++ main]
+                          ++ map (\m -> "--module=" ++ m) modules
+                          ++ args.remainder)
+                         Nothing
 
   withOutputStream opts $ \out' -> do
     write out' bundledJs

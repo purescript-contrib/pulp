@@ -2,7 +2,7 @@ import co from "co";
 import { exec } from "child_process";
 import _temp from "temp";
 import { resolve } from "path";
-import assert from "assert";
+import { assert } from "chai";
 import fs from "fs";
 
 const temp = _temp.track();

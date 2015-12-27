@@ -14,14 +14,13 @@ import Data.StrMap (StrMap())
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Array as Array
 import Control.Monad.Error.Class (MonadError, throwError)
-import Control.Monad.Eff.Exception (Error(), error)
+import Control.Monad.Eff.Exception (error)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Aff
 import Control.Monad.Aff.AVar (takeVar, putVar, makeVar)
 import Node.Process as Process
 import Node.Platform (Platform(Win32))
 import Node.ChildProcess as CP
-import Unsafe.Coerce (unsafeCoerce)
 
 import Pulp.System.Stream
 import Pulp.System.FFI
@@ -95,16 +94,16 @@ execQuiet cmd args env = do
   retry newCmd = execQuiet newCmd args env
 
 -- | A slightly weird combination of `onError` and `onExit` into one.
-wait :: CP.ChildProcess -> AffN (Either CP.ChildProcessError CP.ChildProcessExit)
+wait :: CP.ChildProcess -> AffN (Either CP.Error CP.Exit)
 wait child = makeAff \_ win -> do
   CP.onExit child (win <<< Right)
   CP.onError child (win <<< Left)
 
-showExit :: CP.ChildProcessExit -> String
+showExit :: CP.Exit -> String
 showExit (CP.Normally x) = "with exit code " <> show x
 showExit (CP.BySignal sig) = "as a result of receiving " <> show sig
 
-handleErrors :: forall a. String -> (String -> AffN a) -> CP.ChildProcessError -> AffN a
+handleErrors :: forall a. String -> (String -> AffN a) -> CP.Error -> AffN a
 handleErrors cmd retry err
   | err.code == "ENOENT" = do
      -- On windows, if the executable wasn't found, try adding .cmd
@@ -117,10 +116,7 @@ handleErrors cmd retry err
          throwError $ error $
            "`" <> cmd <> "` executable not found."
   | otherwise =
-     throwError (toErr err)
-     where
-     toErr :: CP.ChildProcessError -> Error
-     toErr = unsafeCoerce
+     throwError (CP.toStandardError err)
 
 concatStream :: ReadableStream -> AffN String
 concatStream stream = runNode $ runFn2 concatStream' stream

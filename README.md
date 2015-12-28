@@ -265,11 +265,16 @@ $ pulp --watch test
 
 It's sometimes useful to kick off a command before or after an action,
 particularly in combination with the `--watch` option above. To do
-this, you can use `--before` or `--then`:
+this, you can use `--before`, or `--then` and `--else` for successful
+or failing actions respectively:
 
 ```sh
-$ pulp --watch --before clear build     # Clears the screen before builds.
-$ pulp --watch --then 'say Done' build  # On OS X, announces 'Done' after a build.
+$ pulp --watch --before clear build       # Clears the screen before builds.
+$ pulp --watch --then 'say Done' build    # On OS X, announces 'Done' after a successful build.
+$ pulp --watch --else 'say Failed' build  # Announces 'Failed' if a build failed.
+
+# A more long-winded example combining the three:
+$ pulp --watch --before clear --then "say $(basename `pwd`) succeeded." --else 'say $(basename `pwd`) failed.' build
 ```
 
 

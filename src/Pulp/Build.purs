@@ -2,7 +2,7 @@ module Pulp.Build
   ( action
   , build
   , testBuild
-  , getOutputStream
+  , withOutputStream
   ) where
 
 import Prelude
@@ -15,7 +15,7 @@ import Control.Monad.Eff.Class (liftEff)
 import Node.Process as Process
 
 import Pulp.System.FFI
-import Pulp.System.Stream (write, WritableStream())
+import Pulp.System.Stream (write, end, WritableStream())
 import Pulp.Outputter
 import Pulp.System.Files as Files
 import Pulp.Args
@@ -96,16 +96,20 @@ bundle args = do
                            ++ args.remainder)
                           Nothing
 
-  out' <- getOutputStream opts
-  write out' bundledJs
+  withOutputStream opts $ \out' -> do
+    write out' bundledJs
 
   out.log "Bundled."
 
 -- | Get a writable stream which output should be written to, based on the
 -- | value of the 'to' option.
-getOutputStream :: Options -> AffN WritableStream
-getOutputStream opts = do
+withOutputStream :: Options -> (WritableStream -> AffN Unit) -> AffN Unit
+withOutputStream opts aff = do
   to <- getOption "to" opts
   case to of
-    Just path -> liftEff $ Files.createWriteStream path
-    Nothing   -> pure Process.stdout
+    Just path -> do
+      stream <- liftEff $ Files.createWriteStream path
+      aff stream
+      end stream
+    Nothing ->
+      aff Process.stdout

@@ -25,7 +25,7 @@ import Node.Platform (Platform(Win32))
 
 import Pulp.System.Stream
 import Pulp.System.FFI
-import Pulp.System.ChildProcess
+import Pulp.System.ChildProcess (spawn, wait, StdIOOptions(), StdIOBehaviour(..))
 import Pulp.System.Files
 
 psc :: Array String -> Array String -> Array String -> Maybe (StrMap String) -> AffN String

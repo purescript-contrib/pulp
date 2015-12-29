@@ -1,9 +1,13 @@
 
-module Pulp.Version ( version ) where
+module Pulp.Version ( version, printVersion ) where
 
 import Prelude
-import Data.Either (Either(..))
-import Data.Version (Version(), parseVersion)
+import Data.Either (Either(..), either)
+import Data.String (trim)
+import Data.Version (Version(), parseVersion, showVersion)
+import Control.Monad.Aff (attempt)
+import Control.Monad.Eff.Class (liftEff)
+import Control.Monad.Eff.Console as Console
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Eff.Exception (throwException, error)
 import Control.Monad.Eff.Exception.Unsafe (unsafeThrow)
@@ -13,6 +17,9 @@ import Node.Path as Path
 import Data.Foreign (parseJSON)
 import Data.Foreign.Class (readProp)
 import Node.Globals (__dirname)
+
+import Pulp.System.FFI (AffN())
+import Pulp.System.ChildProcess (exec)
 
 version :: Version
 version =
@@ -30,3 +37,12 @@ versionString =
         throwException (error ("pulp: Unable to parse package.json: " ++ show err))
       Right v ->
         pure v
+
+printVersion :: AffN Unit
+printVersion = do
+  pscVersion <- exec "psc --version"
+  pscPath <- attempt $ exec "which psc"
+  liftEff $ Console.log $
+    "Pulp version " ++ showVersion version ++
+    "\npsc version " ++ trim pscVersion ++
+    either (const "") (\p -> " using " ++ trim p) pscPath

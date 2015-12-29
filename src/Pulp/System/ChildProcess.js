@@ -30,3 +30,7 @@ exports.treeKill = function treeKill(pid) {
     };
   };
 };
+
+exports["exec'"] = function exec$prime(cmd, callback) {
+  require("child_process").exec(cmd, callback);
+};

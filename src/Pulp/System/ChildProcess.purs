@@ -4,6 +4,7 @@ module Pulp.System.ChildProcess
   , fork
   , wait
   , treeKill
+  , exec
   , StdIOBehaviour(..)
   , StdIOOptions()
   ) where
@@ -77,3 +78,8 @@ type ActualStdIOOptions = Array ActualStdIOBehaviour
 toActualStdIOOptions :: StdIOOptions -> ActualStdIOOptions
 toActualStdIOOptions opts =
  map toActualStdIOBehaviour [opts.stdin, opts.stdout, opts.stderr]
+
+foreign import exec' :: Fn2 String (Callback String) Unit
+
+exec :: String -> AffN String
+exec cmd = runNode $ runFn2 exec' cmd

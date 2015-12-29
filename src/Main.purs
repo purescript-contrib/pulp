@@ -8,11 +8,10 @@ import Control.Monad.Eff.Console as Console
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Eff.Exception
 import Data.Maybe (Maybe(..))
-import Data.Either (Either(..), either)
+import Data.Either (Either(..))
 import Data.Map (insert)
 import Data.Foreign (parseJSON, Foreign(), toForeign)
 import Data.Foreign.Class (readProp)
-import Data.Version (showVersion)
 import Data.Array (head, drop)
 import Data.Foldable (elem)
 import Text.Parsing.Parser (ParseError(..))
@@ -29,7 +28,7 @@ import Pulp.Args.Parser (parse)
 import Pulp.System.FFI
 import Pulp.Outputter
 import Pulp.Validate (validate)
-import Pulp.Version (version)
+import Pulp.Version (printVersion)
 import Pulp.Project (getProject)
 
 import Pulp.Init as Init
@@ -194,7 +193,7 @@ main = runAff failed succeeded do
   handleParseError (Just x) err
     -- TODO: this is kind of gross, especially that --version and --help are
     -- repeated
-    | x `elem` ["--version", "-v"] = liftEff $ Console.log $ showVersion version
+    | x `elem` ["--version", "-v"] = printVersion
     | x `elem` ["--help", "-h"]    = printHelp out globals commands
 
   handleParseError _ err = do

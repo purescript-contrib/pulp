@@ -21,7 +21,7 @@
     "purescript-maps": "~0.5.2",
     "purescript-maybe": "~0.3.4",
     "purescript-monoid": "~0.3.2",
-    "purescript-node-child-process": "~0.3.2",
+    "purescript-node-child-process": "~0.4.0",
     "purescript-node-fs": "~0.9.1",
     "purescript-node-fs-aff": "~0.2.1",
     "purescript-node-path": "~0.4.1",

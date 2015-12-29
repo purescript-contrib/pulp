@@ -133,6 +133,13 @@ describe("integration tests", function() {
     assert.equal(out.trim(), hello);
   }));
 
+  it("pulp build --skip-entry-point --to", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+    yield pulp(`--then "echo module.exports = PS >> out.js" build --skip-entry-point --to out.js`);
+    const [out] = yield sh(`node -e "var o = require('./out'); o.Main.main();"`);
+    assert.equal(out.trim(), hello);
+  }));
+
   it("pulp build -O", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const [src] = yield pulp("build -O");

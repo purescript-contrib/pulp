@@ -2,6 +2,7 @@ module Pulp.System.Stream
   ( ReadableStream()
   , WritableStream()
   , AnyStream()
+  , end
   , forget
   , write
   ) where
@@ -26,3 +27,6 @@ forget = unsafeCoerce
 
 write :: WritableStream -> String -> AffN Unit
 write stream str = makeAff (\_ done -> void (Node.writeString stream UTF8 str (done unit)))
+
+end :: WritableStream -> AffN Unit
+end stream = makeAff (\_ done -> void (Node.end stream (done unit)))

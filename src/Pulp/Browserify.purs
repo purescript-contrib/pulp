@@ -78,15 +78,14 @@ optimising = Action \args -> do
 
   liftEff $ setupNodePath buildPath
 
-  out' <- Build.getOutputStream opts
-
-  browserifyBundle
-    { basedir: Path.resolve [] buildPath
-    , src: bundledJs ++ if isJust standalone then makeOptExport main else ""
-    , transform: toNullable transform
-    , standalone: toNullable standalone
-    , out: out'
-    }
+  Build.withOutputStream opts $ \out' -> do
+    browserifyBundle
+      { basedir: Path.resolve [] buildPath
+      , src: bundledJs ++ if isJust standalone then makeOptExport main else ""
+      , transform: toNullable transform
+      , standalone: toNullable standalone
+      , out: out'
+      }
 
 incremental :: Action
 incremental = Action \args -> do
@@ -122,16 +121,15 @@ incremental = Action \args -> do
               writeTextFile UTF8 entryPath entryJs
               pure entryPath
 
-  out' <- Build.getOutputStream opts
-
-  browserifyIncBundle
-    { basedir: buildPath
-    , cacheFile: cachePath
-    , path: path
-    , transform: toNullable transform
-    , standalone: toNullable standalone
-    , out: out'
-    }
+  Build.withOutputStream opts $ \out' -> do
+    browserifyIncBundle
+      { basedir: buildPath
+      , cacheFile: cachePath
+      , path: path
+      , transform: toNullable transform
+      , standalone: toNullable standalone
+      , out: out'
+      }
 
 -- | Given the build path, modify this process' NODE_PATH environment variable
 -- | for browserify.

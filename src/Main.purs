@@ -103,9 +103,18 @@ buildArgs = [
     "Application's entry point." "Main",
   Args.option "to" ["--to", "-t"] Type.string
     "Output file name (stdout if not specified).",
+  Args.option "skipEntryPoint" ["--skip-entry-point"] Type.flag
+    "Don't add code to automatically invoke Main."
+  ] ++ buildishArgs
+
+-- TODO: This is possibly just a temporary separation from buildArgs; at the
+--       moment, the browserify action doesn't support this option, but it's
+--       definitely in the realm of possibility.
+moduleArgs :: Array Args.Option
+moduleArgs = [
   Args.option "modules" ["--modules"] Type.string
     "Additional modules to be included in the output bundle (comma-separated list)."
-  ] ++ buildishArgs
+  ]
 
 commands :: Array Args.Command
 commands = [
@@ -114,7 +123,7 @@ commands = [
        "Overwrite any project found in the current directory."
      ],
   Args.command "dep" "Invoke Bower for package management." Bower.action [],
-  Args.command "build" "Build the project." Build.action buildArgs,
+  Args.command "build" "Build the project." Build.action $ buildArgs ++ moduleArgs,
   Args.command "test" "Run project tests." Test.action $ [
     Args.optionDefault "main" ["--main", "-m"] Type.string
       "Test entry point." "Test.Main",
@@ -125,21 +134,15 @@ commands = [
     ] ++ buildishArgs,
   Args.command "browserify"
     "Produce a deployable bundle using Browserify." Browserify.action $ [
-      Args.option "to" ["--to", "-t"] Type.string
-        "Output file name for bundle (stdout if not specified).",
-      Args.optionDefault "main" ["--main", "-m"] Type.string
-        "Application's entry point." "Main",
       Args.option "transform" ["--transform"] Type.string
         "Apply a Browserify transform.",
       Args.option "sourceMap" ["--source-map"] Type.string
         "Generate source maps.",
-      Args.option "skipEntryPoint" ["--skip-entry-point"] Type.flag
-        "Don't add code to automatically invoke Main.",
       Args.option "force" ["--force"] Type.flag
         "Force a non-incremental build by deleting the build cache.",
       Args.option "standalone" ["--standalone"] Type.string
         "Output a UMD bundle with the given external module name."
-      ] ++ buildishArgs,
+      ] ++ buildArgs,
   Args.command "run" "Compile and run the project." Run.action $ [
     Args.optionDefault "engine" ["--engine"] Type.string
       "Run the Application on a different JavaScript engine (node, iojs)" "node"

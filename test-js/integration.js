@@ -262,6 +262,25 @@ describe("integration tests", function() {
     assert.equal(out.trim(), hello);
   }));
 
+  it("pulp --else something build", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+
+    // Deliberately cause a build failure.
+    const mainPath = path.join(temp, 'src', 'Main.purs')
+    fs.writeFileSync(
+      mainPath, fs.readFileSync(mainPath).toString().concat("\ninvalidThing")
+    );
+
+    touch.sync(path.join(temp, "before.txt"))
+    const mv = process.platform === "win32" ? "rename" : "mv"
+    const [_, err] = yield pulp(
+      `--else "${mv} before.txt afterFailed.txt" build --to out.js`,
+      null, { expectedExitCode: 1 }
+    );
+    assert.match(err.trim(), /Unable to parse/); // Expected error
+    assert.exists(path.join(temp, "afterFailed.txt")); // --else has run
+  }));
+
   it("pulp build skips when possible", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("build");

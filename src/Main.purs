@@ -8,7 +8,7 @@ import Control.Monad.Eff.Console as Console
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Eff.Exception
 import Data.Maybe (Maybe(..))
-import Data.Either (Either(..))
+import Data.Either (Either(..), either)
 import Data.Map (insert)
 import Data.Foreign (parseJSON, Foreign(), toForeign)
 import Data.Foreign.Class (readProp)
@@ -55,7 +55,9 @@ globals = [
   Args.option "before" ["--before"] Type.string
     "Run a shell command before the operation begins. Useful with `--watch`, eg. `--watch --before clear`.",
   Args.option "then" ["--then"] Type.string
-    "Run a shell command after the operation finishes. Useful with `--watch`, eg. `--watch --then 'say Done'`",
+    "Run a shell command after the operation finishes successfully. Useful with `--watch`, eg. `--watch --then 'say Done'`",
+  Args.option "else" ["--else"] Type.string
+    "Run a shell command if an operation finishes. Useful with `--watch`, eg. `--watch --then 'say Done' --else 'say Failed'`",
   Args.option "version" ["--version", "-v"] Type.flag
     "Show current pulp version."
   ]
@@ -214,8 +216,13 @@ runArgs args = do
         else do
           args' <- addProject args
           runShellForOption "before" args'.globalOpts out
-          Args.runAction args.command.action args'
-          runShellForOption "then" args'.globalOpts out
+          result <- attempt $ Args.runAction args.command.action args'
+          case result of
+            Left e  -> do
+              runShellForOption "else" args'.globalOpts out
+              liftEff $ throwException e
+            Right r ->
+              runShellForOption "then" args'.globalOpts out
   where
   -- This is really quite gross, especially with _project. Not sure exactly
   -- how to go about improving this.

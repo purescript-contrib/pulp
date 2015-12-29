@@ -12,6 +12,9 @@ cache:
 install:
   - ps: Install-Product node $env:nodejs_version
   - npm install
+  - 'node_modules\.bin\bower --version'
+  - 'type node_modules\bower\lib\commands\update.js'
+
 
 # Post-install test scripts.
 test_script:

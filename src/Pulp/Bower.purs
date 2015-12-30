@@ -28,7 +28,7 @@ Pulp no longer bundles Bower. You'll need to install it manually:
 
    $ npm install -g bower
 """)
-    (\e -> exec "node" ([e] ++ args) Nothing)
+    (\e -> exec e args Nothing)
     executable
 
 printHelp :: Outputter -> AffN Unit

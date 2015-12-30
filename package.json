@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "ansi": "^0.3.0",
-    "bower": "*",
+    "bower": "git+https://github.com/bower/bower#baf8f7bf6b0",
     "browserify": "^11.0.0",
     "browserify-incremental": "^3.0.1",
     "concat-stream": "^1.4.6",

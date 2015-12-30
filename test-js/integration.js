@@ -31,7 +31,7 @@ describe("integration tests", function() {
     const [out] = yield pulp("--version");
     assert.ok(semver.valid(out.split(/\s/)[2]), out + " is not a valid version.");
   }));
-
+/*
   it("pulp -v", run(function*(sh, pulp, assert) {
     const [out] = yield pulp("-v");
     assert.ok(semver.valid(out.split(/\s/)[2]), out + " is not a valid version.");
@@ -317,4 +317,5 @@ describe("integration tests", function() {
     const [_, err] = yield pulp("build --force");
     assert.notEqual(err.trim(), skipped);
   }));
+*/
 });

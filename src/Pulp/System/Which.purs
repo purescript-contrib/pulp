@@ -1,4 +1,4 @@
-module Pulp.System.Which where
+module Pulp.System.Which ( which ) where
 
 import Prelude
 

@@ -1,5 +1,13 @@
 # Pulp Release History
 
+## 6.2.0
+
+* `pulp dep` is now deprecated. It continues to work as before, but
+  you will have to install Bower yourself in order to use it. It’s
+  recommended that you use Bower directly instead.
+* New global options `--before` and `--else` to complement `--then`.
+* `--skip-entry-point` now works when using `pulp build --to`.
+
 ## 6.1.0
 
 * You can now use `pulp browserify --standalone <module-name>` to

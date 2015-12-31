@@ -11,7 +11,7 @@ cache:
 # Install scripts. (runs after repo cloning)
 install:
   - ps: Install-Product node $env:nodejs_version
-  - npm install -g bower@1.7.0
+  - npm install -g bower
   - npm install
 
 # Post-install test scripts.

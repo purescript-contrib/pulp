@@ -39,11 +39,16 @@ A build tool for PureScript.
 ## Installation
 
 Assuming you already have [Node](https://nodejs.org/en/download/) set
-up, all you need to do to get a working PureScript environment is:
+up (and we recommend you also set up NPM to
+[keep your global packages in your home directory](https://github.com/sindresorhus/guides/blob/master/npm-global-without-sudo.md)),
+all you need to do to get a working PureScript environment is:
 
 ```sh
-$ npm install -g purescript pulp
+$ npm install -g purescript pulp bower
 ```
+
+This installs the PureScript compiler, the Pulp build tool, and the
+[Bower](http://bower.io/) package manager.
 
 ## Getting Started with a Pulp Project
 
@@ -467,11 +472,16 @@ further configuration options. It's intended as a starting point only.
 
 `pulp` is not a package manager, only a build tool. The PureScript
 community has standardised on [Bower](http://bower.io/) as its package
-manager, and `pulp` only acts as a front end for it: `pulp` comes with
-a bundled Bower installation, and you can use the `pulp dep` command
-to access it. You could also install Bower on your own, and use that
-directly. `pulp` doesn't add any extra features beyond the convenience
-of the bundled installation.
+manager.
+
+Bower expects the presence of a `bower.json` file in your project
+root, in which it records your project’s dependencies and other
+metadata. `pulp init` will have installed a basic `bower.json` file
+for you along with the project skeleton, but you should read the
+[Bower documentation on the file format](https://github.com/bower/spec/blob/master/json.md)
+and make sure you’ve configured it to your satisfaction before you
+publish your package. In particular, mind that you’ve added a
+`license` field.
 
 ### Dependency Management Cheat Sheet
 
@@ -486,20 +496,20 @@ especially easy if you're already used to `npm`. So, here we go.
 To install the `purescript-profunctor` package into your project:
 
 ```sh
-$ pulp dep install purescript-profunctor
+$ bower install purescript-profunctor
 ```
 
 To also record this as a dependency in the `bower.json` file:
 
 ```sh
-$ pulp dep install --save purescript-profunctor
+$ bower install --save purescript-profunctor
 ```
 
 To install every dependency which has been recorded in `bower.json` as
 needed by your project:
 
 ```sh
-$ pulp dep install
+$ bower install
 ```
 
 #### Housekeeping
@@ -507,25 +517,26 @@ $ pulp dep install
 To remove an installed package:
 
 ```sh
-$ pulp dep rm purescript-profunctor
+$ bower rm purescript-profunctor
 ```
 
 To remove it from `bower.json` as well:
 
 ```sh
-$ pulp dep rm --save purescript-profunctor
+$ bower rm --save purescript-profunctor
 ```
 
 To list all packages installed in your project:
 
 ```sh
-$ pulp dep ls
+$ bower ls
 ```
 
-To update all installed packages to the most recent version allowed by `bower.json`:
+To update all installed packages to the most recent version allowed by
+`bower.json`:
 
 ```sh
-$ pulp dep update
+$ bower update
 ```
 
 ### Releasing Packages
@@ -538,7 +549,7 @@ register your new package in the Bower registry (we'll call the
 package `purescript-zygo` to save typing):
 
 ```sh
-$ pulp dep register purescript-zygo git://github.com/me/purescript-zygo.git
+$ bower register purescript-zygo git://github.com/me/purescript-zygo.git
 ```
 
 Note the convention of prefixing PureScript package names with
@@ -551,7 +562,7 @@ version is to make a Git tag. Bower provides a command for doing this
 easily:
 
 ```sh
-$ pulp dep version patch
+$ bower version patch
 ```
 
 This will take your current version (as determined by the most recent
@@ -563,7 +574,7 @@ do to publish the new release is:
 $ git push && git push --tags
 ```
 
-The `patch` argument to `pulp dep version` can be substituted with
+The `patch` argument to `bower version` can be substituted with
 `minor` or `major`, depending on what sort of release you want to
 make.
 

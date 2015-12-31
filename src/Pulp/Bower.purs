@@ -1,4 +1,3 @@
-
 module Pulp.Bower
   ( action
   , launchBower
@@ -6,14 +5,16 @@ module Pulp.Bower
   ) where
 
 import Prelude
+import Control.Monad.Aff (attempt)
+import Control.Monad.Eff.Exception (error)
+import Control.Monad.Error.Class (throwError)
+import Data.Either (either)
 import Data.Maybe (Maybe(..))
-import Control.Monad.Eff.Class (liftEff)
-import Node.Path as Path
 
 import Pulp.Args
 import Pulp.Exec (exec)
 import Pulp.System.FFI
-import Pulp.System.Require (requireResolve)
+import Pulp.System.Which (which)
 import Pulp.Outputter
 
 action :: Action
@@ -21,9 +22,14 @@ action = Action \args -> launchBower args.remainder
 
 launchBower :: Array String -> AffN Unit
 launchBower args = do
-  bowerPath <- liftEff $ requireResolve "bower"
-  let executable = Path.concat [bowerPath, "..", "..", "bin", "bower"]
-  exec "node" ([executable] ++ args) Nothing
+  executable <- attempt $ which "bower"
+  either (const $ throwError $ error """No `bower` executable found.
+Pulp no longer bundles Bower. You'll need to install it manually:
+
+   $ npm install -g bower
+""")
+    (\e -> exec e args Nothing)
+    executable
 
 printHelp :: Outputter -> AffN Unit
 printHelp out = do

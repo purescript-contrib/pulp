@@ -1,7 +1,8 @@
 language: node_js
 node_js:
-  - "node"
-  - "iojs"
+  - "stable"
+before_install:
+  - npm install -g bower
 script:
-  - npm run test
+  - npm test
 sudo: false

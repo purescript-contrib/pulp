@@ -29,7 +29,6 @@
   },
   "dependencies": {
     "ansi": "^0.3.0",
-    "bower": "*",
     "browserify": "^11.0.0",
     "browserify-incremental": "^3.0.1",
     "concat-stream": "^1.4.6",
@@ -44,6 +43,7 @@
     "watchpack": "^0.2.9",
     "webpack": "^1.12.9",
     "webpack-dev-server": "^1.14.0",
+    "which": "^1.2.1",
     "wordwrap": "0.0.2"
   },
   "devDependencies": {

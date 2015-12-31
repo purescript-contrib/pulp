@@ -16,12 +16,14 @@ import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Aff (launchAff)
 import Control.Monad.Aff.AVar as AVar
 import Node.Process as Process
+import Node.Globals (__filename)
+import Node.ChildProcess (fork, pid)
 
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Files
 import Pulp.System.FFI
-import Pulp.System.ChildProcess (fork, treeKill)
+import Pulp.System.TreeKill (treeKill)
 import Pulp.Outputter
 
 foreign import watch ::
@@ -42,7 +44,7 @@ action = Action \args -> do
 
   argv' <- liftEff $ Array.filter (`notElem` ["-w", "--watch"]) <<< Array.drop 2 <$> Process.argv
   childV <- AVar.makeVar
-  liftEff (fork argv') >>= AVar.putVar childV
+  liftEff (fork __filename argv') >>= AVar.putVar childV
 
   srcPath        <- getOption' "srcPath" opts
   testPath       <- getOption' "testPath" opts
@@ -56,6 +58,6 @@ action = Action \args -> do
   watchAff directories $ \path -> do
     when (any (minimatch path) fileGlobs) do
       child <- AVar.takeVar childV
-      liftEff $ treeKill child.pid "SIGTERM"
+      liftEff $ treeKill (pid child) "SIGTERM"
       out.log "Source tree changed; restarting:"
-      liftEff (fork argv') >>= AVar.putVar childV
+      liftEff (fork __filename argv') >>= AVar.putVar childV

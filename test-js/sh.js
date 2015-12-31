@@ -18,8 +18,9 @@ function sh(cwd, cmd, input, opts) {
     var expectedExitCode = (opts && opts.expectedExitCode) || 0;
     var exitCode = (r.error && r.error.code) || 0;
     if (expectedExitCode !== exitCode) {
-      var msg = r.error.message + "Expected exit code " + expectedExitCode +
-                " but got " + exitCode + ".";
+      var msg = (r.error && r.error.message) || "";
+      msg += "Expected exit code " + expectedExitCode +
+               " but got " + exitCode + ".";
       var newErr = new Error(msg);
       newErr.innerError = r.error;
       throw newErr;

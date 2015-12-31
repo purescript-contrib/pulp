@@ -2,6 +2,7 @@
 module Pulp.Version ( version, printVersion ) where
 
 import Prelude
+import Data.Maybe (Maybe(..))
 import Data.Either (Either(..), either)
 import Data.String (trim)
 import Data.Version (Version(), parseVersion, showVersion)
@@ -17,9 +18,11 @@ import Node.Path as Path
 import Data.Foreign (parseJSON)
 import Data.Foreign.Class (readProp)
 import Node.Globals (__dirname)
+import Node.Process as Process
+import Node.Platform (Platform(Win32))
 
 import Pulp.System.FFI (AffN())
-import Pulp.System.ChildProcess (exec)
+import Pulp.Exec (execQuiet)
 
 version :: Version
 version =
@@ -40,8 +43,9 @@ versionString =
 
 printVersion :: AffN Unit
 printVersion = do
-  pscVersion <- exec "psc --version"
-  pscPath <- attempt $ exec "which psc"
+  pscVersion <- execQuiet "psc" ["--version"] Nothing
+  let which = if Process.platform == Win32 then "where" else "which"
+  pscPath <- attempt $ execQuiet which ["psc"] Nothing
   liftEff $ Console.log $
     "Pulp version " ++ showVersion version ++
     "\npsc version " ++ trim pscVersion ++

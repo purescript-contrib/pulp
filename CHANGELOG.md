@@ -1,5 +1,11 @@
 # Pulp Release History
 
+## 6.2.1
+
+* Fix the `--watch` option, which was broken in 6.2.0.
+* Remove the `--optimise` option for `pulp test` and `pulp server`, since it
+  doesn't really make sense with these commands.
+
 ## 6.2.0
 
 * `pulp dep` is now deprecated. It continues to work as before, but

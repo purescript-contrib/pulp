@@ -90,8 +90,6 @@ buildishArgs :: Array Args.Option
 buildishArgs = [
   Args.optionDefault "buildPath" ["--build-path", "-o"] Type.string
     "Path for compiler output." "./output",
-  Args.option "optimise" ["--optimise", "-O"] Type.flag
-    "Perform dead code elimination.",
   Args.option "force" ["--force"] Type.flag
     "Force a build even if no source files have changed."
   ] ++ pathArgs
@@ -102,6 +100,8 @@ buildArgs = [
     "Application's entry point." "Main",
   Args.option "to" ["--to", "-t"] Type.string
     "Output file name (stdout if not specified).",
+  Args.option "optimise" ["--optimise", "-O"] Type.flag
+    "Perform dead code elimination.",
   Args.option "skipEntryPoint" ["--skip-entry-point"] Type.flag
     "Don't add code to automatically invoke Main."
   ] ++ buildishArgs

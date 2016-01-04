@@ -126,10 +126,8 @@ commands = [
   Args.command "test" "Run project tests." Test.action $ [
     Args.optionDefault "main" ["--main", "-m"] Type.string
       "Test entry point." "Test.Main",
-    Args.option "testRuntime" ["--runtime", "-r"] Type.string
-      "Run test script using this command instead of Node.",
-    Args.optionDefault "engine" ["--engine"] Type.string
-      "Run the Application on a different JavaScript engine (node, iojs)" "node"
+    Args.optionDefault "runtime" ["--runtime", "-r"] Type.string
+      "Run test script using this command instead of Node." "node"
     ] ++ buildishArgs,
   Args.command "browserify"
     "Produce a deployable bundle using Browserify." Browserify.action $ [
@@ -143,8 +141,8 @@ commands = [
         "Output a UMD bundle with the given external module name."
       ] ++ buildArgs,
   Args.command "run" "Compile and run the project." Run.action $ [
-    Args.optionDefault "engine" ["--engine"] Type.string
-      "Run the Application on a different JavaScript engine (node, iojs)" "node"
+    Args.optionDefault "runtime" ["--runtime", "-r"] Type.string
+      "Run the program using this command instead of Node." "node"
     ] ++ buildArgs,
   Args.command "docs" "Generate project documentation." Docs.action $ [
     Args.option "withTests" ["--with-tests", "-t"] Type.flag

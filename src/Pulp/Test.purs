@@ -20,8 +20,8 @@ action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
   out <- getOutputter args
 
-  engine <- getOption' "engine" opts
-  let isNode = engine == "node"
+  runtime <- getOption' "runtime" opts
+  let isNode = runtime == "node"
   let changeOpts = if isNode
                      then id :: Options -> Options -- helps type inference
                      else Map.insert "to" (Just (toForeign "./output/test.js"))
@@ -37,11 +37,11 @@ action = Action \args -> do
       main <- getOption' "main" opts
       buildPath <- getOption' "buildPath" opts
       env <- setupEnv buildPath
-      exec engine
+      exec runtime
            (["-e", "require('" ++ main ++ "').main()"] ++ args.remainder)
            (Just env)
     else do
       to <- getOption' "to" buildArgs.commandOpts
-      exec engine ([to] ++ args.remainder) Nothing
+      exec runtime ([to] ++ args.remainder) Nothing
 
   out.log "Tests OK."

@@ -46,9 +46,9 @@ action = Action \args -> do
   FS.fdAppend info.fd src
   FS.fdClose info.fd
 
-  engine <- getOption' "engine" opts
+  runtime <- getOption' "runtime" opts
   env <- setupEnv buildPath
-  exec engine ([info.path] ++ args.remainder) (Just env)
+  exec runtime ([info.path] ++ args.remainder) (Just env)
 
 -- | Given a build path, create an environment that is just like this process'
 -- | environment, except with NODE_PATH set up for commands like `pulp run`.

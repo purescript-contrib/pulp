@@ -317,4 +317,11 @@ describe("integration tests", function() {
     const [_, err] = yield pulp("build --force");
     assert.notEqual(err.trim(), skipped);
   }));
+
+  it("pulp test --runtime", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+    const [out] = yield pulp("test --runtime cat");
+    const [out2] = yield sh("node", out);
+    assert.equal(out2.trim(), test);
+  }));
 });

@@ -19,6 +19,14 @@
     "pulp": "index.js"
   },
   "main": "pulp.js",
+  "files": [
+    "index.js",
+    "pulp.js",
+    "src",
+    "bower.json",
+    "test-js",
+    ".jshintrc"
+  ],
   "scripts": {
     "lint": "jshint src",
     "compile": "psc -c -f \"src/**/*.js\" -f \"bower_components/purescript-*/src/**/*.js\" \"src/**/*.purs\" \"bower_components/purescript-*/src/**/*.purs\"",

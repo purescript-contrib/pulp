@@ -2,6 +2,7 @@
 module Pulp.Exec
   ( exec
   , execQuiet
+  , execInteractive
   , psc
   , pscBundle
   ) where
@@ -12,12 +13,14 @@ import Data.Function
 import Data.String (stripSuffix)
 import Data.StrMap (StrMap())
 import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Foldable (for_)
 import Data.Array as Array
 import Control.Monad.Error.Class (MonadError, throwError)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Aff
 import Control.Monad.Aff.AVar (takeVar, putVar, makeVar)
+import Data.Posix.Signal (Signal(SIGTERM, SIGINT))
 import Node.Process as Process
 import Node.Platform (Platform(Win32))
 import Node.ChildProcess as CP
@@ -92,6 +95,23 @@ execQuiet cmd args env = do
           throwError $ error $ "Subcommand terminated " <> showExit exit
 
   retry newCmd = execQuiet newCmd args env
+
+-- | A version of `exec` which installs signal handlers to make sure that the
+-- | signals SIGINT and SIGTERM are relayed to the child process, if received.
+execInteractive :: String -> Array String -> Maybe (StrMap String) -> AffN Unit
+execInteractive cmd args env = do
+  child <- liftEff $ CP.spawn cmd args (def { env = env
+                                            , stdio = CP.inherit })
+  liftEff $
+    for_ [SIGTERM, SIGINT] \sig ->
+      Process.onSignal sig
+        (void (CP.kill sig child))
+
+  wait child >>= either (handleErrors cmd retry) (const (pure unit))
+
+  where
+  def = CP.defaultSpawnOptions
+  retry newCmd = exec newCmd args env
 
 -- | A slightly weird combination of `onError` and `onExit` into one.
 wait :: CP.ChildProcess -> AffN (Either CP.Error CP.Exit)

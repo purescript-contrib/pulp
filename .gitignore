@@ -6,3 +6,5 @@
 .psci
 .psci_modules/
 /pulp.js
+.pulp-cache/
+.browserify-cache.json

@@ -232,12 +232,12 @@ run`'s command specific options; these will not be passed through to
 your application.
 
 If you want to run your application using something other than `node`,
-`pulp` lets you do that too, with the `--engine` option. For instance,
+`pulp` lets you do that too, with the `--runtime` option. For instance,
 if you've written an application which runs on PhantomJS, you might
 launch it like this:
 
 ```sh
-$ pulp run --engine phantomjs
+$ pulp run --runtime phantomjs
 ```
 
 ### Running Test Suites

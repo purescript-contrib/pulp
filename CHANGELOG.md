@@ -1,5 +1,16 @@
 # Pulp Release History
 
+## 7.0.0
+
+* Remove the `--engine` option, since the `--runtime` option fulfils the same
+  need.
+* Fix the `--runtime` option, which was previously broken. (#143)
+* Fix a bug where Pulp was sometimes using terminal ANSI codes for colours
+  when it shouldn't have been, and not using them when it should. (#147)
+* Relay interrupts (Ctrl+C) to `psci` when running `pulp psci`, so that
+  long-running commands can be interrupted, and to stop the "hGetChar:
+  hardware fault (Input/output error)" message from being shown. (#88)
+
 ## 6.2.1
 
 * Fix the `--watch` option, which was broken in 6.2.0.

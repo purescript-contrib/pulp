@@ -22,7 +22,7 @@ import Pulp.Files
 action :: Action
 action = Action \args -> do
   updateConfig args
-  exec "psci" args.remainder Nothing
+  execInteractive "psci" args.remainder Nothing
 
 updateConfig :: Args -> AffN Unit
 updateConfig args = do

@@ -24,7 +24,7 @@
 // THE SOFTWARE.
 
 exports.supportLevel = (function() {
-  if (process.stdout && !process.stdout.isTTY) {
+  if (process.stderr && !process.stderr.isTTY) {
     return 0;
   }
 

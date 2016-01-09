@@ -18,7 +18,12 @@ import Pulp.System.Which (which)
 import Pulp.Outputter
 
 action :: Action
-action = Action \args -> launchBower args.remainder
+action = Action \args -> do
+  out <- getOutputter args
+  out.err "[warn] `pulp dep` is deprecated. Please use `bower` directly instead."
+  launchBower args.remainder
+  out.err "[warn] Just in case you missed the earlier warning:"
+  out.err "[warn] `pulp dep` is deprecated. Please use `bower` directly instead."
 
 launchBower :: Array String -> AffN Unit
 launchBower args = do

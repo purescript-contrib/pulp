@@ -2,18 +2,23 @@ module Main where
 
 import Prelude
 
+import Control.Monad (when)
 import Control.Monad.Aff
 import Control.Monad.Eff.Class
 import Control.Monad.Eff.Console as Console
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Eff.Exception
-import Data.Maybe (Maybe(..))
+import Control.Monad.Error.Class (throwError)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Either (Either(..))
 import Data.Map (insert)
 import Data.Foreign (parseJSON, Foreign(), toForeign)
 import Data.Foreign.Class (readProp)
 import Data.Array (head, drop)
 import Data.Foldable (elem)
+import Data.List (List(Nil))
+import Data.Version (Version(), version, showVersion, parseVersion)
+import Data.String (stripPrefix)
 import Text.Parsing.Parser (ParseError(..))
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Sync (readTextFile)
@@ -180,6 +185,7 @@ succeeded = const (pure unit)
 
 main :: EffN Unit
 main = runAff failed succeeded do
+  requireNodeAtLeast (version 4 0 0 Nil Nil)
   argv <- drop 2 <$> liftEff Process.argv
   args <- parse globals commands argv
   case args of
@@ -238,6 +244,22 @@ runArgs args = do
     case triggerCommand of
       Just cmd -> Shell.shell out cmd
       Nothing  -> pure unit
+
+requireNodeAtLeast :: Version -> AffN Unit
+requireNodeAtLeast minimum = do
+  case parseVersion (stripV Process.version) of
+    Left (ParseError { message }) ->
+      throwError (error ("Failed to parse node.js version: " ++ message))
+    Right actual ->
+      when (actual < minimum)
+        (throwError (error
+          ("Your node.js version is too old " ++
+           "(required: " ++ showVersion minimum ++
+           ", actual: " ++ showVersion actual ++ ")")))
+
+  where
+  stripV str =
+    fromMaybe str (stripPrefix "v" str)
 
 argsParserDiagnostics :: Args.Args -> AffN Unit
 argsParserDiagnostics opts = do

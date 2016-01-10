@@ -27,6 +27,9 @@
     "test-js",
     ".jshintrc"
   ],
+  "engines": {
+    "node": ">= 4"
+  },
   "scripts": {
     "lint": "jshint src",
     "compile": "psc -c -f \"src/**/*.js\" -f \"bower_components/purescript-*/src/**/*.js\" \"src/**/*.purs\" \"bower_components/purescript-*/src/**/*.purs\"",

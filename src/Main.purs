@@ -120,22 +120,47 @@ moduleArgs = [
     "Additional modules to be included in the output bundle (comma-separated list)."
   ]
 
+remainderToPsc :: Maybe String
+remainderToPsc = Just "Passthrough options are sent to `psc`."
+
+remainderToTest :: Maybe String
+remainderToTest =
+  Just ("Passthrough options are sent to the test program. " ++
+    "This can be useful for only running one particular test, for instance.")
+
+remainderToBundle :: Maybe String
+remainderToBundle =
+  Just "Passthrough options are sent to `psc-bundle`."
+
+remainderToProgram :: Maybe String
+remainderToProgram =
+  Just "Passthrough options are sent to your program."
+
+remainderToPscDocs :: Maybe String
+remainderToPscDocs =
+  Just "Passthrough options are sent to `psc-docs`."
+
+remainderToPsci :: Maybe String
+remainderToPsci =
+  Just "Passthrough options are sent to `psci`."
+
 commands :: Array Args.Command
 commands = [
-  Args.command "init" "Generate an example PureScript project." Init.action [
+  Args.command "init" "Generate an example PureScript project." Nothing Init.action [
      Args.option "force" ["--force"] Type.flag
        "Overwrite any project found in the current directory."
      ],
-  Args.command "dep" "Invoke Bower for package management." Bower.action [],
-  Args.command "build" "Build the project." Build.action $ buildArgs ++ moduleArgs,
-  Args.command "test" "Run project tests." Test.action $ [
+  Args.command "dep" "Invoke Bower for package management." Nothing Bower.action [],
+  Args.command "build" "Build the project." remainderToPsc Build.action $
+    buildArgs ++ moduleArgs,
+  Args.command "test" "Run project tests." remainderToTest Test.action $ [
     Args.optionDefault "main" ["--main", "-m"] Type.string
       "Test entry point." "Test.Main",
     Args.optionDefault "runtime" ["--runtime", "-r"] Type.string
       "Run test script using this command instead of Node." "node"
     ] ++ buildishArgs,
   Args.command "browserify"
-    "Produce a deployable bundle using Browserify." Browserify.action $ [
+    "Produce a deployable bundle using Browserify." remainderToBundle Browserify.action $ [
       Args.option "transform" ["--transform"] Type.string
         "Apply a Browserify transform.",
       Args.option "sourceMap" ["--source-map"] Type.string
@@ -145,18 +170,20 @@ commands = [
       Args.option "standalone" ["--standalone"] Type.string
         "Output a UMD bundle with the given external module name."
       ] ++ buildArgs,
-  Args.command "run" "Compile and run the project." Run.action $ [
+  Args.command "run" "Compile and run the project." remainderToProgram Run.action $ [
     Args.optionDefault "runtime" ["--runtime", "-r"] Type.string
       "Run the program using this command instead of Node." "node"
     ] ++ buildArgs,
-  Args.command "docs" "Generate project documentation." Docs.action $ [
+  Args.command "docs" "Generate project documentation." remainderToPscDocs Docs.action $ [
     Args.option "withTests" ["--with-tests", "-t"] Type.flag
       "Include tests.",
     Args.option "withDependencies" ["--with-dependencies", "-d"] Type.flag
       "Include external dependencies."
     ] ++ pathArgs,
-  Args.command "psci" "Launch a PureScript REPL configured for the project." Psci.action pathArgs,
-  Args.command "server" "Launch a Webpack development server." Server.action $ [
+  Args.command "psci"
+    "Launch a PureScript REPL configured for the project." remainderToPsci
+    Psci.action pathArgs,
+  Args.command "server" "Launch a Webpack development server." Nothing Server.action $ [
       Args.optionDefault "main" ["--main", "-m"] Type.string
         "Application's entry point." "Main",
       Args.option "config" ["--config", "-c"] Type.file

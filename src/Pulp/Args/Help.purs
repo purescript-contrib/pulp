@@ -74,6 +74,11 @@ prepareCmds = foldr foldCmds empty
 formatCmds :: Array Command -> AffN String
 formatCmds = liftEff <<< formatTable <<< prepareCmds
 
+formatPassThrough :: Maybe String -> AffN String
+formatPassThrough mdesc =
+  let desc = fromMaybe "Passthrough options are ignored." mdesc
+  in liftEff (wrap ("  " ++ desc) 2)
+
 helpOpt :: Option
 helpOpt = option "help" ["--help", "-h"] Type.flag
             "Show this help message."
@@ -82,7 +87,6 @@ printHelp :: Outputter -> Array Option -> Array Command -> AffN Unit
 printHelp out globals commands = do
   commandName <- liftEff getCommandName
   out.write $ "Usage: " ++ commandName ++ " [global-options] <command> [command-options]\n"
-  -- if context print command docs
   out.bolded "\nGlobal options:\n"
   formatOpts (globals ++ [helpOpt]) >>= out.write
   out.bolded "\nCommands:\n"
@@ -103,6 +107,8 @@ printCommandHelp out globals command = do
   formatOpts (command.options) >>= out.write
   out.bolded "\nGlobal options:\n"
   formatOpts (globals ++ [helpOpt]) >>= out.write
+  out.bolded "\nPassthrough options:\n"
+  formatPassThrough command.passthroughDesc >>= out.write
   out.write "\n"
 
 getCommandName :: EffN String

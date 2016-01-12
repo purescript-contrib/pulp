@@ -45,6 +45,7 @@ type Option = {
 type Command = {
   name :: String,
   desc :: String,
+  passthroughDesc :: Maybe String,
   options :: Array Option,
   action :: Action
   }
@@ -69,10 +70,11 @@ optionDefault :: forall a. String -> Array String -> OptionParser -> String -> a
 optionDefault n m p d defaultValue =
   (option n m p d) { defaultValue = Just (toForeign defaultValue) }
 
-command :: String -> String -> Action -> Array Option -> Command
-command name desc action options = {
-  name: name,
-  desc: desc,
-  options: options,
-  action: action
+command :: String -> String -> Maybe String -> Action -> Array Option -> Command
+command name desc passthroughDesc action options = {
+  name,
+  desc,
+  passthroughDesc,
+  options,
+  action
   }

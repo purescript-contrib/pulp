@@ -20,7 +20,7 @@ import Pulp.Outputter
 import Pulp.System.Files as Files
 import Pulp.Args
 import Pulp.Args.Get
-import Pulp.Exec (psc, pscBundle)
+import Pulp.Exec (psa, psc, pscBundle)
 import Pulp.Files
 import Pulp.Rebuild as Rebuild
 
@@ -66,8 +66,9 @@ go buildType = Action \args -> do
                             else pure Set.empty)
 
   buildPath <- getOption' "buildPath" args.commandOpts
-
-  psc (sources globs)
+  noPsa <- getFlag "noPsa" args.commandOpts
+  let bin = if noPsa then psc else psa
+  bin (sources globs)
       (ffis globs)
       (["-o", buildPath] ++ args.remainder)
       Nothing

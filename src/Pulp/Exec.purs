@@ -3,6 +3,7 @@ module Pulp.Exec
   ( exec
   , execQuiet
   , execInteractive
+  , psa
   , psc
   , pscBundle
   ) where
@@ -27,11 +28,22 @@ import Node.ChildProcess as CP
 
 import Pulp.System.Stream
 import Pulp.System.FFI
+import Pulp.System.Which
+
+psa :: Array String -> Array String -> Array String -> Maybe (StrMap String) -> AffN String
+psa deps ffi args env = do
+  bin <- attempt $ which "psa"
+  case bin of
+    Left  _ -> psc deps ffi args env
+    Right _ -> compiler "psa" deps ffi args env
 
 psc :: Array String -> Array String -> Array String -> Maybe (StrMap String) -> AffN String
-psc deps ffi args env =
+psc = compiler "psc"
+
+compiler :: String -> Array String -> Array String -> Array String -> Maybe (StrMap String) -> AffN String
+compiler name deps ffi args env =
   let allArgs = args <> deps <> (Array.concatMap (\path -> ["--ffi", path]) ffi)
-  in  execQuiet "psc" allArgs env
+  in  execQuiet name allArgs env
 
 pscBundle :: Array String -> Array String -> Maybe (StrMap String) -> AffN String
 pscBundle files args env =

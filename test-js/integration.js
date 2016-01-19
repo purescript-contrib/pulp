@@ -1,8 +1,9 @@
-import fs from "fs";
+import fs from "fs-promise";
 import path from "path";
 import run from "./sh";
 import semver from "semver";
 import touch from "touch";
+import which from "which";
 
 const hello = "Hello sailor!";
 const test = "You should add some tests.";
@@ -18,10 +19,20 @@ const skipped = "* Project unchanged; skipping build step."
 
 const newlines = /\r?\n/g
 
+function resolvePath(cmd) {
+  return new Promise((resolve, reject) => {
+    which(cmd, (err, res) => err ? reject(err) : resolve(res));
+  });
+}
+
 function sleep(ms) {
   return new Promise((resolve, reject) => {
     setTimeout(resolve, ms);
   });
+}
+
+function windowsify(script) {
+  return process.platform === "win32" ? `${script}.bat` : script;
 }
 
 describe("integration tests", function() {
@@ -61,22 +72,24 @@ describe("integration tests", function() {
   it("refuses to init without --force", run(function*(sh, pulp, assert, temp) {
     for (var idx in filesToOverwrite) {
       let file = path.join(temp, filesToOverwrite[idx])
-        , dir  = path.dirname(file)
-      if (!fs.existsSync(dir)) { fs.mkdirSync(dir); }
+        , dir  = path.dirname(file);
+      if (!(yield fs.exists(dir))) {
+        yield fs.mkdir(dir);
+      }
       touch.sync(file);
       const [_, err] = yield pulp("init", null, { expectedExitCode: 1 });
       assert.match(err.trim(), initWithoutForce(path.basename(file)));
       const rm = process.platform === "win32" ? "del" : "rm"
-      fs.unlinkSync(file);
+      yield fs.unlink(file);
     }
   }));
 
   it("init overwrites existing files with --force", run(function*(sh, pulp, assert, temp) {
     for (var idx in filesToOverwrite) {
       let file = path.join(temp, filesToOverwrite[idx]);
-      fs.writeFileSync(file, "hello");
+      yield fs.writeFile(file, "hello");
       yield pulp("init --force");
-      const out = fs.readFileSync(file);
+      const out = yield fs.readFile(file);
       assert.notEqual(out, "hello");
     }
   }));
@@ -105,8 +118,8 @@ describe("integration tests", function() {
     yield pulp("init");
     yield sh("mkdir extras");
 
-    fs.writeFileSync(path.join(temp, "extras", "Extras.purs"),
-                     "module Extras where\n\nfoo = 1");
+    yield fs.writeFile(path.join(temp, "extras", "Extras.purs"),
+                       "module Extras where\n\nfoo = 1");
 
     yield pulp("build --include extras");
 
@@ -121,7 +134,7 @@ describe("integration tests", function() {
 
   it("pulp --bower-file FILE run", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
-    fs.renameSync(path.join(temp, "bower.json"), path.join(temp, "lol.json"));
+    yield fs.rename(path.join(temp, "bower.json"), path.join(temp, "lol.json"));
     const [out] = yield pulp("--bower-file lol.json run");
     assert.equal(out.trim(), hello);
   }));
@@ -157,7 +170,7 @@ describe("integration tests", function() {
 
   it("pulp build -O --src-path alt", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
-    fs.renameSync(path.join(temp, "src"), path.join(temp, "alt"));
+    yield fs.rename(path.join(temp, "src"), path.join(temp, "alt"));
     const [src] = yield pulp("build -O --src-path alt");
     const [out] = yield sh("node", src);
     assert.equal(out.trim(), hello);
@@ -171,7 +184,7 @@ describe("integration tests", function() {
 
   it("pulp test --test-path alt", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
-    fs.renameSync(path.join(temp, "test"), path.join(temp, "alt"));
+    yield fs.rename(path.join(temp, "test"), path.join(temp, "alt"));
     const [out] = yield pulp("test --src-path alt");
     assert.equal(out.trim(), test);
   }));
@@ -231,8 +244,7 @@ describe("integration tests", function() {
 
     assert.file(".psci", (c) => true);
     const [out] = yield pulp("psci", "import Prelude\n\"hello, \" ++ \"world\"");
-    assert.ok(out.indexOf("\"hello, world\"") > -1,
-      "output did not contain \"hello, world\"");
+    assert.match(out, /hello, world/);
   }));
 
   it("pulp psci includes local files", run(function*(sh, pulp, assert) {
@@ -241,8 +253,7 @@ describe("integration tests", function() {
 
     assert.file(".psci", (c) => true);
     const [out] = yield pulp("psci", "import Main as Main\nMain.main");
-    assert.ok(out.indexOf(hello) > -1,
-      "output did not contain \"" + hello + "\"");
+    assert.match(out, new RegExp(hello));
   }));
 
   it("pulp --before something build", run(function*(sh, pulp, assert, temp) {
@@ -256,7 +267,7 @@ describe("integration tests", function() {
 
     const [out] = yield sh("node out.js");
     assert.equal(out.trim(), hello);
-    assert.ok(fs.existsSync(path.join(temp, "after.txt")),
+    assert.ok(yield fs.exists(path.join(temp, "after.txt")),
       "test file before.txt was not found as after.txt");
   }));
 
@@ -274,8 +285,9 @@ describe("integration tests", function() {
 
     // Deliberately cause a build failure.
     const mainPath = path.join(temp, 'src', 'Main.purs')
-    fs.writeFileSync(
-      mainPath, fs.readFileSync(mainPath).toString().concat("\ninvalidThing")
+    yield fs.writeFile(
+      mainPath,
+      (yield fs.readFile(mainPath)).toString().concat("\ninvalidThing")
     );
 
     touch.sync(path.join(temp, "before.txt"))
@@ -323,5 +335,42 @@ describe("integration tests", function() {
     const [out] = yield pulp("test --runtime cat");
     const [out2] = yield sh("node", out);
     assert.equal(out2.trim(), test);
+  }));
+
+  it("pulp chooses psa over psc when available", run(function*(sh, pulp, assert, temp) {
+    const node = yield resolvePath("node");
+    const prog = (name) => `
+if (process.argv[2] === "--version") {
+  process.stdout.write("1.0.0.0\\n");
+} else {
+  process.stderr.write("assert ${name}\\n");
+}
+`;
+    const p = path.resolve(temp, "bin");
+    const psc = path.resolve(p, windowsify("psc"));
+    const psa = path.resolve(p, windowsify("psa"));
+    const pscJs = path.resolve(p, "psc.js");
+    const psaJs = path.resolve(p, "psa.js");
+    const args = process.platform === "win32" ? "%*" : "$@";
+
+    yield fs.mkdir(p);
+    yield fs.writeFile(psc, `${node} ${pscJs} ${args}`, "utf-8");
+    yield fs.chmod(psc, 0o755);
+    yield fs.writeFile(pscJs, prog("psc"), "utf-8");
+
+    yield pulp("init");
+
+    const [out1, err1] = yield pulp("build", undefined, {path: p});
+    assert.match(err1, /assert psc/);
+
+    yield fs.writeFile(psa, `${node} ${psaJs} ${args}`, "utf-8");
+    yield fs.chmod(psa, 0o755);
+    yield fs.writeFile(psaJs, prog("psa"), "utf-8");
+
+    const [out2, err2] = yield pulp("build --force", undefined, {path: p});
+    assert.match(err2, /assert psa/);
+
+    const [out3, err3] = yield pulp("build --force --no-psa", undefined, {path: p});
+    assert.match(err3, /assert psc/);
   }));
 });

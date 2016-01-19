@@ -4,24 +4,30 @@ import _temp from "temp";
 import { resolve } from "path";
 import { assert } from "chai";
 import fs from "fs";
+import which from "which";
 
 const temp = _temp.track();
 
 function sh(cwd, cmd, input, opts) {
-  var opts = opts || {};
+  opts = opts || {};
   return new Promise((resolve, reject) => {
-    const proc = exec(cmd, { cwd: opts.cwd || cwd }, (error, stdout, stderr) => {
+    const procOpts = { cwd: opts.cwd || cwd };
+    if (opts.path) {
+      procOpts.env = {...process.env};
+      procOpts.env.PATH = opts.path;
+    }
+    const proc = exec(cmd, procOpts, (error, stdout, stderr) => {
       resolve({ error, stdout, stderr });
     });
     proc.stdin.end(input || "");
   }).then(function(r) {
-    var expectedExitCode = (opts && opts.expectedExitCode) || 0;
-    var exitCode = (r.error && r.error.code) || 0;
+    const expectedExitCode = (opts && opts.expectedExitCode) || 0;
+    const exitCode = (r.error && r.error.code) || 0;
     if (expectedExitCode !== exitCode) {
-      var msg = (r.error && r.error.message) || "";
+      let msg = (r.error && r.error.message) || "";
       msg += "Expected exit code " + expectedExitCode +
-               " but got " + exitCode + ".";
-      var newErr = new Error(msg);
+             " but got " + exitCode + ".";
+      const newErr = new Error(msg);
       newErr.innerError = r.error;
       throw newErr;
     }
@@ -31,19 +37,26 @@ function sh(cwd, cmd, input, opts) {
 }
 
 function asserts(path) {
-  var file = (filename, pred) => {
-      const data = fs.readFileSync(resolve(path, filename), "utf-8");
-      pred(data);
-    };
+  const file = (filename, pred) => {
+    const data = fs.readFileSync(resolve(path, filename), "utf-8");
+    pred(data);
+  };
 
-  var exists = (filename) => file(filename, (data) => true);
+  const exists = (filename) => file(filename, (data) => true);
 
   return Object.assign({}, assert, { file, exists });
 }
 
+function resolvePath(cmd) {
+  return new Promise((resolve, reject) => {
+    which(cmd, (err, res) => err ? reject(err) : resolve(res));
+  });
+}
+
 function pulpFn(path, pulpPath) {
   return (cmd, input, opts) =>
-    sh(path, `node "${pulpPath}" ${cmd}`, input, opts);
+    resolvePath("node").then((node) =>
+      sh(path, `${node} "${pulpPath}" ${cmd}`, input, opts));
 }
 
 export default function run(fn) {

@@ -56,7 +56,7 @@ function resolvePath(cmd) {
 function pulpFn(path, pulpPath) {
   return (cmd, input, opts) =>
     resolvePath("node").then((node) =>
-      sh(path, `${node} "${pulpPath}" ${cmd}`, input, opts));
+      sh(path, `"${node}" "${pulpPath}" ${cmd}`, input, opts));
 }
 
 export default function run(fn) {

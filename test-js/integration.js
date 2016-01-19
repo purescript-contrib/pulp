@@ -354,7 +354,7 @@ if (process.argv[2] === "--version") {
     const args = process.platform === "win32" ? "%*" : "$@";
 
     yield fs.mkdir(p);
-    yield fs.writeFile(psc, `${node} ${pscJs} ${args}`, "utf-8");
+    yield fs.writeFile(psc, `"${node}" "${pscJs}" ${args}`, "utf-8");
     yield fs.chmod(psc, 0o755);
     yield fs.writeFile(pscJs, prog("psc"), "utf-8");
 

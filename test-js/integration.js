@@ -32,7 +32,7 @@ function sleep(ms) {
 }
 
 function windowsify(script) {
-  return process.platform === "win32" ? `${script}.bat` : script;
+  return process.platform === "win32" ? `${script}.cmd` : script;
 }
 
 describe("integration tests", function() {

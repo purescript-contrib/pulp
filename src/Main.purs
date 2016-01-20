@@ -95,8 +95,6 @@ buildishArgs :: Array Args.Option
 buildishArgs = [
   Args.optionDefault "buildPath" ["--build-path", "-o"] Type.string
     "Path for compiler output." "./output",
-  Args.option "force" ["--force"] Type.flag
-    "Force a build even if no source files have changed.",
   Args.option "noPsa" ["--no-psa"] Type.flag
     "Do not attempt to use the psa frontend instead of psc"
   ] ++ pathArgs

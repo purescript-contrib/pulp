@@ -300,36 +300,6 @@ describe("integration tests", function() {
     assert.exists(path.join(temp, "afterFailed.txt")); // --else has run
   }));
 
-  it("pulp build skips when possible", run(function*(sh, pulp, assert) {
-    yield pulp("init");
-    yield pulp("build");
-    const [_, err] = yield pulp("build");
-    assert.equal(err.trim(), skipped);
-  }));
-
-  it("changed args force rebuild", run(function*(sh, pulp, assert, temp) {
-    yield pulp("init");
-    yield pulp("build");
-    const [_, err] = yield pulp("build --to out.js");
-    assert.notEqual(err.trim(), skipped);
-  }));
-
-  it("changed files force rebuild", run(function*(sh, pulp, assert, temp) {
-    yield pulp("init");
-    yield pulp("build");
-    yield sleep(1000);
-    touch.sync(path.join(temp, "src", "Main.purs"));
-    const [_, err] = yield pulp("build");
-    assert.notEqual(err.trim(), skipped);
-  }));
-
-  it("--force flag forces rebuild", run(function*(sh, pulp, assert) {
-    yield pulp("init");
-    yield pulp("build --force");
-    const [_, err] = yield pulp("build --force");
-    assert.notEqual(err.trim(), skipped);
-  }));
-
   it("pulp test --runtime", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const [out] = yield pulp("test --runtime cat");
@@ -368,10 +338,10 @@ if (process.argv[2] === "--version") {
     yield fs.chmod(psa, 0o755);
     yield fs.writeFile(psaJs, prog("psa"), "utf-8");
 
-    const [out2, err2] = yield pulp("build --force", undefined, {path: p});
+    const [out2, err2] = yield pulp("build", undefined, {path: p});
     assert.match(err2, /assert psa/);
 
-    const [out3, err3] = yield pulp("build --force --no-psa", undefined, {path: p});
+    const [out3, err3] = yield pulp("build --no-psa", undefined, {path: p});
     assert.match(err3, /assert psc/);
   }));
 });

@@ -14,7 +14,7 @@ function sh(cwd, cmd, input, opts) {
     const procOpts = { cwd: opts.cwd || cwd };
     if (opts.path) {
       procOpts.env = {...process.env};
-      procOpts.env.PATH = opts.path;
+      procOpts.env.Path = opts.path;
     }
     const proc = exec(cmd, procOpts, (error, stdout, stderr) => {
       resolve({ error, stdout, stderr });

@@ -32,7 +32,7 @@ function sleep(ms) {
 }
 
 function windowsify(script) {
-  return process.platform === "win32" ? `${script}.bat` : script;
+  return process.platform === "win32" ? `${script}.cmd` : script;
 }
 
 describe("integration tests", function() {
@@ -351,10 +351,11 @@ if (process.argv[2] === "--version") {
     const psa = path.resolve(p, windowsify("psa"));
     const pscJs = path.resolve(p, "psc.js");
     const psaJs = path.resolve(p, "psa.js");
+    const echoOff = process.platform === "win32" ? "@echo off\r\n" : "";
     const args = process.platform === "win32" ? "%*" : "$@";
 
     yield fs.mkdir(p);
-    yield fs.writeFile(psc, `"${node}" "${pscJs}" ${args}`, "utf-8");
+    yield fs.writeFile(psc, `${echoOff}"${node}" "${pscJs}" ${args}`, "utf-8");
     yield fs.chmod(psc, 0o755);
     yield fs.writeFile(pscJs, prog("psc"), "utf-8");
 
@@ -363,7 +364,7 @@ if (process.argv[2] === "--version") {
     const [out1, err1] = yield pulp("build", undefined, {path: p});
     assert.match(err1, /assert psc/);
 
-    yield fs.writeFile(psa, `${node} ${psaJs} ${args}`, "utf-8");
+    yield fs.writeFile(psa, `${echoOff}"${node}" "${psaJs}" "${args}"`, "utf-8");
     yield fs.chmod(psa, 0o755);
     yield fs.writeFile(psaJs, prog("psa"), "utf-8");
 

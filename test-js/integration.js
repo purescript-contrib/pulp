@@ -309,9 +309,9 @@ describe("integration tests", function() {
 
   it("pulp chooses psa over psc when available", run(function*(sh, pulp, assert, temp) {
     const node = yield resolvePath("node");
-    const prog = (name) => `
+    const prog = (name, version) => `
 if (process.argv[2] === "--version") {
-  process.stdout.write("1.0.0.0\\n");
+  process.stdout.write("${version}\\n");
 } else {
   process.stderr.write("assert ${name}\\n");
 }
@@ -327,7 +327,7 @@ if (process.argv[2] === "--version") {
     yield fs.mkdir(p);
     yield fs.writeFile(psc, `${echoOff}"${node}" "${pscJs}" ${args}`, "utf-8");
     yield fs.chmod(psc, 0o755);
-    yield fs.writeFile(pscJs, prog("psc"), "utf-8");
+    yield fs.writeFile(pscJs, prog("psc", "1.0.0.0"), "utf-8");
 
     yield pulp("init");
 
@@ -336,12 +336,16 @@ if (process.argv[2] === "--version") {
 
     yield fs.writeFile(psa, `${echoOff}"${node}" "${psaJs}" "${args}"`, "utf-8");
     yield fs.chmod(psa, 0o755);
-    yield fs.writeFile(psaJs, prog("psa"), "utf-8");
+    yield fs.writeFile(psaJs, prog("psa", "1.0.0"), "utf-8");
 
     const [out2, err2] = yield pulp("build", undefined, {path: p});
     assert.match(err2, /assert psa/);
 
     const [out3, err3] = yield pulp("build --no-psa", undefined, {path: p});
     assert.match(err3, /assert psc/);
+
+    yield fs.writeFile(pscJs, prog("psc", "0.7.9.0"), "utf-8");
+    const [out4, err4] = yield pulp("build --force", undefined, {path: p});
+    assert.match(err4, /assert psc/);
   }));
 });

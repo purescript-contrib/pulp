@@ -1,4 +1,7 @@
-module Pulp.Validate (validate) where
+module Pulp.Validate
+  ( validate
+  , minimumPscVersionForPsa
+  ) where
 
 import Prelude
 import Data.Maybe
@@ -15,7 +18,7 @@ import Pulp.Exec (execQuiet)
 import Pulp.System.FFI
 import Pulp.Outputter (Outputter())
 
-validate :: Outputter -> AffN Unit
+validate :: Outputter -> AffN Version
 validate out = do
   ver <- getPscVersion out
   when (ver < minimumPscVersion) $ do
@@ -24,6 +27,7 @@ validate out = do
     out.err $ "Your installed version is " <> showVersion ver <> "."
     out.err $ "Please either upgrade PureScript or downgrade Pulp to version 3.x."
     throwError $ error "Minimum psc version not satisfied"
+  pure ver
 
 getPscVersion :: Outputter -> AffN Version
 getPscVersion out = do
@@ -38,3 +42,6 @@ getPscVersion out = do
 
 minimumPscVersion :: Version
 minimumPscVersion = Version (toList [0, 7, 0, 0]) Nil
+
+minimumPscVersionForPsa :: Version
+minimumPscVersionForPsa = Version (toList [0, 8, 0, 0]) Nil

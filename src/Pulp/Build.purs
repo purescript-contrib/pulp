@@ -7,17 +7,20 @@ module Pulp.Build
 
 import Prelude
 import Control.Monad (when)
+import Data.Either (Either(..))
 import Data.Maybe
 import Data.Map (union)
 import Data.String (split)
 import Data.Set as Set
 import Control.Monad.Eff.Class (liftEff)
+import Control.Monad.Aff (attempt)
 import Node.Process as Process
 
 import Pulp.System.FFI
 import Pulp.System.Stream (write, end, WritableStream())
 import Pulp.Outputter
 import Pulp.System.Files as Files
+import Pulp.System.Which
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec (psa, psc, pscBundle)
@@ -54,11 +57,26 @@ go buildType = Action \args -> do
 
   buildPath <- getOption' "buildPath" args.commandOpts
   noPsa <- getFlag "noPsa" args.commandOpts
-  let bin = if noPsa then psc else psa
-  bin (sources globs)
-      (ffis globs)
-      (["-o", buildPath] ++ args.remainder)
-      Nothing
+
+  let sourceGlobs = sources globs
+      ffiGlobs = ffis globs
+      binArgs = ["-o", buildPath] ++ args.remainder
+      runPsc = psc sourceGlobs ffiGlobs binArgs Nothing
+
+  if noPsa
+    then runPsc
+    else do
+      psaBin <- attempt (which "psa")
+      case psaBin of
+        Left _ -> runPsc
+        Right _ -> do
+          monochrome <- getFlag "monochrome" args.globalOpts
+          dependencyPath <- getOption' "dependencyPath" args.commandOpts
+          let binArgs' = binArgs ++ ["--is-lib=" ++ dependencyPath]
+                                 ++ (if monochrome
+                                       then ["--monochrome"]
+                                       else [])
+          psa sourceGlobs ffiGlobs binArgs' Nothing
 
   out.log "Build successful."
 

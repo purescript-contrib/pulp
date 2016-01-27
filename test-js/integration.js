@@ -330,6 +330,7 @@ if (process.argv[2] === "--version") {
   process.stdout.write("${version}\\n");
 } else {
   process.stderr.write("assert ${name}\\n");
+  process.stderr.write(process.argv.join(" ") + "\\n");
 }
 `;
     const p = path.resolve(temp, "bin");
@@ -360,8 +361,12 @@ if (process.argv[2] === "--version") {
     const [out3, err3] = yield pulp("build --no-psa", undefined, {path: p});
     assert.match(err3, /assert psc/);
 
+    const [out4, err4] = yield pulp("build --monochrome", undefined, {path: p});
+    assert.match(err4, /--monochrome/);
+    assert.match(err4, /--is-lib=bower_components/);
+
     yield fs.writeFile(pscJs, prog("psc", "0.7.9.0"), "utf-8");
-    const [out4, err4] = yield pulp("build --force", undefined, {path: p});
-    assert.match(err4, /assert psc/);
+    const [out5, err5] = yield pulp("build", undefined, {path: p});
+    assert.match(err5, /assert psc/);
   }));
 });

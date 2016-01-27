@@ -28,14 +28,9 @@ import Node.ChildProcess as CP
 
 import Pulp.System.Stream
 import Pulp.System.FFI
-import Pulp.System.Which
 
 psa :: Array String -> Array String -> Array String -> Maybe (StrMap String) -> AffN String
-psa deps ffi args env = do
-  bin <- attempt $ which "psa"
-  case bin of
-    Left  _ -> psc deps ffi args env
-    Right _ -> compiler "psa" deps ffi args env
+psa = compiler "psa"
 
 psc :: Array String -> Array String -> Array String -> Maybe (StrMap String) -> AffN String
 psc = compiler "psc"

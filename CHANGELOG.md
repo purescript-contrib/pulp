@@ -1,5 +1,18 @@
 # Pulp Release History
 
+## 8.0.0
+
+* Pulp's rebuild logic has been removed, as it was causing more
+  trouble than it was worth. This means the `--force` flag is now once
+  again only available on `pulp browserify`, to force a
+  non-incremental build.
+* Pulp will now use the
+  [`psa`](https://github.com/natefaubion/purescript-psa) tool instead
+  of `psc` if available on your path. You can disable this behaviour
+  by passing the `--no-psa` flag.
+
+Bugs fixed: #140.
+
 ## 7.0.0
 
 * Remove the `--engine` option, since the `--runtime` option fulfils the same

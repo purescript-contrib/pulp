@@ -7,17 +7,17 @@ import which from "which";
 
 const hello = "Hello sailor!";
 const test = "You should add some tests.";
-const docLine1 = "## Module Main"
+const docLine1 = "## Module Main";
 const bowerMissing = "* ERROR: No bower.json found in current or parent directories. Are you in a PureScript project?";
 const initWithoutForce = f => new RegExp('\\* ERROR: Found .*'+f+': There\'s already a project here. Run `pulp init --force` if you\'re sure you want to overwrite it.');
 const filesToOverwrite = ['./bower.json', './.gitignore', 'src/Main.purs', 'test/Main.purs'];
-const testDocLine1 = "## Module Test.Main"
-const consoleDocLine1 = "## Module Control.Monad.Eff.Console"
-const buildHelp = ["Command: build", "Build the project."]
-const docsHelp = ["Command: docs", "Generate project documentation."]
-const skipped = "* Project unchanged; skipping build step."
+const testDocLine1 = "## Module Test.Main";
+const consoleDocLine1 = "## Module Control.Monad.Eff.Console";
+const buildHelp = ["Command: build", "Build the project."];
+const docsHelp = ["Command: docs", "Generate project documentation."];
+const skipped = "* Project unchanged; skipping build step.";
 
-const newlines = /\r?\n/g
+const newlines = /\r?\n/g;
 
 function resolvePath(cmd) {
   return new Promise((resolve, reject) => {
@@ -300,13 +300,11 @@ describe("integration tests", function() {
     assert.exists(path.join(temp, "afterFailed.txt")); // --else has run
   }));
 
-  it("pulp --then something browserify", run(function*(sh, pulp, assert) {
+  it("pulp --then something browserify", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     const mv = process.platform === "win32" ? "rename" : "mv";
-    yield pulp(`--then "${mv} out.js out2.js" browserify > out.js`);
-
-    const [out] = yield sh("node out2.js");
-    assert.equal(out.trim(), hello);
+    yield pulp(`--then "echo lol > out.txt" browserify`);
+    assert.equal((yield fs.readFile(path.join(temp, "out.txt"), "utf-8")).trim(), "lol");
   }));
 
   it("pulp --then something browserify --to", run(function*(sh, pulp, assert) {

@@ -15,7 +15,7 @@ import Control.Monad.Eff.Class (liftEff)
 import Node.Process as Process
 
 import Pulp.System.FFI
-import Pulp.System.Stream (write, end, WritableStream())
+import Pulp.System.Stream (write, WritableStream())
 import Pulp.Outputter
 import Pulp.System.Files as Files
 import Pulp.Args
@@ -100,6 +100,5 @@ withOutputStream opts aff = do
     Just path -> do
       stream <- liftEff $ Files.createWriteStream path
       aff stream
-      end stream
     Nothing ->
       aff Process.stdout

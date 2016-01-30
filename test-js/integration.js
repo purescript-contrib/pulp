@@ -261,8 +261,8 @@ describe("integration tests", function() {
 
     // In reality, this is likely to be a "--before clear" or something, but
     // that's nightmarish to actually test.
-    touch.sync(path.join(temp, "before.txt"))
-    const mv = process.platform === "win32" ? "rename" : "mv"
+    touch.sync(path.join(temp, "before.txt"));
+    const mv = process.platform === "win32" ? "rename" : "mv";
     yield pulp(`--before "${mv} before.txt after.txt" build --to out.js`);
 
     const [out] = yield sh("node out.js");
@@ -273,7 +273,7 @@ describe("integration tests", function() {
 
   it("pulp --then something build", run(function*(sh, pulp, assert) {
     yield pulp("init");
-    const mv = process.platform === "win32" ? "rename" : "mv"
+    const mv = process.platform === "win32" ? "rename" : "mv";
     yield pulp(`--then "${mv} out.js out2.js" build --to out.js`);
 
     const [out] = yield sh("node out2.js");
@@ -284,20 +284,38 @@ describe("integration tests", function() {
     yield pulp("init");
 
     // Deliberately cause a build failure.
-    const mainPath = path.join(temp, 'src', 'Main.purs')
+    const mainPath = path.join(temp, 'src', 'Main.purs');
     yield fs.writeFile(
       mainPath,
       (yield fs.readFile(mainPath)).toString().concat("\ninvalidThing")
     );
 
-    touch.sync(path.join(temp, "before.txt"))
-    const mv = process.platform === "win32" ? "rename" : "mv"
+    touch.sync(path.join(temp, "before.txt"));
+    const mv = process.platform === "win32" ? "rename" : "mv";
     const [_, err] = yield pulp(
       `--else "${mv} before.txt afterFailed.txt" build --to out.js`,
       null, { expectedExitCode: 1 }
     );
     assert.match(err.trim(), /Unable to parse/); // Expected error
     assert.exists(path.join(temp, "afterFailed.txt")); // --else has run
+  }));
+
+  it("pulp --then something browserify", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+    const mv = process.platform === "win32" ? "rename" : "mv";
+    yield pulp(`--then "${mv} out.js out2.js" browserify > out.js`);
+
+    const [out] = yield sh("node out2.js");
+    assert.equal(out.trim(), hello);
+  }));
+
+  it("pulp --then something browserify --to", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+    const mv = process.platform === "win32" ? "rename" : "mv";
+    yield pulp(`--then "${mv} out.js out2.js" browserify --to out.js`);
+
+    const [out] = yield sh("node out2.js");
+    assert.equal(out.trim(), hello);
   }));
 
   it("pulp test --runtime", run(function*(sh, pulp, assert) {

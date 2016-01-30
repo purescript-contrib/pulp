@@ -12,7 +12,9 @@ exports["browserifyBundle'"] = function browserifyBundle$prime(opts, callback) {
     standalone: opts.standalone
   });
   if (opts.transform) b.transform(opts.transform);
-  b.bundle().pipe(opts.out).on("close", callback);
+  var out = b.bundle();
+  out.pipe(opts.out);
+  out.on("finish", callback);
 };
 
 exports["browserifyIncBundle'"] = function browserifyIncBundle$prime(opts, callback) {
@@ -25,5 +27,7 @@ exports["browserifyIncBundle'"] = function browserifyIncBundle$prime(opts, callb
   });
   b.add(opts.path);
   if (opts.transform) b.transform(opts.transform);
-  b.bundle().pipe(opts.out).on("close", callback);
+  var out = b.bundle();
+  out.pipe(opts.out);
+  out.on("finish", callback);
 };

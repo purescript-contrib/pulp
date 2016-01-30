@@ -2,6 +2,13 @@
 
 "use strict";
 
+function write(input, output, callback) {
+  var pipe = require("through")();
+  input.pipe(pipe);
+  pipe.pipe(output, {end: false});
+  pipe.on("end", callback);
+}
+
 exports["browserifyBundle'"] = function browserifyBundle$prime(opts, callback) {
   var StringStream = require("string-stream");
   var browserify = require("browserify");
@@ -12,9 +19,7 @@ exports["browserifyBundle'"] = function browserifyBundle$prime(opts, callback) {
     standalone: opts.standalone
   });
   if (opts.transform) b.transform(opts.transform);
-  var out = b.bundle();
-  out.pipe(opts.out);
-  out.on("finish", callback);
+  write(b.bundle(), opts.out, callback);
 };
 
 exports["browserifyIncBundle'"] = function browserifyIncBundle$prime(opts, callback) {
@@ -27,7 +32,5 @@ exports["browserifyIncBundle'"] = function browserifyIncBundle$prime(opts, callb
   });
   b.add(opts.path);
   if (opts.transform) b.transform(opts.transform);
-  var out = b.bundle();
-  out.pipe(opts.out);
-  out.on("finish", callback);
+  write(b.bundle(), opts.out, callback);
 };

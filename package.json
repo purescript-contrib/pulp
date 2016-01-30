@@ -49,6 +49,7 @@
     "string-stream": "0.0.7",
     "supports-color": "^3.1.2",
     "temp": "^0.8.1",
+    "through": "^2.3.8",
     "tree-kill": "^1.0.0",
     "watch": "^0.11.0",
     "watchpack": "^0.2.9",

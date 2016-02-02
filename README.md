@@ -80,8 +80,12 @@ where the project root is.
 Your project source files go in the `src` folder. Your test files go
 in the `test` folder. Project dependencies will be installed under the
 Bower standard `bower_components` folder, and are expected to have the
-same basic `src`/`test` structure aswell as a `purescript-` prefix in 
-their name. That's all there is to a `pulp` project.
+same basic `src`/`test` structure. That's all there is to a `pulp` project.
+
+We employ the `purescript-` prefix as a convention to identify PureScript
+projects when they're used as dependencies. You're welcome to call your
+project anything you like, but without the `purescript-` prefix it won't
+be picked up by `pulp` as a dependency when installed through Bower.
 
 ### What if I need something a bit more complicated?
 

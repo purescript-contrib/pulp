@@ -55,8 +55,8 @@ This installs the PureScript compiler, the Pulp build tool, and the
 The short version:
 
 ```sh
-$ mkdir hello
-$ cd hello
+$ mkdir purescript-hello
+$ cd purescript-hello
 $ pulp init
 $ pulp run
 ```
@@ -65,7 +65,7 @@ The structure of your project folder, after running `pulp init`, will
 look like this:
 
 ```
-  hello
+  purescript-hello
   - bower.json
   - src/
   - test/
@@ -80,8 +80,8 @@ where the project root is.
 Your project source files go in the `src` folder. Your test files go
 in the `test` folder. Project dependencies will be installed under the
 Bower standard `bower_components` folder, and are expected to have the
-same basic `src`/`test` structure. That's all there is to a `pulp`
-project.
+same basic `src`/`test` structure aswell as a `purescript-` prefix in 
+their name. That's all there is to a `pulp` project.
 
 ### What if I need something a bit more complicated?
 

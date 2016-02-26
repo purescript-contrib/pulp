@@ -73,9 +73,10 @@ look like this:
 
 `pulp` works by convention. It expects all projects to contain a
 `bower.json` file, which is needed for package management (which, in
-PureScript, is handled by [Bower](http://bower.io/)). `pulp` itself
-currently doesn't use this file for anything other than figuring out
-where the project root is.
+PureScript, is handled by [Bower](http://bower.io/) (see:
+[Why the PureScript community uses Bower](http://harry.garrood.me/blog/purescript-why-bower/))).
+`pulp` itself currently doesn't use this file for anything other than
+figuring out where the project root is.
 
 Your project source files go in the `src` folder. Your test files go
 in the `test` folder. Project dependencies will be installed under the

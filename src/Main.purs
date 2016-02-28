@@ -45,6 +45,7 @@ import Pulp.Browserify as Browserify
 import Pulp.Docs as Docs
 import Pulp.Psci as Psci
 import Pulp.Server as Server
+import Pulp.Login as Login
 import Pulp.Watch as Watch
 import Pulp.Shell as Shell
 
@@ -196,7 +197,8 @@ commands = [
         "Display no info to the console, only warnings and errors.",
       Args.option "quiet" ["--quiet", "-q"] Type.flag
         "Display nothing to the console when rebuilding."
-    ] ++ buildishArgs
+    ] ++ buildishArgs,
+  Args.command "login" "Obtain and store a token for uploading packages to Pursuit." Nothing Login.action []
   ]
 
 failed :: forall a. Error -> EffN a

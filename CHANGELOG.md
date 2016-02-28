@@ -1,5 +1,13 @@
 # Pulp Release History
 
+## 8.1.0
+
+* Fix `pulp browserify` hanging on Windows.
+* Fix `--dependency-path` and `--monochrome` options not being honoured
+  when using psa.
+* Add `pulp login`, which will be useful later along with the upcoming
+  `pulp release`.
+
 ## 8.0.0
 
 * Pulp's rebuild logic has been removed, as it was causing more

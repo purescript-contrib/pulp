@@ -12,7 +12,6 @@ import Data.Nullable (Nullable(), toNullable)
 import Node.Path as Path
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff (unlink, writeTextFile)
-import Node.Path as Path
 import Node.Process as Process
 
 import Pulp.System.FFI
@@ -139,8 +138,8 @@ setupNodePath buildPath = do
   let buildPath' = Path.resolve [] buildPath
   Process.setEnv "NODE_PATH" $
     case nodePath of
-      Just nodePath -> buildPath' ++ Path.delimiter ++ nodePath
-      Nothing       -> buildPath'
+      Just p  -> buildPath' ++ Path.delimiter ++ p
+      Nothing -> buildPath'
 
 type BrowserifyOptions =
   { basedir    :: String

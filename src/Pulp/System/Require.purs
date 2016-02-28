@@ -1,6 +1,5 @@
 module Pulp.System.Require where
 
-import Prelude
 import Pulp.System.FFI
 
 foreign import unsafeRequire :: forall a. String -> EffN a

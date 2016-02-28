@@ -16,7 +16,7 @@ import Data.StrMap (StrMap())
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Foldable (for_)
 import Data.Array as Array
-import Control.Monad.Error.Class (MonadError, throwError)
+import Control.Monad.Error.Class (throwError)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Aff

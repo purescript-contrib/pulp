@@ -11,7 +11,7 @@ import Control.Monad.Error.Class (throwError)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Eff.Class (liftEff)
 import Data.Foreign (Foreign(), parseJSON)
-import Data.Foreign.Class (IsForeign, readProp)
+import Data.Foreign.Class (class IsForeign, readProp)
 
 import Node.FS.Aff (exists, readTextFile)
 import Node.Encoding (Encoding(UTF8))

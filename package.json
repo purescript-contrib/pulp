@@ -32,7 +32,7 @@
   },
   "scripts": {
     "lint": "jshint src",
-    "compile": "psc -c -f \"src/**/*.js\" -f \"bower_components/purescript-*/src/**/*.js\" \"src/**/*.purs\" \"bower_components/purescript-*/src/**/*.purs\"",
+    "compile": "psa -c -f \"src/**/*.js\" -f \"bower_components/purescript-*/src/**/*.js\" \"src/**/*.purs\" \"bower_components/purescript-*/src/**/*.purs\" --censor-lib --censor-codes=ImplicitImport",
     "bundle": "psc-bundle \"output/*/*.js\" --output pulp.js --module Main --main Main",
     "build": "npm run lint && npm run compile && npm run bundle",
     "test": "npm run build && mocha test-js --compilers js:babel/register",
@@ -68,6 +68,7 @@
     "jshint": "^2.8.0",
     "mocha": "^2.2.5",
     "purescript": "^0.8.0",
+    "purescript-psa": "^0.3.4",
     "semver": "^5.1.0",
     "touch": "^1.0.0"
   }

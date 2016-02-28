@@ -12,7 +12,6 @@ import Node.Process (stderr)
 import Pulp.System.FFI
 import Pulp.System.Stream (write, WritableStream())
 import Pulp.System.SupportsColor as Color
-import Pulp.System.FFI
 import Pulp.Args
 import Pulp.Args.Get
 

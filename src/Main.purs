@@ -46,6 +46,7 @@ import Pulp.Docs as Docs
 import Pulp.Psci as Psci
 import Pulp.Server as Server
 import Pulp.Login as Login
+import Pulp.BumpVersion as BumpVersion
 import Pulp.Watch as Watch
 import Pulp.Shell as Shell
 
@@ -198,7 +199,9 @@ commands = [
       Args.option "quiet" ["--quiet", "-q"] Type.flag
         "Display nothing to the console when rebuilding."
     ] ++ buildishArgs,
-  Args.command "login" "Obtain and store a token for uploading packages to Pursuit." Nothing Login.action []
+  Args.command "login" "Obtain and store a token for uploading packages to Pursuit." Nothing Login.action [],
+  Args.commandWithArgs "version" "Bump and tag a new version in preparation for release." Nothing BumpVersion.action []
+    [Args.argument "bump" Type.versionBump "The type of bump to perform" false]
   ]
 
 failed :: forall a. Error -> EffN a

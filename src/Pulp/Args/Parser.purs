@@ -5,11 +5,14 @@ import Prelude
 import Control.Monad.Eff.Exception
 import Control.Monad.Error.Class
 import Control.Monad.Trans
+import Control.Alt
 import Data.Array (many)
-import Data.Either (Either())
+import Data.Either (Either(), either)
 import Data.Foldable (find, elem)
-import Data.List (List(), toList)
-import Data.Maybe (Maybe(..))
+import Data.Traversable (traverse)
+import Data.List (List)
+import Data.List as List
+import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..))
 import Data.Foreign (toForeign)
 
@@ -60,6 +63,15 @@ opt opts = do
       val <- option.parser.parser key
       return $ Map.singleton option.name val
 
+arg :: Argument -> OptParser Options
+arg a | a.required = do
+  next <- token <|> fail ("Required argument \"" <> a.name <> "\" missing.")
+  val <- a.parser next
+  pure (Map.singleton a.name (Just val))
+arg a = do
+  val <- (Just <$> (token >>= a.parser)) <|> pure Nothing
+  pure (maybe Map.empty (Map.singleton a.name <<< Just) val)
+
 cmd :: Array Command -> OptParser Command
 cmd cmds = do
   o <- lookupCmd cmds <?> "command"
@@ -78,12 +90,14 @@ parseArgv :: Array Option -> Array Command -> OptParser Args
 parseArgv globals commands = do
   globalOpts <- many $ try $ opt globals
   command <- cmd commands
+  commandArgs <- traverse arg command.arguments
   commandOpts <- many $ try $ opt command.options
   rest <- many token
   return $ {
-    globalOpts: Map.unions (toList (globalOpts ++ defs globals)),
+    globalOpts: Map.unions (globalOpts ++ defs globals),
     command: command,
-    commandOpts: Map.unions (toList (commandOpts ++ defs command.options)),
+    commandOpts: Map.unions (commandOpts ++ defs command.options),
+    commandArgs: Map.unions commandArgs,
     remainder: rest
     }
   where
@@ -93,4 +107,4 @@ parse :: Array Option -> Array Command -> Array String -> AffN (Either ParseErro
 parse globals commands s =
   runParserT initialState $ parseArgv globals commands
   where
-  initialState = PState { input: toList s, position: Pos.initialPos }
+  initialState = PState { input: List.fromFoldable s, position: Pos.initialPos }

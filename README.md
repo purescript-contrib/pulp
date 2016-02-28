@@ -90,18 +90,18 @@ be picked up by `pulp` as a dependency when installed through Bower.
 ### What if I need something a bit more complicated?
 
 If you want to change any of these defaults, you can—`pulp` offers a
-number of command line flags to alter its behaviour—but you really
-shouldn't. If you find that your project has more complex requirements
-(which can easily happen if you're building web apps, but shouldn't if
-you're building tooling or libraries), consider using a PureScript
-plugin for a more generic build tool, such as
-[gulp-purescript](https://github.com/purescript-contrib/gulp-purescript).
+number of command line flags to alter its behaviour—but try to avoid using
+them unless you have a good reason to.
 
-Another, often equally viable, alternative is to just
-[use `npm` as your build tool](http://substack.net/task_automation_with_npm_run).
-`pulp`'s numerous command line flags make it well suited for this,
-though there's still a limit to how complicated you can get using just
-`pulp`.
+If you get fed up with having to remember long `pulp` invocations, try
+[using `npm` as your build tool](http://substack.net/task_automation_with_npm_run).
+`pulp`'s numerous command line flags make it well suited for this.
+
+If that's still not enough, you might try using a more generic build tool,
+such as [webpack](https://webpack.github.io/) with
+[purs-loader](https://github.com/ethul/purs-loader), or
+[gulp](http://gulpjs.com) with
+[gulp-purescript](https://github.com/purescript-contrib/gulp-purescript).
 
 ## Pulp Commands
 

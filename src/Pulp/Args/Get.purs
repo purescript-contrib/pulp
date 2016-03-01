@@ -81,8 +81,7 @@ readForeign name thing =
       pure x
 
 internalError :: forall b. String -> AffN b
-internalError msg = do
-  let msg' = "Internal error in Pulp.Args.Get: " ++ msg ++ "\n"
-  write Process.stderr msg'
-  write Process.stderr "This is a bug. Please report it.\n"
-  throwError (error msg')
+internalError msg =
+  throwError (error
+    ("Internal error in Pulp.Args.Get: " <> msg <> "\n" <>
+     "This is a bug. Please report it.\n"))

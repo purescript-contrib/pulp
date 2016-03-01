@@ -7,15 +7,11 @@ import Control.Monad
 import Control.Monad.Eff.Exception
 import Control.Monad.Eff.Class
 import Control.Monad.Error.Class
-import Control.Monad.Aff
 import Data.Maybe
 import Data.Either
-import Data.Monoid
 import Data.Foreign (toForeign)
 import Data.Foreign.Class as Foreign
-import Data.Options ((:=))
 import Data.String as String
-import Node.ReadLine as RL
 import Node.Process as Process
 import Node.Path as Path
 import Node.FS.Aff as FS

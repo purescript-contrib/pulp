@@ -1,9 +1,7 @@
 module Pulp.BumpVersion ( action ) where
 
 import Prelude
-import Control.Monad
 import Control.Monad.Eff.Exception
-import Control.Monad.Eff.Class
 import Control.Monad.Error.Class
 import Control.Monad.Aff
 import Data.Maybe
@@ -11,21 +9,10 @@ import Data.Tuple
 import Data.Either
 import Data.Array as Array
 import Data.List (List(..))
-import Data.Monoid
 import Data.Foldable as Foldable
-import Data.Map as Map
 import Data.Version (Version)
 import Data.Version as Version
-import Data.Foreign (toForeign)
-import Data.Foreign.Class as Foreign
-import Data.Options ((:=))
 import Data.String as String
-import Node.ReadLine as RL
-import Node.Process as Process
-import Node.Path as Path
-import Node.FS.Aff as FS
-import Node.FS.Perms
-import Node.Encoding (Encoding(..))
 import Node.ChildProcess as CP
 
 import Pulp.System.FFI
@@ -148,12 +135,12 @@ promptInitial out = do
 
   where
   initialOptions =
-    [ Tuple "a" (v 1 0 0)
-    , Tuple "b" (v 0 1 0)
-    , Tuple "c" (v 0 0 1)
+    [ Tuple "a" (vers 1 0 0)
+    , Tuple "b" (vers 0 1 0)
+    , Tuple "c" (vers 0 0 1)
     ]
 
-  v major minor patch = Version.version major minor patch Nil Nil
+  vers major minor patch = Version.version major minor patch Nil Nil
 
 promptCurrent :: Outputter -> Version -> AffN Version
 promptCurrent out current = do

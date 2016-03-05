@@ -16,7 +16,7 @@ import Prelude
 import Data.Array (concat)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Function
-import Data.Foreign.Class (IsForeign)
+import Data.Foreign.Class (class IsForeign)
 import Data.List as List
 import Data.Set (Set())
 import Data.Set as Set
@@ -28,10 +28,10 @@ import Pulp.Args
 import Pulp.Args.Get
 
 sources :: Set String -> Array String
-sources = Set.toList >>> List.fromList >>> map (++ "/**/*.purs")
+sources = Set.toList >>> List.fromList >>> map (_ <> "/**/*.purs")
 
 ffis :: Set String -> Array String
-ffis = Set.toList >>> List.fromList >>> map (++ "/**/*.js")
+ffis = Set.toList >>> List.fromList >>> map (_ <> "/**/*.js")
 
 globsFromOption' :: forall a. (IsForeign a) => (a -> a) -> String -> Options -> AffN (Set a)
 globsFromOption' f name opts = do

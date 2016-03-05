@@ -7,7 +7,7 @@ import Control.Monad.Error.Class
 import Control.Monad.Trans
 import Control.Alt
 import Data.Array (many)
-import Data.Either (Either(), either)
+import Data.Either (Either)
 import Data.Foldable (find, elem)
 import Data.Traversable (traverse)
 import Data.List (List)

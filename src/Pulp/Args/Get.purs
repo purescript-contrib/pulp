@@ -15,10 +15,8 @@ import Data.Foreign.Class
 import Data.Map (lookup)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Error.Class (throwError)
-import Node.Process as Process
 
 import Pulp.System.FFI
-import Pulp.System.Stream (write)
 import Pulp.Args
 
 -- | Get an option out of the `Options` value. If the option has no default and

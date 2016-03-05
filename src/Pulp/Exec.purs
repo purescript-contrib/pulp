@@ -14,7 +14,7 @@ import Data.Either (Either(..), either)
 import Data.Function
 import Data.String (stripSuffix)
 import Data.StrMap (StrMap())
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..))
 import Data.Foldable (for_)
 import Data.Array as Array
 import Control.Monad.Error.Class (throwError)

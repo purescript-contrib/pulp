@@ -1,10 +1,12 @@
 import co from "co";
 import { exec } from "child_process";
 import _temp from "temp";
-import { resolve } from "path";
+import { resolve, join } from "path";
 import { assert } from "chai";
 import fs from "fs";
 import which from "which";
+import tar from "tar-fs";
+import zlib from "zlib";
 
 const temp = _temp.track();
 
@@ -54,6 +56,21 @@ function resolvePath(cmd) {
   });
 }
 
+// Has the same effect as running 'pulp init', but uses a pre-prepared tar.gz
+// file, which is stored in the Pulp code repository. Returns a promise.
+function pulpFastInit(destDirectory) {
+  const tarballPath = resolve(__dirname, "pulp-init.tar.gz");
+  return new Promise((resolve, reject) => {
+    const stream = fs
+      .createReadStream(tarballPath)
+      .pipe(zlib.createGunzip())
+      .pipe(tar.extract(destDirectory, { strict: false }));
+
+    stream.on("finish", resolve);
+    stream.on("error", reject);
+  });
+}
+
 function pulpFn(path, pulpPath) {
   return (cmd, input, opts) =>
     resolvePath("node").then((node) =>
@@ -67,7 +84,8 @@ export default function run(fn) {
         throw err;
       } else {
         const pulpPath = resolve(__dirname, "..", "index.js");
-        const pulp = pulpFn(path, pulpPath);
+        let pulp = pulpFn(path, pulpPath);
+        pulp.fastInit = pulpFastInit;
         co(fn(sh.bind(null, path), pulp, asserts(path), path)).then(done, done);
       }
     });

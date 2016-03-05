@@ -63,6 +63,15 @@ function assertThrows(promise) {
     );
 }
 
+function setupGit(sh) {
+  return sh("git init")
+    .then(() => sh("git add ."))
+    .then(() => sh("git config user.name \"Test User\""))
+    .then(() => sh("git config user.email test@test.com"))
+    .then(() => sh("git commit -m \"initial commit\""))
+    .then(() => sh("git tag v1.0.0"));
+}
+
 describe("integration tests", function() {
   this.timeout(60000);
 
@@ -400,36 +409,32 @@ if (process.argv[2] === "--version") {
 
   it("pulp version requires a clean working tree", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
-    yield sh("git init");
-    yield sh("git add .");
-    yield sh("git commit -m 'initial commit'");
+    yield setupGit(sh);
     yield fs.writeFile(path.join(temp, "hello.txt"), "hello");
+
     // TODO: check the output.
     yield assertThrows(pulp("version"));
   }));
 
   it("pulp version checks using psc-publish", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
-    yield sh("git init");
-    yield sh("git add .");
-    yield sh("git commit -m 'initial commit'");
-    yield sh("git tag v1.0.0");
+    yield setupGit(sh);
 
     // The bower.json file should be invalid because the repository key is
     // missing. TODO: Check that we actually get this error.
     yield assertThrows(pulp("version minor"));
   }));
 
-  [["major", /v2.0.0/], ["minor", /v1.1.0/], ["patch", /v1.0.1/]].forEach((params) => {
+  [["major", /v3.0.0/], ["minor", /v2.1.0/], ["patch", /v2.0.1/]].forEach((params) => {
     const [ bumpType, pattern ] = params;
     it("pulp version applies the specified bump: " + bumpType,
         run(function*(sh, pulp, assert, temp) {
       yield pulp("init");
-      yield sh("git init");
+      yield setupGit(sh);
+
       yield fs.writeFile(path.join(temp, "bower.json"), testBowerJson);
-      yield sh("git add .");
-      yield sh("git commit -m 'initial commit'");
-      yield sh("git tag v1.0.0");
+      yield sh("git commit -am \"updating bower.json\"");
+      yield sh("git tag v2.0.0");
 
       const [out, err] = yield pulp("version " + bumpType);
       assert.match(err, pattern);

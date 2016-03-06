@@ -18,6 +18,7 @@ import Data.Maybe (Maybe(..))
 import Data.Int (fromString)
 import Data.Foldable (for_)
 import Data.Foreign (toForeign)
+import Text.Parsing.Parser (fail)
 
 import Node.FS.Stats (Stats(), isFile, isDirectory)
 import Node.FS.Aff (stat)
@@ -104,5 +105,5 @@ versionBump arg =
     Just _ ->
       pure (toForeign arg)
     Nothing ->
-      halt ("Not a valid version bump. Must be: 'major', 'minor', 'patch', "
+      fail ("Not a valid version bump. Must be: 'major', 'minor', 'patch', "
             <> "or a version.")

@@ -69,7 +69,7 @@ arg a | a.required = do
   val <- a.parser next
   pure (Map.singleton a.name (Just val))
 arg a = do
-  val <- (Just <$> (token >>= a.parser)) <|> pure Nothing
+  val <- (try (Just <$> (token >>= a.parser))) <|> pure Nothing
   pure (maybe Map.empty (Map.singleton a.name <<< Just) val)
 
 cmd :: Array Command -> OptParser Command

@@ -5,9 +5,10 @@ module Pulp.Args.Help
 
 import Prelude
 
+import Control.Monad (when)
 import Control.Monad.Eff.Class (liftEff)
 import Data.Either (Either(..))
-import Data.Array (sort, (!!))
+import Data.Array (sort, (!!), null)
 import Data.Foldable (foldr, maximum)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Maybe.Unsafe (fromJust)
@@ -103,8 +104,9 @@ printCommandHelp out globals command = do
                   command.name ++ " [command-options]\n"
   out.bolded $ "\nCommand: " ++ command.name ++ "\n"
   out.write $ "  " ++ command.desc ++ "\n"
-  out.bolded "\nCommand options:\n"
-  formatOpts (command.options) >>= out.write
+  when (not (null command.options)) do
+    out.bolded "\nCommand options:\n"
+    formatOpts (command.options) >>= out.write
   out.bolded "\nGlobal options:\n"
   formatOpts (globals ++ [helpOpt]) >>= out.write
   out.bolded "\nPassthrough options:\n"

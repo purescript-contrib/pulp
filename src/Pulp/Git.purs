@@ -4,7 +4,9 @@ import Prelude
 import Control.Monad.Eff.Exception
 import Control.Monad.Error.Class
 import Control.Monad.Aff
+import Data.Function
 import Data.Maybe
+import Data.Tuple
 import Data.Either
 import Data.Array as Array
 import Data.Foldable as Foldable
@@ -27,7 +29,7 @@ requireCleanGitWorkingTree = do
       "first."
 
 -- | Get the most recently tagged version from the git tag.
-getVersionFromGitTag :: AffN (Maybe Version)
+getVersionFromGitTag :: AffN (Maybe (Tuple String Version))
 getVersionFromGitTag =
   attempt (run "git" ["describe", "--tags", "--abbrev=0", "HEAD"] Nothing)
   # map (either (const Nothing) maxVersion)
@@ -38,17 +40,19 @@ getVersionFromGitTag =
 
 -- | Given a number of lines of text, attempt to parse each line as a version,
 -- | and return the maximum.
-maxVersion :: String -> Maybe Version
+maxVersion :: String -> Maybe (Tuple String Version)
 maxVersion =
   String.split "\n"
   >>> Array.mapMaybe (String.trim >>> parseMay)
-  >>> Foldable.maximum
+  >>> Foldable.maximumBy (compare `on` snd)
 
   where
-  parseMay =
-    dropPrefix "v"
-    >>> Version.parseVersion
-    >>> either (const Nothing) Just
+  parseMay str =
+    str
+    # dropPrefix "v"
+    # Version.parseVersion
+    # either (const Nothing) Just
+    # map (Tuple str)
 
 dropPrefix :: String -> String -> String
 dropPrefix prefix str =

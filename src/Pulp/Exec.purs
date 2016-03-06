@@ -11,7 +11,6 @@ module Pulp.Exec
 
 import Prelude
 import Data.Either (Either(..), either)
-import Data.Function
 import Data.String (stripSuffix)
 import Data.StrMap (StrMap())
 import Data.Maybe (Maybe(..))
@@ -148,8 +147,3 @@ handleErrors cmd retry err
            "`" <> cmd <> "` executable not found."
   | otherwise =
      throwError (CP.toStandardError err)
-
-concatStream :: ReadableStream -> AffN String
-concatStream stream = runNode $ runFn2 concatStream' stream
-
-foreign import concatStream' :: Fn2 ReadableStream (Callback String) Unit

@@ -5,11 +5,18 @@ module Pulp.System.Stream
   , end
   , forget
   , write
+  , concatStream
+  , concatStreamToBuffer
+  , createGzip
   ) where
 
 import Prelude
+import Data.Function (runFn2, Fn2)
+import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Aff (makeAff)
 import Node.Stream as Node
+import Node.Buffer (Buffer)
+import Node.Buffer as Buffer
 import Node.Encoding (Encoding(UTF8))
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -25,8 +32,20 @@ foreign import data AnyStream :: *
 forget :: forall eff r. Node.Stream r eff -> AnyStream
 forget = unsafeCoerce
 
-write :: WritableStream -> String -> AffN Unit
+write :: forall r. Node.Writable r PulpEffects -> String -> AffN Unit
 write stream str = makeAff (\_ done -> void (Node.writeString stream UTF8 str (done unit)))
 
-end :: WritableStream -> AffN Unit
+end :: forall r. Node.Writable r PulpEffects -> AffN Unit
 end stream = makeAff (\_ done -> void (Node.end stream (done unit)))
+
+concatStream :: forall w. Node.Readable w PulpEffects -> AffN String
+concatStream stream = do
+  buf <- concatStreamToBuffer stream
+  liftEff (Buffer.toString UTF8 buf)
+
+concatStreamToBuffer :: forall w. Node.Readable w PulpEffects -> AffN Buffer
+concatStreamToBuffer stream = runNode $ runFn2 concatStreamToBuffer' stream
+
+foreign import concatStreamToBuffer' :: forall w. Fn2 (Node.Readable w PulpEffects) (Callback Buffer) Unit
+
+foreign import createGzip :: EffN (Node.Duplex PulpEffects)

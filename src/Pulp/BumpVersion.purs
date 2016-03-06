@@ -42,7 +42,7 @@ checkPscPublish out = do
 bumpVersion :: Args -> AffN Version
 bumpVersion args = do
   mbumpStr <- getOption "bump" args.commandArgs
-  mcurrent <- getVersionFromGitTag
+  mcurrent <- map (map snd) getVersionFromGitTag
   out <- getOutputter args
 
   case mbumpStr of

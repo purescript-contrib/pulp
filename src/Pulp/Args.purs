@@ -45,8 +45,8 @@ type Option = {
   defaultValue :: Maybe Foreign
   }
 
--- | A required, positional command line argument, like `major` in `pulp
--- | version major`.
+-- | A positional command line argument, like `major` in `pulp version
+-- | major`.
 type Argument = {
   name :: String,
   parser :: ArgumentParser,

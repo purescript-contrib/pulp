@@ -62,6 +62,7 @@
   },
   "devDependencies": {
     "babel": "^5.8.9",
+    "bower": "^1.7.7",
     "chai": "^3.4.1",
     "co": "^4.6.0",
     "fs-promise": "^0.3.1",

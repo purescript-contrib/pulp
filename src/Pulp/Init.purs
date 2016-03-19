@@ -42,7 +42,7 @@ mainFile :: String
 mainFile = unlines [
   "module Main where",
   "",
-  "import Prelude (Unit)",
+  "import Prelude",
   "import Control.Monad.Eff (Eff)",
   "import Control.Monad.Eff.Console (CONSOLE, log)",
   "",
@@ -55,7 +55,7 @@ testFile :: String
 testFile = unlines [
   "module Test.Main where",
   "",
-  "import Prelude (Unit)",
+  "import Prelude",
   "import Control.Monad.Eff (Eff)",
   "import Control.Monad.Eff.Console (CONSOLE, log)",
   "",

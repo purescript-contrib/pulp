@@ -7,6 +7,7 @@
 * Fix `pulp login` using the wrong environment variable for the home directory
   on Windows (#197).
 * Fix `pulp login` failing to check the auth token with GitHub (#199).
+* Don't require being inside a project to run `pulp init` (#200).
 
 ## 8.2.0-rc.1
 

@@ -4,7 +4,6 @@
 exports.bowerFile = function bowerFile(name) {
   return JSON.stringify({
     name: name,
-    moduleType: ["node"],
     ignore: [
       "**/.*",
       "node_modules",

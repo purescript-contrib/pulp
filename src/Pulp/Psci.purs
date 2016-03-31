@@ -38,8 +38,8 @@ updateConfig args = do
   ffis <- resolveGlobs (ffis globs)
 
   let psci = Array.concat [ entries
-                          , map (":load " ++) deps
-                          , map (":foreign " ++) ffis
+                          , map (":load " <> _) deps
+                          , map (":foreign " <> _) ffis
                           ]
 
   FS.writeTextFile UTF8 ".psci" (String.joinWith "\n" psci ++ "\n")
@@ -49,12 +49,12 @@ updateConfig args = do
 extractPsciEntries :: String -> Array String
 extractPsciEntries =
   String.split "\n"
-  >>> Array.filter (allOf [ maybe false (/= 0) <<< String.indexOf ":load "
-                          , maybe false (/= 0) <<< String.indexOf ":foreign "
-                          , (> 0) <<< String.length <<< String.trim
+  >>> Array.filter (allOf [ maybe false (_ /= 0) <<< String.indexOf ":load "
+                          , maybe false (_ /= 0) <<< String.indexOf ":foreign "
+                          , (_ > 0) <<< String.length <<< String.trim
                           ])
   where
-  allOf fs x = all ($ x) fs
+  allOf fs x = all (_ $ x) fs
 
 suppressENOENT :: forall m a. (MonadError Error m) => m a -> m (Maybe a)
 suppressENOENT act = do

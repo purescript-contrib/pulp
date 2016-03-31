@@ -36,12 +36,12 @@ action = Action \args -> do
   buildPath <- Path.resolve [] <$> getOption' "buildPath" opts
   globs <- defaultGlobs opts
 
-  let sources' = map ("src[]=" ++) (sources globs)
-  let ffis'    = map ("ffi[]=" ++) (ffis globs)
+  let sources' = map ("src[]=" <> _) (sources globs)
+  let ffis'    = map ("ffi[]=" <> _) (ffis globs)
 
   sourceFiles <- resolveGlobs sources'
 
-  main <- (("." ++ Path.sep) ++) <<< (++ ".purs") <<< String.replace "." Path.sep <$> getOption' "main" opts
+  main <- (("." <> Path.sep) <> _) <<< (_ <> ".purs") <<< String.replace "." Path.sep <$> getOption' "main" opts
   let entryPath = Path.concat ["src", ".webpack.js"]
   FS.writeTextFile UTF8 entryPath (makeEntry main)
 

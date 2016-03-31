@@ -2,6 +2,7 @@
 module Pulp.Exec
   ( exec
   , execQuiet
+  , execQuietWithStderr
   , execInteractive
   , psa
   , psc
@@ -13,7 +14,7 @@ import Data.Either (Either(..), either)
 import Data.Function
 import Data.String (stripSuffix)
 import Data.StrMap (StrMap())
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..))
 import Data.Foldable (for_)
 import Data.Array as Array
 import Control.Monad.Error.Class (throwError)
@@ -25,6 +26,7 @@ import Data.Posix.Signal (Signal(SIGTERM, SIGINT))
 import Node.Process as Process
 import Node.Platform (Platform(Win32))
 import Node.ChildProcess as CP
+import Unsafe.Coerce
 
 import Pulp.System.Stream
 import Pulp.System.FFI
@@ -43,11 +45,6 @@ compiler name deps ffi args env =
 pscBundle :: Array String -> Array String -> Maybe (StrMap String) -> AffN String
 pscBundle files args env =
   execQuiet "psc-bundle" (files <> args) env
-
-inheritAllButStdout :: Array (Maybe CP.StdIOBehaviour)
-inheritAllButStdout = updateAt 1 (Just CP.Pipe) CP.inherit
-  where
-  updateAt n f arr = fromMaybe arr (Array.updateAt n f arr)
 
 -- | Start a child process asynchronously, with the given command line
 -- | arguments and environment, and wait for it to exit.
@@ -82,9 +79,16 @@ exec cmd args env = do
 -- | Same as exec, except instead of relaying stdout immediately, it is
 -- | captured and returned as a String.
 execQuiet :: String -> Array String -> Maybe (StrMap String) -> AffN String
-execQuiet cmd args env = do
-  child <- liftEff $ CP.spawn cmd args (def { env = env
-                                            , stdio = inheritAllButStdout })
+execQuiet =
+  execQuietWithStderr (CP.ShareStream (unsafeCoerce Process.stderr))
+
+execQuietWithStderr :: CP.StdIOBehaviour -> String -> Array String -> Maybe (StrMap String) -> AffN String
+execQuietWithStderr stderrBehaviour cmd args env = do
+  let stdio = [ Just (CP.ShareStream (unsafeCoerce Process.stdin)) -- stdin
+              , Just CP.Pipe -- stdout
+              , Just stderrBehaviour -- stderr
+              ]
+  child <- liftEff $ CP.spawn cmd args (def { env = env, stdio = stdio })
   outVar <- makeVar
   forkAff (concatStream (CP.stdout child) >>= putVar outVar)
   wait child >>= either (handleErrors cmd retry) (onExit outVar)
@@ -101,7 +105,7 @@ execQuiet cmd args env = do
           write Process.stderr childOut
           throwError $ error $ "Subcommand terminated " <> showExit exit
 
-  retry newCmd = execQuiet newCmd args env
+  retry newCmd = execQuietWithStderr stderrBehaviour newCmd args env
 
 -- | A version of `exec` which installs signal handlers to make sure that the
 -- | signals SIGINT and SIGTERM are relayed to the child process, if received.

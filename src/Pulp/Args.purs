@@ -34,6 +34,9 @@ type OptionParser = {
   parser :: String -> OptParser (Maybe Foreign)
   }
 
+type ArgumentParser = String -> OptParser Foreign
+
+-- | A command line option, like `--output` or `--verbose`.
 type Option = {
   name :: String,
   match :: Array String,
@@ -42,27 +45,38 @@ type Option = {
   defaultValue :: Maybe Foreign
   }
 
+-- | A positional command line argument, like `major` in `pulp version
+-- | major`.
+type Argument = {
+  name :: String,
+  parser :: ArgumentParser,
+  desc :: String,
+  required :: Boolean
+  }
+
 type Command = {
   name :: String,
   desc :: String,
   passthroughDesc :: Maybe String,
   options :: Array Option,
+  arguments :: Array Argument,
   action :: Action
   }
 
 type Args = {
   globalOpts :: Options,
   commandOpts :: Options,
+  commandArgs :: Options, -- TODO: this is a bit gross.
   command :: Command,
   remainder :: Array String
   }
 
 option :: String -> Array String -> OptionParser -> String -> Option
 option name match parser desc = {
-  name: name,
-  match: match,
-  parser: parser,
-  desc: desc,
+  name,
+  match,
+  parser,
+  desc,
   defaultValue: Nothing
   }
 
@@ -70,11 +84,24 @@ optionDefault :: forall a. String -> Array String -> OptionParser -> String -> a
 optionDefault n m p d defaultValue =
   (option n m p d) { defaultValue = Just (toForeign defaultValue) }
 
+argument :: String -> ArgumentParser -> String -> Boolean -> Argument
+argument name parser desc required = {
+  name,
+  parser,
+  desc,
+  required
+  }
+
 command :: String -> String -> Maybe String -> Action -> Array Option -> Command
 command name desc passthroughDesc action options = {
   name,
   desc,
   passthroughDesc,
   options,
-  action
+  action,
+  arguments: []
   }
+
+commandWithArgs :: String -> String -> Maybe String -> Action -> Array Option -> Array Argument -> Command
+commandWithArgs name desc passthroughDesc action options args =
+  (command name desc passthroughDesc action options) { arguments = args }

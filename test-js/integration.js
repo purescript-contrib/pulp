@@ -19,6 +19,27 @@ const skipped = "* Project unchanged; skipping build step.";
 
 const newlines = /\r?\n/g;
 
+const testBowerJson = JSON.stringify({
+  "name": "test-package-for-pulp-tests",
+  "version": "1.0.0",
+  "moduleType": [
+    "node"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/not-real/not-real.git"
+  },
+  "dependencies": {
+    "purescript-console": "^0.1.0"
+  }
+});
+
 function resolvePath(cmd) {
   return new Promise((resolve, reject) => {
     which(cmd, (err, res) => err ? reject(err) : resolve(res));
@@ -33,6 +54,22 @@ function sleep(ms) {
 
 function windowsify(script) {
   return process.platform === "win32" ? `${script}.cmd` : script;
+}
+
+function assertThrows(promise) {
+  return promise.then(
+      () => { throw new Error("Expected the promise to throw") },
+      () => {}
+    );
+}
+
+function setupGit(sh) {
+  return sh("git init")
+    .then(() => sh("git add ."))
+    .then(() => sh("git config user.name \"Test User\""))
+    .then(() => sh("git config user.email test@test.com"))
+    .then(() => sh("git commit -m \"initial commit\""))
+    .then(() => sh("git tag v1.0.0"));
 }
 
 describe("integration tests", function() {
@@ -369,4 +406,38 @@ if (process.argv[2] === "--version") {
     const [out5, err5] = yield pulp("build", undefined, {path: p});
     assert.match(err5, /assert psc/);
   }));
+
+  it("pulp version requires a clean working tree", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+    yield setupGit(sh);
+    yield fs.writeFile(path.join(temp, "hello.txt"), "hello");
+
+    // TODO: check the output.
+    yield assertThrows(pulp("version"));
+  }));
+
+  it("pulp version checks using psc-publish", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+    yield setupGit(sh);
+
+    // The bower.json file should be invalid because the repository key is
+    // missing. TODO: Check that we actually get this error.
+    yield assertThrows(pulp("version minor"));
+  }));
+
+  [["major", /v3.0.0/], ["minor", /v2.1.0/], ["patch", /v2.0.1/]].forEach((params) => {
+    const [ bumpType, pattern ] = params;
+    it("pulp version applies the specified bump: " + bumpType,
+        run(function*(sh, pulp, assert, temp) {
+      yield pulp("init");
+      yield setupGit(sh);
+
+      yield fs.writeFile(path.join(temp, "bower.json"), testBowerJson);
+      yield sh("git commit -am \"updating bower.json\"");
+      yield sh("git tag v2.0.0");
+
+      const [out, err] = yield pulp("version " + bumpType);
+      assert.match(err, pattern);
+    }));
+  });
 });

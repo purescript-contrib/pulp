@@ -42,7 +42,7 @@ action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
   out <- getOutputter args
 
-  argv' <- liftEff $ Array.filter (`notElem` ["-w", "--watch"]) <<< Array.drop 2 <$> Process.argv
+  argv' <- liftEff $ Array.filter (_ `notElem` ["-w", "--watch"]) <<< Array.drop 2 <$> Process.argv
   childV <- AVar.makeVar
   liftEff (fork __filename argv') >>= AVar.putVar childV
 

@@ -5,6 +5,7 @@ module Pulp.Args.Types
   , int
   , directory
   , directories
+  , versionBump
   ) where
 
 import Prelude
@@ -17,6 +18,7 @@ import Data.Maybe (Maybe(..))
 import Data.Int (fromString)
 import Data.Foldable (for_)
 import Data.Foreign (toForeign)
+import Text.Parsing.Parser (fail)
 
 import Node.FS.Stats (Stats(), isFile, isDirectory)
 import Node.FS.Aff (stat)
@@ -24,6 +26,7 @@ import Node.Path as Path
 
 import Pulp.Args
 import Pulp.Args.Parser
+import Pulp.VersionBump
 
 argErr :: forall a. String -> String -> OptParser a
 argErr arg msg =
@@ -92,3 +95,15 @@ directories = {
     for_ paths' requireDirectory
     return $ Just (toForeign paths')
   }
+
+-- TODO: this is gross; we end up parsing the version twice. Probably should
+-- fix this by parameterising OptionParsers and ArgumentParsers based on the
+-- type of the thing they parse.
+versionBump :: ArgumentParser
+versionBump arg =
+  case parseBump arg of
+    Just _ ->
+      pure (toForeign arg)
+    Nothing ->
+      fail ("Not a valid version bump. Must be: 'major', 'minor', 'patch', "
+            <> "or a version.")

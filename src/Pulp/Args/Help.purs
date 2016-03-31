@@ -5,9 +5,10 @@ module Pulp.Args.Help
 
 import Prelude
 
+import Control.Monad (when)
 import Control.Monad.Eff.Class (liftEff)
 import Data.Either (Either(..))
-import Data.Array (sort, (!!))
+import Data.Array (sort, (!!), null)
 import Data.Foldable (foldr, maximum)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Maybe.Unsafe (fromJust)
@@ -79,6 +80,23 @@ formatPassThrough mdesc =
   let desc = fromMaybe "Passthrough options are ignored." mdesc
   in liftEff (wrap ("  " ++ desc) 2)
 
+prepareArguments :: Array Argument -> StrMap String
+prepareArguments = foldr foldOpts empty
+  where formatKey arg = Str.toUpper arg.name
+        foldOpts arg = insert (formatKey arg) arg.desc
+
+formatArguments :: Array Argument -> AffN String
+formatArguments = liftEff <<< formatTable <<< prepareArguments
+
+argumentSynopsis :: Array Argument -> String
+argumentSynopsis = map format  >>> Str.joinWith " "
+  where
+  format arg =
+    Str.toUpper $
+      if arg.required
+        then arg.name
+        else "[" ++ arg.name ++ "]"
+
 helpOpt :: Option
 helpOpt = option "help" ["--help", "-h"] Type.flag
             "Show this help message."
@@ -100,16 +118,26 @@ printCommandHelp :: Outputter -> Array Option -> Command -> AffN Unit
 printCommandHelp out globals command = do
   commandName <- liftEff getCommandName
   out.write $ "Usage: " ++ commandName ++ " [global-options] " ++
-                  command.name ++ " [command-options]\n"
+                  command.name ++ " " ++
+                  (if hasArguments then argumentSynopsis command.arguments ++ " " else "") ++
+                  (if hasCommandOpts then "[command-options]" else "") ++ "\n"
   out.bolded $ "\nCommand: " ++ command.name ++ "\n"
   out.write $ "  " ++ command.desc ++ "\n"
-  out.bolded "\nCommand options:\n"
-  formatOpts (command.options) >>= out.write
+  when hasArguments do
+    out.bolded "\nArguments:\n"
+    formatArguments command.arguments >>= out.write
+  when hasCommandOpts do
+    out.bolded "\nCommand options:\n"
+    formatOpts (command.options) >>= out.write
   out.bolded "\nGlobal options:\n"
   formatOpts (globals ++ [helpOpt]) >>= out.write
   out.bolded "\nPassthrough options:\n"
   formatPassThrough command.passthroughDesc >>= out.write
   out.write "\n"
+
+  where
+  hasCommandOpts = not (null command.options)
+  hasArguments = not (null command.arguments)
 
 getCommandName :: EffN String
 getCommandName = maybe "pulp" (_.name <<< Path.parse) <<< (!! 1) <$> Process.argv

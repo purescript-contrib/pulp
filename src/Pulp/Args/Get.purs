@@ -15,10 +15,8 @@ import Data.Foreign.Class
 import Data.Map (lookup)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Error.Class (throwError)
-import Node.Process as Process
 
 import Pulp.System.FFI
-import Pulp.System.Stream (write)
 import Pulp.Args
 
 -- | Get an option out of the `Options` value. If the option has no default and
@@ -81,8 +79,7 @@ readForeign name thing =
       pure x
 
 internalError :: forall b. String -> AffN b
-internalError msg = do
-  let msg' = "Internal error in Pulp.Args.Get: " ++ msg ++ "\n"
-  write Process.stderr msg'
-  write Process.stderr "This is a bug. Please report it.\n"
-  throwError (error msg')
+internalError msg =
+  throwError (error
+    ("Internal error in Pulp.Args.Get: " <> msg <> "\n" <>
+     "This is a bug. Please report it.\n"))

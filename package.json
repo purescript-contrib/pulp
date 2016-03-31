@@ -68,7 +68,7 @@
     "fs-promise": "^0.3.1",
     "jshint": "^2.8.0",
     "mocha": "^2.2.5",
-    "purescript": "^0.8.0",
+    "purescript": "0.8.2",
     "purescript-psa": "^0.3.4",
     "semver": "^5.1.0",
     "touch": "^1.0.0"

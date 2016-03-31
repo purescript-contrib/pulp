@@ -264,10 +264,11 @@ runArgs args = do
             Right r ->
               runShellForOption "then" args''.globalOpts out
   where
+  noProject = ["init", "login"]
   -- This is really quite gross, especially with _project. Not sure exactly
   -- how to go about improving this.
   addProject args =
-    if args.command.name == "init"
+    if args.command.name `elem` noProject
       then return args
       else do
         proj <- getProject args.globalOpts

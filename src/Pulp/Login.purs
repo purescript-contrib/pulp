@@ -65,15 +65,19 @@ checkToken out token = do
   res <- httpRequest reqOptions Nothing
 
   let statusCode = HTTP.statusCode res
-  unless (statusCode == 200) $
-    throwError $ error case statusCode of
-      403 ->
-        "Your token was not accepted (403 Forbidden)."
-      other ->
-        "Something went wrong (HTTP " <> show other <> " " <>
-        HTTP.statusMessage res <> ")."
-
   resBody <- concatStream (HTTP.responseAsStream res)
+  unless (statusCode == 200) $
+    throwError (error case statusCode of
+      401 ->
+        "Your token was not accepted (401 Unauthorized)."
+      other ->
+        let
+          header =
+            "Something went wrong (HTTP " <> show other <> " " <>
+            HTTP.statusMessage res <> ")."
+        in
+          header <> "\n" <> resBody)
+
   case parseJSON resBody >>= Foreign.readProp "login" of
     Right login' ->
       out.write ("Successfully authenticated as " <> login' <> ".\n")

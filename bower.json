@@ -21,12 +21,12 @@
     "purescript-maps": "~0.5.2",
     "purescript-maybe": "~0.3.4",
     "purescript-monoid": "~0.3.2",
-    "purescript-node-child-process": "~0.5.1",
-    "purescript-node-fs": "~0.10.0",
-    "purescript-node-fs-aff": "~0.3.1",
+    "purescript-node-child-process": "~0.6.0",
+    "purescript-node-fs": "~0.11.0",
+    "purescript-node-fs-aff": "~0.6.0",
     "purescript-node-path": "~0.4.1",
-    "purescript-node-process": "~0.4.1",
-    "purescript-node-readline": "~0.4.0",
+    "purescript-node-process": "~0.5.0",
+    "purescript-node-readline": "~0.5.0",
     "purescript-node-streams": "~0.4.0",
     "purescript-nullable": "~0.2.1",
     "purescript-parsing": "~0.7.1",
@@ -38,6 +38,6 @@
     "purescript-unsafe-coerce": "~0.1.0",
     "purescript-versions": "~0.1.1",
     "purescript-foreign-generic": "^0.3.0",
-    "purescript-node-http": "^0.3.1"
+    "purescript-node-http": "^0.4.0"
   }
 }

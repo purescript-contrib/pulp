@@ -63,8 +63,10 @@ function assertThrows(promise) {
     );
 }
 
-function setupGit(sh) {
+function setupPackage(sh) {
   return sh("git init")
+    .then(() => fs.writeFile("LICENSE", "do whatever u want lol",
+                             {encoding: 'utf8'}))
     .then(() => sh("git add ."))
     .then(() => sh("git config user.name \"Test User\""))
     .then(() => sh("git config user.email test@test.com"))
@@ -409,7 +411,7 @@ if (process.argv[2] === "--version") {
 
   it("pulp version requires a clean working tree", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
-    yield setupGit(sh);
+    yield setupPackage(sh);
     yield fs.writeFile(path.join(temp, "hello.txt"), "hello");
 
     // TODO: check the output.
@@ -418,7 +420,7 @@ if (process.argv[2] === "--version") {
 
   it("pulp version checks using psc-publish", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
-    yield setupGit(sh);
+    yield setupPackage(sh);
 
     // The bower.json file should be invalid because the repository key is
     // missing. TODO: Check that we actually get this error.
@@ -430,7 +432,7 @@ if (process.argv[2] === "--version") {
     it("pulp version applies the specified bump: " + bumpType,
         run(function*(sh, pulp, assert, temp) {
       yield pulp("init");
-      yield setupGit(sh);
+      yield setupPackage(sh);
 
       yield fs.writeFile(path.join(temp, "bower.json"), testBowerJson);
       yield sh("git commit -am \"updating bower.json\"");

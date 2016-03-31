@@ -1,11 +1,11 @@
-// module Pulp.Exec
+// module Pulp.System.Stream
 "use strict";
 
-exports["concatStream'"] = function concatStream$prime(stream, callback) {
+exports["concatStreamToBuffer'"] = function concatStream$prime(stream, callback) {
   var concat = require("concat-stream");
 
   var onSuccess = function(buf) {
-    callback(null, buf.toString("utf-8"));
+    callback(null, buf);
   };
 
   var onError = function(err) {
@@ -15,3 +15,5 @@ exports["concatStream'"] = function concatStream$prime(stream, callback) {
   stream.on('error', onError);
   stream.pipe(concat(onSuccess));
 };
+
+exports.createGzip = require("zlib").createGzip;

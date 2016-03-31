@@ -14,12 +14,12 @@ import Node.ChildProcess (CHILD_PROCESS())
 import Node.Buffer (BUFFER())
 import Node.Process (PROCESS())
 import Node.ReadLine (READLINE())
-import Network.HTTP.Affjax (AJAX())
+import Node.HTTP (HTTP())
 
 foreign import data Node :: !
 foreign import data NodeError :: *
 
-type PulpEffects = (node :: Node, console :: CONSOLE, buffer :: BUFFER, fs :: FS, avar :: AVAR, err :: EXCEPTION, process :: PROCESS, cp :: CHILD_PROCESS, ajax :: AJAX, readline :: READLINE)
+type PulpEffects = (node :: Node, console :: CONSOLE, buffer :: BUFFER, fs :: FS, avar :: AVAR, err :: EXCEPTION, process :: PROCESS, cp :: CHILD_PROCESS, http :: HTTP, readline :: READLINE)
 
 type EffN a = Eff PulpEffects a
 type AffN a = Aff PulpEffects a

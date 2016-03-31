@@ -31,6 +31,7 @@ import Pulp.System.Stream (concatStream)
 import Pulp.System.Read as Read
 import Pulp.Outputter
 import Pulp.Args
+import Pulp.Version as PulpVersion
 
 -- TODO: Obtain tokens automatically after prompting for a username and
 -- password.
@@ -87,6 +88,7 @@ checkToken out token = do
     , HTTP.headers := HTTP.RequestHeaders (StrMap.fromFoldable
         [ "Accept" /\ "application/vnd.github.v3+json"
         , "Authorization" /\ ("token " <> token)
+        , "User-Agent" /\ ("Pulp-" <> PulpVersion.versionString)
         ])
     ]
 

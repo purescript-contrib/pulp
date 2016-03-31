@@ -1,5 +1,5 @@
 
-module Pulp.Version ( version, printVersion ) where
+module Pulp.Version ( version, versionString, printVersion ) where
 
 import Prelude
 import Data.Maybe (Maybe(..))

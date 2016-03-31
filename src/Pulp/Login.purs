@@ -81,7 +81,7 @@ checkToken out token = do
 
   where
   reqOptions = fold
-    [ HTTP.protocol := "https"
+    [ HTTP.protocol := "https:"
     , HTTP.hostname := "api.github.com"
     , HTTP.path := "/user"
     , HTTP.headers := HTTP.RequestHeaders (StrMap.fromFoldable

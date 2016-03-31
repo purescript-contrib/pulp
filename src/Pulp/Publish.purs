@@ -185,7 +185,7 @@ uploadPursuitDocs authToken gzippedJson = do
 
   reqOptions = fold
     [ HTTP.method := "POST"
-    , HTTP.protocol := "https"
+    , HTTP.protocol := "https:"
     , HTTP.hostname := "pursuit.purescript.org"
     , HTTP.path := "/packages"
     , HTTP.headers := headers

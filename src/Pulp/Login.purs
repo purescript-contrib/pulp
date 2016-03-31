@@ -113,9 +113,11 @@ tokenFilePath =
 
 getHome :: AffN String
 getHome = do
-  home <- liftEff (Process.lookupEnv "HOME")
+  let homeVar = if Process.platform == Win32 then "USERPROFILE" else "HOME"
+  home <- liftEff (Process.lookupEnv homeVar)
   case home of
     Just h ->
       pure h
     Nothing ->
-      throwError (error "The HOME environment variable is not set.")
+      throwError (error (
+        "The " <> homeVar <> " environment variable is not set."))

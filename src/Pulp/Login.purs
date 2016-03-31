@@ -9,21 +9,25 @@ import Control.Monad.Eff.Exception
 import Control.Monad.Eff.Class
 import Control.Monad.Error.Class
 import Data.Maybe
+import Data.Tuple.Nested
 import Data.Either
-import Data.Foreign (toForeign)
+import Data.Foldable (fold)
+import Data.Foreign (toForeign, parseJSON)
 import Data.Foreign.Class as Foreign
 import Data.String as String
+import Data.StrMap as StrMap
+import Data.Options ((:=))
 import Node.Process as Process
 import Node.Path as Path
 import Node.FS.Aff as FS
 import Node.FS.Perms
 import Node.Encoding (Encoding(..))
-import Network.HTTP.Affjax
-import Network.HTTP.StatusCode
-import Network.HTTP.RequestHeader
-import Network.HTTP.MimeType
+import Node.Buffer as Buffer
+import Node.HTTP.Client as HTTP
 
+import Pulp.System.HTTP
 import Pulp.System.FFI
+import Pulp.System.Stream (concatStream)
 import Pulp.System.Read as Read
 import Pulp.Outputter
 import Pulp.Args
@@ -57,25 +61,34 @@ obtainTokenFromStdin out = do
 
 checkToken :: Outputter -> String -> AffN Unit
 checkToken out token = do
-  r <- affjax $ defaultRequest
-    { url = "https://api.github.com/user"
-    , headers = [ Accept (MimeType "application/vnd.github.v3+json")
-                , RequestHeader "Authorization" ("token " <> token)
-                ]
-    }
+  emptyBody <- liftEff (Buffer.create 0)
+  res <- httpRequest reqOptions emptyBody
 
-  unless (r.status == StatusCode 200) $
-    throwError (error case r.status of
-      StatusCode 401 ->
+  let statusCode = HTTP.statusCode res
+  unless (statusCode == 200) $
+    throwError (error case statusCode of
+      401 ->
         "Your token was not accepted (401 Unauthorized)."
-      StatusCode other ->
+      other ->
         "Something went wrong (HTTP " <> show other <> ").")
 
-  case Foreign.readProp "login" r.response of
+  resBody <- concatStream (HTTP.responseAsStream res)
+  case parseJSON resBody >>= Foreign.readProp "login" of
     Right login' ->
       out.write ("Successfully authenticated as " <> login' <> ".\n")
     Left err ->
       throwError (error ("Unexpected response from GitHub API: " <> show err))
+
+  where
+  reqOptions = fold
+    [ HTTP.protocol := "https"
+    , HTTP.hostname := "api.github.com"
+    , HTTP.path := "/user"
+    , HTTP.headers := HTTP.RequestHeaders (StrMap.fromFoldable
+        [ "Accept" /\ "application/vnd.github.v3+json"
+        , "Authorization" /\ ("token " <> token)
+        ])
+    ]
 
 writeTokenFile :: String -> AffN Unit
 writeTokenFile token = do

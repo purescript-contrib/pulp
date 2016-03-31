@@ -11,7 +11,6 @@
   ],
   "dependencies": {
     "purescript-aff": "~0.14.0",
-    "purescript-affjax": "~0.12.0",
     "purescript-ansi": "~0.1.2",
     "purescript-console": "~0.1.1",
     "purescript-eff": "~0.1.2",
@@ -38,6 +37,7 @@
     "purescript-strings": "~0.7.0",
     "purescript-unsafe-coerce": "~0.1.0",
     "purescript-versions": "~0.1.1",
-    "purescript-foreign-generic": "^0.3.0"
+    "purescript-foreign-generic": "^0.3.0",
+    "purescript-node-http": "^0.3.1"
   }
 }

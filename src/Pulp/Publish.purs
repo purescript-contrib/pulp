@@ -8,22 +8,24 @@ import Control.Monad.Error.Class
 import Control.Monad.Aff
 import Data.Maybe
 import Data.Tuple
+import Data.Tuple.Nested ((/\))
 import Data.Either
+import Data.Foldable (fold)
 import Data.Foreign (Foreign, parseJSON)
 import Data.Foreign.Class (readProp)
 import Data.Version (Version)
 import Data.Version as Version
 import Data.String as String
+import Data.StrMap as StrMap
+import Data.Options ((:=))
 import Node.Encoding (Encoding(..))
+import Node.Buffer (Buffer)
 import Node.ChildProcess as CP
 import Node.FS.Aff as FS
-import Network.HTTP.Affjax
-import Network.HTTP.Method
-import Network.HTTP.RequestHeader
-import Network.HTTP.MimeType
-import Network.HTTP.StatusCode
+import Node.HTTP.Client as HTTP
 
 import Pulp.System.FFI
+import Pulp.System.HTTP
 import Pulp.System.Stream
 import Pulp.Exec
 import Pulp.Args
@@ -74,12 +76,12 @@ action = Action \args -> do
           pure
 
 
-gzip :: String -> AffN String
+gzip :: String -> AffN Buffer
 gzip str = do
   gzipStream <- liftEff createGzip
   write gzipStream str
   end gzipStream
-  concatStream gzipStream
+  concatStreamToBuffer gzipStream
 
 pscPublish :: AffN String
 pscPublish = execQuiet "psc-publish" [] Nothing
@@ -162,28 +164,29 @@ registerOnBowerIfNecessary out name repoUrl = do
   -- Run a command, sending stderr to /dev/null
   run = execQuietWithStderr CP.Ignore
 
-uploadPursuitDocs :: String -> String -> AffN Unit
+uploadPursuitDocs :: String -> Buffer -> AffN Unit
 uploadPursuitDocs authToken gzippedJson = do
-  r <- affjax $ defaultRequest
-          { url = "https://pursuit.purescript.org/packages"
-          , method = POST
-          , headers = [ Accept (MimeType "application/json")
-                      , RequestHeader "Authorization" ("token " <> authToken)
-                      , RequestHeader "Content-Encoding" "gzip"
-                      ]
-          , content = Just gzippedJson
-          }
-
-  itsAString r.response
-
-  case r.status of
-    StatusCode x | x /= 201 -> do
-      liftEff (logAny r)
-      throwError (error ("Expected an HTTP 201 response from Pursuit, got: " <> show x))
-    _ ->
+  res <- httpRequest reqOptions gzippedJson
+  case HTTP.statusCode res of
+    201 ->
       pure unit
+    other -> do
+      liftEff (logAny res)
+      throwError (error (
+        "Expected an HTTP 201 response from Pursuit, got: " <> show other))
 
   where
-  -- type inference help
-  itsAString :: String -> AffN Unit
-  itsAString = const (pure unit)
+  headers =
+    HTTP.RequestHeaders (StrMap.fromFoldable
+      [ "Accept" /\ "application/json"
+      , "Authorization" /\ ("token " <> authToken)
+      , "Content-Encoding" /\ "gzip"
+      ])
+
+  reqOptions = fold
+    [ HTTP.method := "POST"
+    , HTTP.protocol := "https"
+    , HTTP.hostname := "pursuit.purescript.org"
+    , HTTP.path := "/packages"
+    , HTTP.headers := headers
+    ]

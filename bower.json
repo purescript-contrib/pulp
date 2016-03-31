@@ -27,7 +27,7 @@
     "purescript-node-path": "~0.4.1",
     "purescript-node-process": "~0.4.1",
     "purescript-node-readline": "~0.4.0",
-    "purescript-node-streams": "~0.3.0",
+    "purescript-node-streams": "~0.4.0",
     "purescript-nullable": "~0.2.1",
     "purescript-parsing": "~0.7.1",
     "purescript-posix-types": "~0.1.1",

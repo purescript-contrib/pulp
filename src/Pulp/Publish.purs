@@ -166,7 +166,7 @@ registerOnBowerIfNecessary out name repoUrl = do
 
 uploadPursuitDocs :: String -> Buffer -> AffN Unit
 uploadPursuitDocs authToken gzippedJson = do
-  res <- httpRequest reqOptions gzippedJson
+  res <- httpRequest reqOptions (Just gzippedJson)
   case HTTP.statusCode res of
     201 ->
       pure unit

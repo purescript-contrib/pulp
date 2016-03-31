@@ -18,11 +18,11 @@ import Data.String as String
 import Data.StrMap as StrMap
 import Data.Options ((:=))
 import Node.Process as Process
+import Node.Platform (Platform(Win32))
 import Node.Path as Path
 import Node.FS.Aff as FS
 import Node.FS.Perms
 import Node.Encoding (Encoding(..))
-import Node.Buffer as Buffer
 import Node.HTTP.Client as HTTP
 
 import Pulp.System.HTTP
@@ -61,16 +61,16 @@ obtainTokenFromStdin out = do
 
 checkToken :: Outputter -> String -> AffN Unit
 checkToken out token = do
-  emptyBody <- liftEff (Buffer.create 0)
-  res <- httpRequest reqOptions emptyBody
+  res <- httpRequest reqOptions Nothing
 
   let statusCode = HTTP.statusCode res
   unless (statusCode == 200) $
-    throwError (error case statusCode of
-      401 ->
-        "Your token was not accepted (401 Unauthorized)."
+    throwError $ error case statusCode of
+      403 ->
+        "Your token was not accepted (403 Forbidden)."
       other ->
-        "Something went wrong (HTTP " <> show other <> ").")
+        "Something went wrong (HTTP " <> show other <> " " <>
+        HTTP.statusMessage res <> ")."
 
   resBody <- concatStream (HTTP.responseAsStream res)
   case parseJSON resBody >>= Foreign.readProp "login" of

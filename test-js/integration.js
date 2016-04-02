@@ -76,7 +76,8 @@ function setupPackage(cwd, sh) {
 }
 
 describe("integration tests", function() {
-  this.timeout(60000);
+  // This is, unfortunately, required, as CI is horrendously slow.
+  this.timeout(90000);
 
   it("pulp --version", run(function*(sh, pulp, assert) {
     const [out] = yield pulp("--version");

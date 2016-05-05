@@ -21,10 +21,7 @@ const newlines = /\r?\n/g;
 
 const testBowerJson = JSON.stringify({
   "name": "test-package-for-pulp-tests",
-  "version": "1.0.0",
-  "moduleType": [
-    "node"
-  ],
+  "license": "MIT",
   "ignore": [
     "**/.*",
     "node_modules",

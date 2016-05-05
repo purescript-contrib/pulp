@@ -1,6 +1,7 @@
 module Pulp.Publish ( action ) where
 
 import Prelude
+import Control.Monad (unless)
 import Control.Monad.Eff.Class
 import Control.Monad.Eff.Exception
 import Control.Monad.Eff.Console.Unsafe (logAny)
@@ -29,6 +30,7 @@ import Pulp.System.HTTP
 import Pulp.System.Stream
 import Pulp.Exec
 import Pulp.Args
+import Pulp.Args.Get
 import Pulp.Outputter
 import Pulp.System.Files
 import Pulp.System.Read as Read
@@ -54,10 +56,15 @@ action = Action \args -> do
   name <- getBowerName bowerJson
   confirm ("Publishing " <> name <> " at v" <> Version.showVersion tagVersion <> ". Is this ok?")
 
-  confirmRun out "git" ["push", "origin", "HEAD", "refs/tags/" <> tagStr]
+  noPush <- getFlag "noPush" args.commandOpts
+  unless noPush do
+    remote <- getOption' "pushTo" args.commandOpts
+    confirmRun out "git" ["push", remote, "HEAD", "refs/tags/" <> tagStr]
 
-  repoUrl <- getBowerRepositoryUrl bowerJson
-  registerOnBowerIfNecessary out name repoUrl
+    -- Only attempt to register on Bower after a successful push, to avoid
+    -- accidental squatting by non-package-owners.
+    repoUrl <- getBowerRepositoryUrl bowerJson
+    registerOnBowerIfNecessary out name repoUrl
 
   out.log "Uploading documentation to Pursuit..."
   uploadPursuitDocs authToken gzippedJson

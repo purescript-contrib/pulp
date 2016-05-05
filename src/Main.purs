@@ -203,7 +203,12 @@ commands = [
   Args.command "login" "Obtain and store a token for uploading packages to Pursuit." Nothing Login.action [],
   Args.commandWithArgs "version" "Bump and tag a new version in preparation for release." Nothing BumpVersion.action []
     [Args.argument "bump" Type.versionBump "How to bump the version. Acceptable values: 'major', 'minor', 'patch', or any specific version. If omitted, Pulp will prompt you for a version." false],
-  Args.command "publish" "Publish a previously tagged version to Bower and Pursuit." Nothing Publish.action []
+  Args.command "publish" "Publish a previously tagged version to Bower and Pursuit." Nothing Publish.action [
+      Args.optionDefault "pushTo" ["--push-to"] Type.string
+        "The Git remote to push commits and tags to." "origin",
+      Args.option "noPush" ["--no-push"] Type.flag
+        "Skip pushing commits or tags to any remote."
+    ]
   ]
 
 failed :: forall a. Error -> EffN a

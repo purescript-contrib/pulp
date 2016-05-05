@@ -48,10 +48,10 @@ action = Action \args -> do
 
   unless (Array.null fails) $ do
     out.err $ "Unable to extract module name from the following modules:"
-    for_ fails (out.log <<< ("  " ++))
+    for_ fails (out.log <<< ("  " <> _))
     out.err $ "This may be a bug."
 
-  _ <- execQuiet "psc-docs" (args.remainder ++ sources globSrc ++ docgen) Nothing
+  _ <- execQuiet "psc-docs" (args.remainder <> sources globSrc <> docgen) Nothing
 
   out.log "Documentation generated."
 
@@ -62,14 +62,14 @@ makeDocgen path = do
   maybeModName <- extractModuleName path
   pure $ case maybeModName of
     Just mn ->
-      Tuple ["--docgen", showModuleName mn ++ ":" ++ docPath mn] []
+      Tuple ["--docgen", showModuleName mn <> ":" <> docPath mn] []
     Nothing ->
       Tuple [] [path]
 
 -- | Given a module name, return the file path where its documentation should
 -- | be written to.
 docPath :: ModuleName -> String
-docPath mn = "docs/" ++ String.joinWith "/" mn ++ ".md"
+docPath mn = "docs/" <> String.joinWith "/" mn <> ".md"
 
 type ModuleName = Array String
 
@@ -90,6 +90,6 @@ extractModuleName path = go <$> FS.readTextFile UTF8 path
 moduleNameFromLine :: String -> Maybe ModuleName
 moduleNameFromLine =
   String.stripPrefix "module "
-  >>> map (   String.takeWhile (not <<< (`elem` [' ', '(']))
+  >>> map (   String.takeWhile (not <<< (_ `elem` [' ', '(']))
           >>> String.split "."
           )

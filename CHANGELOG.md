@@ -1,5 +1,13 @@
 # Pulp Release History
 
+## 8.2.0
+
+* Update the dependency on `watchpack` to fix deprecation warnings (#196).
+* Add a `--no-push` flag to `pulp publish`, allowing you to skip pushing
+  tags to a Git remote as part of publishing (#201).
+* Add a `--push-to` option to `pulp publish`, allowing you to push to a
+  specific Git remote (#201).
+
 ## 8.2.0-rc.3
 
 * Actually fix `pulp login` (which was *still* broken).

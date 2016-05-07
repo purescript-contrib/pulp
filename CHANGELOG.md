@@ -1,5 +1,10 @@
 # Pulp Release History
 
+## 8.2.1
+
+* Remove unused npm dependencies (`xhr2`, `ansi`, and `supports-color`).
+* Fix Pulp's description in package.json; Pulp is not a package manager.
+
 ## 8.2.0
 
 * Update the dependency on `watchpack` to fix deprecation warnings (#196).

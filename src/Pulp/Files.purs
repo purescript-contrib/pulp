@@ -27,11 +27,15 @@ import Pulp.System.FFI
 import Pulp.Args
 import Pulp.Args.Get
 
+recursiveGlobWithExtension :: String -> Set String -> Array String
+recursiveGlobWithExtension ext =
+  Set.toList >>> List.fromList >>> map (_ <> ("/**/*." <> ext))
+
 sources :: Set String -> Array String
-sources = Set.toList >>> List.fromList >>> map (_ <> "/**/*.purs")
+sources = recursiveGlobWithExtension "purs"
 
 ffis :: Set String -> Array String
-ffis = Set.toList >>> List.fromList >>> map (_ <> "/**/*.js")
+ffis = recursiveGlobWithExtension "js"
 
 globsFromOption' :: forall a. (IsForeign a) => (a -> a) -> String -> Options -> AffN (Set a)
 globsFromOption' f name opts = do

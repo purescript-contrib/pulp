@@ -8,3 +8,4 @@
 /pulp.js
 .pulp-cache/
 .browserify-cache.json
+/.psvm/

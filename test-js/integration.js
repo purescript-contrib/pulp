@@ -280,8 +280,7 @@ describe("integration tests", function() {
     yield pulp("init");
     yield pulp("psci");
 
-    assert.file(".psci", (c) => true);
-    const [out] = yield pulp("psci", "import Prelude\n\"hello, \" ++ \"world\"");
+    const [out] = yield pulp("psci", "import Prelude\n\"hello, \" <> \"world\"");
     assert.match(out, /hello, world/);
   }));
 
@@ -289,7 +288,6 @@ describe("integration tests", function() {
     yield pulp("init");
     yield pulp("psci");
 
-    assert.file(".psci", (c) => true);
     const [out] = yield pulp("psci", "import Main as Main\nMain.main");
     assert.match(out, new RegExp(hello));
   }));
@@ -402,10 +400,6 @@ if (process.argv[2] === "--version") {
     const [out4, err4] = yield pulp("build --monochrome", undefined, {path: p});
     assert.match(err4, /--monochrome/);
     assert.match(err4, /--is-lib=bower_components/);
-
-    yield fs.writeFile(pscJs, prog("psc", "0.7.9.0"), "utf-8");
-    const [out5, err5] = yield pulp("build", undefined, {path: p});
-    assert.match(err5, /assert psc/);
   }));
 
   it("pulp version requires a clean working tree", run(function*(sh, pulp, assert, temp) {

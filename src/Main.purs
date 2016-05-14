@@ -32,7 +32,7 @@ import Pulp.Args.Types as Type
 import Pulp.Args.Parser (parse)
 import Pulp.System.FFI
 import Pulp.Outputter
-import Pulp.Validate (validate, minimumPscVersionForPsa)
+import Pulp.Validate (validate)
 import Pulp.Version (printVersion)
 import Pulp.Project (getProject)
 
@@ -253,21 +253,21 @@ runArgs args = do
       then Bower.printHelp out
       else printCommandHelp out globals args.command
     else do
-      args' <- addNoPsa args <$> validate out
+      _ <- validate out
       watch <- getFlag "watch" args.globalOpts
       if watch
         then
-          Args.runAction Watch.action args'
+          Args.runAction Watch.action args
         else do
-          args'' <- addProject args'
-          runShellForOption "before" args''.globalOpts out
-          result <- attempt $ Args.runAction args.command.action args''
+          args' <- addProject args
+          runShellForOption "before" args'.globalOpts out
+          result <- attempt $ Args.runAction args.command.action args'
           case result of
             Left e  -> do
-              runShellForOption "else" args''.globalOpts out
+              runShellForOption "else" args'.globalOpts out
               liftEff $ throwException e
             Right r ->
-              runShellForOption "then" args''.globalOpts out
+              runShellForOption "then" args'.globalOpts out
   where
   noProject = ["init", "login"]
   -- This is really quite gross, especially with _project. Not sure exactly
@@ -284,11 +284,6 @@ runArgs args = do
     case triggerCommand of
       Just cmd -> Shell.shell out cmd
       Nothing  -> pure unit
-
-  addNoPsa args ver =
-    if ver < minimumPscVersionForPsa
-      then args { commandOpts = insert "noPsa" Nothing args.commandOpts }
-      else args
 
 requireNodeAtLeast :: Version -> AffN Unit
 requireNodeAtLeast minimum = do

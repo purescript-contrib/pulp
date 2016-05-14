@@ -30,13 +30,14 @@
   "engines": {
     "node": ">= 4"
   },
+  "config": {
+    "psc_build_version": "v0.8.5",
+    "psc_test_version": "v0.9.0"
+  },
   "scripts": {
-    "lint": "jshint src",
-    "compile": "psa -c -f \"src/**/*.js\" -f \"bower_components/purescript-*/src/**/*.js\" \"src/**/*.purs\" \"bower_components/purescript-*/src/**/*.purs\" --censor-lib --censor-codes=ImplicitImport",
-    "bundle": "psc-bundle \"output/*/*.js\" --output pulp.js --module Main --main Main",
-    "build": "npm run lint && npm run compile && npm run bundle",
-    "test": "npm run build && mocha test-js --compilers js:babel/register",
-    "prepublish": "bower install && npm run build"
+    "prepublish": "node scripts.js prepublish",
+    "test": "node scripts.js test",
+    "build": "node scripts.js build"
   },
   "dependencies": {
     "browserify": "^11.0.0",
@@ -63,8 +64,9 @@
     "co": "^4.6.0",
     "fs-promise": "^0.3.1",
     "jshint": "^2.8.0",
+    "mkdirp": "^0.5.1",
     "mocha": "^2.2.5",
-    "purescript": "0.8.6-rc.1",
+    "psvm": "hdgarrood/psvm-js#9a95d3341286d9759935e7a703362b7e96e1acd4",
     "purescript-psa": "^0.3.4",
     "semver": "^5.1.0",
     "touch": "^1.0.0"

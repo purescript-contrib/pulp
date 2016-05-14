@@ -1,6 +1,5 @@
 module Pulp.Validate
   ( validate
-  , minimumPscVersionForPsa
   ) where
 
 import Prelude
@@ -22,10 +21,11 @@ validate :: Outputter -> AffN Version
 validate out = do
   ver <- getPscVersion out
   when (ver < minimumPscVersion) $ do
-    out.err $ "This version of Pulp requires PureScript version "
-              <> showVersion minimumPscVersion <> " or higher."
+    out.err $ "This version of Pulp requires version "
+              <> showVersion minimumPscVersion <> " of the PureScript compiler "
+              <> "or higher."
     out.err $ "Your installed version is " <> showVersion ver <> "."
-    out.err $ "Please either upgrade PureScript or downgrade Pulp to version 3.x."
+    out.err $ "Please either upgrade PureScript or downgrade Pulp to version 8.x."
     throwError $ error "Minimum psc version not satisfied"
   pure ver
 
@@ -41,7 +41,4 @@ getPscVersion out = do
       throwError $ error "Couldn't parse version from psc"
 
 minimumPscVersion :: Version
-minimumPscVersion = Version (toList [0, 7, 0, 0]) Nil
-
-minimumPscVersionForPsa :: Version
-minimumPscVersionForPsa = Version (toList [0, 8, 0, 0]) Nil
+minimumPscVersion = Version (toList [0, 9, 0]) Nil

@@ -18,10 +18,9 @@ import Node.Path as Path
 import Data.Foreign (parseJSON)
 import Data.Foreign.Class (readProp)
 import Node.Globals (__dirname)
-import Node.Process as Process
-import Node.Platform (Platform(Win32))
 
 import Pulp.System.FFI (AffN())
+import Pulp.System.Which (which)
 import Pulp.Exec (execQuiet)
 
 version :: Version
@@ -44,8 +43,7 @@ versionString =
 printVersion :: AffN Unit
 printVersion = do
   pscVersion <- execQuiet "psc" ["--version"] Nothing
-  let which = if Process.platform == Win32 then "where" else "which"
-  pscPath <- attempt $ execQuiet which ["psc"] Nothing
+  pscPath <- attempt $ which "psc"
   liftEff $ Console.log $
     "Pulp version " ++ showVersion version ++
     "\npsc version " ++ trim pscVersion ++

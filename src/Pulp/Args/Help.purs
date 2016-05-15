@@ -140,4 +140,4 @@ printCommandHelp out globals command = do
   hasArguments = not (null command.arguments)
 
 getCommandName :: EffN String
-getCommandName = maybe "pulp" (_.name <<< Path.parse) <<< (!! 1) <$> Process.argv
+getCommandName = maybe "pulp" (_.name <<< Path.parse) <<< (_ !! 1) <$> Process.argv

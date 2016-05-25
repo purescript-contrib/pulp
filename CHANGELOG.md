@@ -1,5 +1,13 @@
 # Pulp Release History
 
+## 9.0.0-rc.1
+
+* Compatibility with version 0.9 of the PureScript compiler. Pulp no longer
+  works with earlier versions of the PureScript compiler; to use earlier
+  versions, you will need to downgrade to a previous version of Pulp.
+* Fix a bug where the version of psc being used was not being printed properly
+  (#210).
+
 ## 8.2.1
 
 * Remove unused npm dependencies (`xhr2`, `ansi`, and `supports-color`).

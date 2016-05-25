@@ -53,7 +53,7 @@ action = Action \args -> do
   let directories = [ srcPath, testPath, dependencyPath ] ++ includePaths
 
   globs <- Set.union <$> defaultGlobs opts <*> testGlobs opts
-  let fileGlobs = sources globs ++ ffis globs
+  let fileGlobs = sources globs <> ffis globs
 
   watchAff directories $ \path -> do
     when (any (minimatch path) fileGlobs) do

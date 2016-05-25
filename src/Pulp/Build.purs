@@ -59,9 +59,8 @@ go buildType = Action \args -> do
   noPsa <- getFlag "noPsa" args.commandOpts
 
   let sourceGlobs = sources globs
-      ffiGlobs = ffis globs
       binArgs = ["-o", buildPath] ++ args.remainder
-      runPsc = psc sourceGlobs ffiGlobs binArgs Nothing
+      runPsc = psc sourceGlobs binArgs Nothing
 
   if noPsa
     then runPsc
@@ -76,7 +75,7 @@ go buildType = Action \args -> do
                                  ++ (if monochrome
                                        then ["--monochrome"]
                                        else [])
-          psa sourceGlobs ffiGlobs binArgs' Nothing
+          psa sourceGlobs binArgs' Nothing
 
   out.log "Build successful."
 

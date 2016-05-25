@@ -1,6 +1,6 @@
 # Test against this version of Node.js
 environment:
-  nodejs_version: "4.2"
+  nodejs_version: "6.2"
 
 # Cache bower packages.
 # This should speed builds up, but more importantly, reduce errors during
@@ -10,7 +10,8 @@ cache:
 
 # Install scripts. (runs after repo cloning)
 install:
-  - ps: Install-Product node $env:nodejs_version
+  - ps: Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:nodejs_version)
+  - ps: Install-Product node (Get-NodeJsLatestBuild $env:nodejs_version)
   - npm install -g bower
   - npm install
 

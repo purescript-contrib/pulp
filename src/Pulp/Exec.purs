@@ -15,7 +15,6 @@ import Data.String (stripSuffix)
 import Data.StrMap (StrMap())
 import Data.Maybe (Maybe(..))
 import Data.Foldable (for_)
-import Data.Array as Array
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Eff.Class (liftEff)
@@ -30,16 +29,15 @@ import Unsafe.Coerce
 import Pulp.System.Stream
 import Pulp.System.FFI
 
-psa :: Array String -> Array String -> Array String -> Maybe (StrMap String) -> AffN String
+psa :: Array String -> Array String -> Maybe (StrMap String) -> AffN String
 psa = compiler "psa"
 
-psc :: Array String -> Array String -> Array String -> Maybe (StrMap String) -> AffN String
+psc :: Array String -> Array String -> Maybe (StrMap String) -> AffN String
 psc = compiler "psc"
 
-compiler :: String -> Array String -> Array String -> Array String -> Maybe (StrMap String) -> AffN String
-compiler name deps ffi args env =
-  let allArgs = args <> deps <> (Array.concatMap (\path -> ["--ffi", path]) ffi)
-  in  execQuiet name allArgs env
+compiler :: String ->  Array String -> Array String -> Maybe (StrMap String) -> AffN String
+compiler name deps args env =
+  execQuiet name (args <> deps) env
 
 pscBundle :: Array String -> Array String -> Maybe (StrMap String) -> AffN String
 pscBundle files args env =

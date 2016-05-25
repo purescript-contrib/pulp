@@ -66,7 +66,7 @@
     "jshint": "^2.8.0",
     "mkdirp": "^0.5.1",
     "mocha": "^2.2.5",
-    "psvm": "hdgarrood/psvm-js#9a95d3341286d9759935e7a703362b7e96e1acd4",
+    "psvm": "hdgarrood/psvm-js#a8434fdc158ffa6ffbfb3174c96bb81b6ea5b6fb",
     "purescript-psa": "^0.3.4",
     "semver": "^5.1.0",
     "touch": "^1.0.0"

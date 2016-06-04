@@ -82,19 +82,10 @@ function prependPath(env, newDirectory) {
 function ensurePscVersionsInstalled() {
   var subcommandEnv = getSubcommandEnv();
 
-  // Workaround for https://github.com/ThomasCrvsr/psvm-js/issues/13
-  mkdirp.sync(path.join(subcommandEnv.PSVM_HOME, 'versions'));
-
-  const newlines = /\r?\n/g;
-  installedVersions = spawnSync("psvm ls", { quiet: true })
-    .split(newlines).map((s) => s.trim());
-
   const versions = ['psc_build_version', 'psc_test_version'].map(getConfig);
 
   versions.forEach((version) => {
-    if (!installedVersions.includes(version)) {
-      spawnSync("psvm install " + version);
-    }
+    spawnSync("psvm install " + version);
   });
 }
 

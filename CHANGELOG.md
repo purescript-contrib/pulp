@@ -1,6 +1,6 @@
 # Pulp Release History
 
-## 9.0.0-rc.1
+## 9.0.0
 
 * Compatibility with version 0.9 of the PureScript compiler. Pulp no longer
   works with earlier versions of the PureScript compiler; to use earlier

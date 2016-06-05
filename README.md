@@ -521,13 +521,13 @@ $ bower install
 To remove an installed package:
 
 ```sh
-$ bower rm purescript-profunctor
+$ bower uninstall purescript-profunctor
 ```
 
 To remove it from `bower.json` as well:
 
 ```sh
-$ bower rm --save purescript-profunctor
+$ bower uninstall --save purescript-profunctor
 ```
 
 To list all packages installed in your project:

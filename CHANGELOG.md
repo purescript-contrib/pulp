@@ -1,5 +1,12 @@
 # Pulp Release History
 
+## 9.0.1
+
+* Improved error messages in the case where submitting a package to Pursuit as
+  part of `pulp publish` fails.
+* Update README to use `bower uninstall` instead of the undocumented and
+  presumably deprecated `bower rm` (@menelaos, #215).
+
 ## 9.0.0
 
 * Compatibility with version 0.9 of the PureScript compiler. Pulp no longer

@@ -1,10 +1,10 @@
 module Pulp.Publish ( action ) where
 
 import Prelude
+import Control.Bind ((=<<))
 import Control.Monad (unless)
 import Control.Monad.Eff.Class
 import Control.Monad.Eff.Exception
-import Control.Monad.Eff.Console.Unsafe (logAny)
 import Control.Monad.Error.Class
 import Control.Monad.Aff
 import Data.Maybe
@@ -67,7 +67,7 @@ action = Action \args -> do
     registerOnBowerIfNecessary out name repoUrl
 
   out.log "Uploading documentation to Pursuit..."
-  uploadPursuitDocs authToken gzippedJson
+  uploadPursuitDocs out authToken gzippedJson
 
   out.log "Done."
   out.log ("You can view your package's documentation at: " <>
@@ -171,14 +171,14 @@ registerOnBowerIfNecessary out name repoUrl = do
   -- Run a command, sending stderr to /dev/null
   run = execQuietWithStderr CP.Ignore
 
-uploadPursuitDocs :: String -> Buffer -> AffN Unit
-uploadPursuitDocs authToken gzippedJson = do
+uploadPursuitDocs :: Outputter -> String -> Buffer -> AffN Unit
+uploadPursuitDocs out authToken gzippedJson = do
   res <- httpRequest reqOptions (Just gzippedJson)
   case HTTP.statusCode res of
     201 ->
       pure unit
     other -> do
-      liftEff (logAny res)
+      out.err =<< concatStream (HTTP.responseAsStream res)
       throwError (error (
         "Expected an HTTP 201 response from Pursuit, got: " <> show other))
 

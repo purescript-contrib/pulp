@@ -34,7 +34,7 @@ gitignore = unlines [
   "/node_modules/",
   "/.pulp-cache/",
   "/output/",
-  "/.psci*",
+  "/.psc*",
   "/src/.webpack.js"
   ]
 

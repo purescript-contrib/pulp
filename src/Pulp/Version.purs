@@ -28,7 +28,7 @@ version =
   case parseVersion versionString of
     Right v  -> v
     Left err -> unsafeThrow $ "pulp: Unable to parse version from package.json: "
-                              ++ show err
+                              <> show err
 
 versionString :: String
 versionString =
@@ -36,7 +36,7 @@ versionString =
     json <- FS.readTextFile UTF8 (Path.concat [__dirname, "package.json"])
     case parseJSON json >>= readProp "version" of
       Left err ->
-        throwException (error ("pulp: Unable to parse package.json: " ++ show err))
+        throwException (error ("pulp: Unable to parse package.json: " <> show err))
       Right v ->
         pure v
 
@@ -45,6 +45,6 @@ printVersion = do
   pscVersion <- execQuiet "psc" ["--version"] Nothing
   pscPath <- attempt $ which "psc"
   liftEff $ Console.log $
-    "Pulp version " ++ showVersion version ++
-    "\npsc version " ++ trim pscVersion ++
-    either (const "") (\p -> " using " ++ trim p) pscPath
+    "Pulp version " <> showVersion version <>
+    "\npsc version " <> trim pscVersion <>
+    either (const "") (\p -> " using " <> trim p) pscPath

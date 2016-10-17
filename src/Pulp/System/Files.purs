@@ -8,7 +8,7 @@ module Pulp.System.Files
   ) where
 
 import Prelude
-import Data.Function
+import Data.Function.Uncurried
 import Data.Maybe
 import Control.Monad.Eff.Exception (Error())
 import Control.Monad.Error.Class (catchJust)

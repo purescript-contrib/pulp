@@ -29,7 +29,7 @@ getOption name opts = do
     Just (Just thing) ->
       Just <$> readForeign name thing
     Just Nothing ->
-      let msg = "Tried to read a flag as an option: " ++ name
+      let msg = "Tried to read a flag as an option: " <> name
       in internalError msg
     Nothing ->
       pure Nothing
@@ -43,7 +43,7 @@ getOption' name opts = do
     Just val ->
       pure val
     Nothing ->
-      let msg = "Missing default value for option: " ++ name
+      let msg = "Missing default value for option: " <> name
       in internalError msg
 
 -- | Get a flag out of the `Options` value. If it was specified at the command
@@ -52,7 +52,7 @@ getFlag :: String -> Options -> AffN Boolean
 getFlag name opts = do
   case lookup name opts of
     Just (Just _) ->
-      let msg = "Tried to read an option as a flag: " ++ name
+      let msg = "Tried to read an option as a flag: " <> name
       in internalError msg
     Just Nothing ->
       pure true
@@ -71,9 +71,9 @@ readForeign name thing =
   case read thing of
     Left e ->
       internalError $ joinWith "\n"
-        [ "Failed to read option: " ++ name
-        , "The value was: " ++ unsafeInspect thing
-        , "Data.Foreign.read failed: " ++ show e
+        [ "Failed to read option: " <> name
+        , "The value was: " <> unsafeInspect thing
+        , "Data.Foreign.read failed: " <> show e
         ]
     Right x ->
       pure x

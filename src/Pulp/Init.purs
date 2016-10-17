@@ -26,7 +26,7 @@ import Pulp.Bower (launchBower)
 foreign import bowerFile :: String -> String
 
 unlines :: Array String -> String
-unlines arr = joinWith "\n" arr ++ "\n"
+unlines arr = joinWith "\n" arr <> "\n"
 
 gitignore :: String
 gitignore = unlines [
@@ -73,14 +73,14 @@ projectFiles pathRoot projectName =
   , { path: fullPath ["test", "Main.purs"], content: testFile }
   ]
   where
-    fullPath pathParts = Path.concat ([pathRoot] ++ pathParts)
+    fullPath pathParts = Path.concat ([pathRoot] <> pathParts)
 
 
 init :: Boolean -> Outputter -> AffN Unit
 init force out = do
   cwd <- liftEff Process.cwd
   let projectName = Path.basename cwd
-  out.log $ "Generating project skeleton in " ++ cwd
+  out.log $ "Generating project skeleton in " <> cwd
 
   let files = projectFiles cwd projectName
 
@@ -88,9 +88,9 @@ init force out = do
     for_ files \f -> do
       fileExists <- exists f.path
       when fileExists do
-        throwError <<< error $ "Found " ++ f.path ++ ": "
-                               ++ "There's already a project here. Run `pulp init --force` "
-                               ++ "if you're sure you want to overwrite it."
+        throwError <<< error $ "Found " <> f.path <> ": "
+                               <> "There's already a project here. Run `pulp init --force` "
+                               <> "if you're sure you want to overwrite it."
 
   for files \f -> do
     let dir = Path.dirname f.path

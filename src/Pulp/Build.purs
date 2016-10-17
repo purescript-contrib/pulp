@@ -48,7 +48,7 @@ go buildType = Action \args -> do
   out <- getOutputter args
 
   cwd <- liftEff Process.cwd
-  out.log $ "Building project in " ++ cwd
+  out.log $ "Building project in " <> cwd
 
   globs <- Set.union <$> defaultGlobs opts
                      <*> (if buildType == TestBuild
@@ -59,7 +59,7 @@ go buildType = Action \args -> do
   noPsa <- getFlag "noPsa" args.commandOpts
 
   let sourceGlobs = sources globs
-      binArgs = ["-o", buildPath] ++ args.remainder
+      binArgs = ["-o", buildPath] <> args.remainder
       runPsc = psc sourceGlobs binArgs Nothing
 
   if noPsa
@@ -71,8 +71,8 @@ go buildType = Action \args -> do
         Right _ -> do
           monochrome <- getFlag "monochrome" args.globalOpts
           dependencyPath <- getOption' "dependencyPath" args.commandOpts
-          let binArgs' = binArgs ++ ["--is-lib=" ++ dependencyPath]
-                                 ++ (if monochrome
+          let binArgs' = binArgs <> ["--is-lib=" <> dependencyPath]
+                                 <> (if monochrome
                                        then ["--monochrome"]
                                        else [])
           psa sourceGlobs binArgs' Nothing
@@ -95,12 +95,12 @@ bundle args = do
   skipEntry <- getFlag "skipEntryPoint" opts
 
   bundledJs <- pscBundle (outputModules buildPath)
-                         (["--module=" ++ main]
-                          ++ if skipEntry
+                         (["--module=" <> main]
+                          <> if skipEntry
                              then []
-                             else ["--main=" ++ main]
-                          ++ map (\m -> "--module=" ++ m) modules
-                          ++ args.remainder)
+                             else ["--main=" <> main]
+                          <> map (\m -> "--module=" <> m) modules
+                          <> args.remainder)
                          Nothing
 
   withOutputStream opts $ \out' -> do

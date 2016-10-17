@@ -5,7 +5,7 @@ import Prelude
 import Control.Monad (when)
 import Control.Monad.Aff (apathize)
 import Control.Monad.Eff.Class (liftEff)
-import Data.Function
+import Data.Function.Uncurried
 import Data.Maybe
 import Data.Map as Map
 import Data.Nullable (Nullable(), toNullable)
@@ -30,7 +30,7 @@ action = Action \args -> do
   out <- getOutputter args
 
   cwd <- liftEff Process.cwd
-  out.log $ "Browserifying project in " ++ cwd
+  out.log $ "Browserifying project in " <> cwd
 
   optimise <- getFlag "optimise" args.commandOpts
   let act = if optimise then optimising else incremental
@@ -42,11 +42,11 @@ action = Action \args -> do
 makeExport :: String -> Boolean -> String
 makeExport main export =
   if export
-  then "module.exports = require(\"" ++ jsEscape main ++ "\");\n"
+  then "module.exports = require(\"" <> jsEscape main <> "\");\n"
   else makeEntry main
 
 makeOptExport :: String -> String
-makeOptExport main = "module.exports = PS[\"" ++ jsEscape main ++ "\"];\n"
+makeOptExport main = "module.exports = PS[\"" <> jsEscape main <> "\"];\n"
 
 optimising :: Action
 optimising = Action \args -> do
@@ -66,11 +66,11 @@ optimising = Action \args -> do
   let skipEntryPoint = skipEntryPoint' || isJust standalone
 
   bundledJs <- pscBundle (outputModules buildPath)
-                         (["--module=" ++ main]
-                          ++ if skipEntryPoint
+                         (["--module=" <> main]
+                          <> if skipEntryPoint
                              then []
-                             else ["--main=" ++ main]
-                          ++ args.remainder)
+                             else ["--main=" <> main]
+                          <> args.remainder)
                          Nothing
 
   out.log "Browserifying..."
@@ -80,7 +80,7 @@ optimising = Action \args -> do
   Build.withOutputStream opts $ \out' -> do
     browserifyBundle
       { basedir: Path.resolve [] buildPath
-      , src: bundledJs ++ if isJust standalone then makeOptExport main else ""
+      , src: bundledJs <> if isJust standalone then makeOptExport main else ""
       , transform: toNullable transform
       , standalone: toNullable standalone
       , out: out'
@@ -138,7 +138,7 @@ setupNodePath buildPath = do
   let buildPath' = Path.resolve [] buildPath
   Process.setEnv "NODE_PATH" $
     case nodePath of
-      Just p  -> buildPath' ++ Path.delimiter ++ p
+      Just p  -> buildPath' <> Path.delimiter <> p
       Nothing -> buildPath'
 
 type BrowserifyOptions =

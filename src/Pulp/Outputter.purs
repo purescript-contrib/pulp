@@ -48,7 +48,7 @@ monochromeOutputter =
   , monochrome: true
   }
   where
-  monobullet text = write stderr ("* " ++ text ++ "\n")
+  monobullet text = write stderr ("* " <> text <> "\n")
 
 ansiOutputter :: Outputter
 ansiOutputter =

@@ -27,7 +27,7 @@ action = Action \args -> do
   out <- getOutputter args
 
   cwd <- liftEff Process.cwd
-  out.log $ "Building project in" ++ cwd
+  out.log $ "Building project in" <> cwd
 
   globs <- defaultGlobs opts
 
@@ -45,7 +45,7 @@ action = Action \args -> do
 
   runtime <- getOption' "runtime" opts
   env <- setupEnv buildPath
-  exec runtime ([info.path] ++ args.remainder) (Just env)
+  exec runtime ([info.path] <> args.remainder) (Just env)
 
 -- | Given a build path, create an environment that is just like this process'
 -- | environment, except with NODE_PATH set up for commands like `pulp run`.
@@ -60,7 +60,7 @@ prependPath :: String -> Maybe String -> Maybe String
 prependPath newPath paths =
   Just $ case paths of
     Nothing -> newPath
-    Just p  -> newPath ++ Path.delimiter ++ p
+    Just p  -> newPath <> Path.delimiter <> p
 
 -- | Escape a string for insertion into a JS string literal.
 jsEscape :: String -> String
@@ -68,4 +68,4 @@ jsEscape = replace "'" "\\'" <<< replace "\\" "\\\\"
 
 -- | Construct a JS string to be used as an entry point from a module name.
 makeEntry :: String -> String
-makeEntry main = "require('" ++ jsEscape main ++ "').main();\n"
+makeEntry main = "require('" <> jsEscape main <> "').main();\n"

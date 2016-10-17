@@ -43,4 +43,4 @@ printHelp out = do
   out.write "Run Bower commands like eg. `pulp dep install` instead of `bower install`.\n\n"
   out.write "Consult Bower's help page for the available commands:\n"
 
-  launchBower (["--help"] ++ if out.monochrome then ["--no-color"] else [])
+  launchBower (["--help"] <> if out.monochrome then ["--no-color"] else [])

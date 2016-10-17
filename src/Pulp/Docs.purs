@@ -8,7 +8,7 @@ import Data.Array as Array
 import Data.Set as Set
 import Data.Map as Map
 import Data.String as String
-import Data.Foldable (mconcat, for_, elem)
+import Data.Foldable (fold, for_, elem)
 import Data.Traversable (traverse)
 import Control.Monad
 import Control.Monad.Eff.Class (liftEff)
@@ -28,7 +28,7 @@ action = Action \args -> do
   out <- getOutputter args
 
   cwd <- liftEff Process.cwd
-  out.log $ "Generating documentation in " ++ cwd
+  out.log $ "Generating documentation in " <> cwd
 
   let opts = Map.union args.globalOpts args.commandOpts
 
@@ -44,7 +44,7 @@ action = Action \args -> do
 
   genFiles <- resolveGlobs (sources globGen)
 
-  Tuple docgen fails <- mconcat <$> traverse makeDocgen genFiles
+  Tuple docgen fails <- fold <$> traverse makeDocgen genFiles
 
   unless (Array.null fails) $ do
     out.err $ "Unable to extract module name from the following modules:"

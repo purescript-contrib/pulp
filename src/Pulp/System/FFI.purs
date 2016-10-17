@@ -7,7 +7,7 @@ import Control.Monad.Aff.AVar (AVAR())
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Exception (Error(), EXCEPTION())
 import Control.Monad.Eff.Console (CONSOLE())
-import Data.Function
+import Data.Function.Uncurried
 
 import Node.FS (FS())
 import Node.ChildProcess (CHILD_PROCESS())

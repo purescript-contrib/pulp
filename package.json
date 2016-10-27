@@ -44,7 +44,7 @@
     "browserify-incremental": "^3.0.1",
     "concat-stream": "^1.4.6",
     "glob": "^4.0.2",
-    "minimatch": "^1.0.0",
+    "minimatch": "^3.0.3",
     "purs-loader": "^0.4.0",
     "read": "^1.0.7",
     "string-stream": "0.0.7",

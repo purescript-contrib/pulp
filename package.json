@@ -32,7 +32,7 @@
   },
   "config": {
     "psc_build_version": "v0.8.5",
-    "psc_test_version": "v0.9.0"
+    "psc_test_version": "v0.10.1"
   },
   "scripts": {
     "prepublish": "node scripts.js prepublish",

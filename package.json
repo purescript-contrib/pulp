@@ -31,7 +31,7 @@
     "node": ">= 4"
   },
   "config": {
-    "psc_build_version": "v0.8.5",
+    "psc_build_version": "v0.9.3",
     "psc_test_version": "v0.10.1"
   },
   "scripts": {

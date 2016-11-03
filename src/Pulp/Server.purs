@@ -4,7 +4,6 @@ module Pulp.Server
   ) where
 
 import Prelude
-import Control.Monad (when)
 import Data.Maybe
 import Data.Map as Map
 import Data.String as String

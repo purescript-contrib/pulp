@@ -2,7 +2,6 @@ module Main where
 
 import Prelude
 
-import Control.Monad (when)
 import Control.Monad.Aff
 import Control.Monad.Eff.Class
 import Control.Monad.Eff.Console as Console

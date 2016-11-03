@@ -2,7 +2,6 @@
 module Pulp.Browserify where
 
 import Prelude
-import Control.Monad (when)
 import Control.Monad.Aff (apathize)
 import Control.Monad.Eff.Class (liftEff)
 import Data.Function.Uncurried

@@ -10,7 +10,6 @@ import Data.Map as Map
 import Data.String as String
 import Data.Foldable (fold, for_, elem)
 import Data.Traversable (traverse)
-import Control.Monad
 import Control.Monad.Eff.Class (liftEff)
 import Node.FS.Aff as FS
 import Node.Encoding (Encoding(..))

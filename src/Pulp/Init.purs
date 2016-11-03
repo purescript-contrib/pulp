@@ -8,7 +8,6 @@ import Data.String (joinWith)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad (when)
 import Node.Path as Path
 import Node.FS.Aff (writeTextFile, exists)
 import Node.Encoding (Encoding(UTF8))

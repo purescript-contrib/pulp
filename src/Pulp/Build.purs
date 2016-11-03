@@ -6,7 +6,6 @@ module Pulp.Build
   ) where
 
 import Prelude
-import Control.Monad (when)
 import Data.Either (Either(..))
 import Data.Maybe
 import Data.Map (union)

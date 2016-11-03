@@ -2,7 +2,6 @@ module Pulp.Publish ( action ) where
 
 import Prelude
 import Control.Bind ((=<<))
-import Control.Monad (unless)
 import Control.Monad.Eff.Class
 import Control.Monad.Eff.Exception
 import Control.Monad.Error.Class

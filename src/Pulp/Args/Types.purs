@@ -10,7 +10,6 @@ module Pulp.Args.Types
 
 import Prelude
 
-import Control.Monad (unless)
 import Control.Alt
 import Control.Monad.Trans
 import Data.String (split)

@@ -11,11 +11,9 @@ import Data.Array as Array
 import Data.Set as Set
 import Data.Map as Map
 import Data.Foldable (any, notElem)
-import Control.Monad (when)
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Exception (EXCEPTION())
-import Control.Monad.Aff (Aff, runAff, launchAff, Canceler)
+import Control.Monad.Aff (Aff, launchAff)
 import Control.Monad.Aff.AVar as AVar
 import Node.Process as Process
 import Node.Globals (__filename)

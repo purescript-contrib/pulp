@@ -2,7 +2,7 @@ module Pulp.Args.Parser where
 
 import Prelude
 
-import Control.Monad.Eff.Exception
+import Control.Monad.Eff.Exception (error)
 import Control.Monad.Error.Class
 import Control.Monad.Trans
 import Control.Alt

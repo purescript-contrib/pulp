@@ -5,7 +5,6 @@ module Pulp.Args.Help
 
 import Prelude
 
-import Control.Monad (when)
 import Control.Monad.Eff.Class (liftEff)
 import Data.Either (Either(..))
 import Data.Array (sort, (!!), null)

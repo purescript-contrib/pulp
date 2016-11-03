@@ -4,7 +4,6 @@ module Pulp.Login
   ) where
 
 import Prelude
-import Control.Monad
 import Control.Monad.Eff.Exception
 import Control.Monad.Eff.Class
 import Control.Monad.Error.Class

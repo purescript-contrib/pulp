@@ -16,7 +16,7 @@ const scripts = {
   "lint": "jshint src",
   "compile": "psa -c \"src/**/*.purs\" \"bower_components/purescript-*/src/**/*.purs\" --censor-lib --censor-codes=ImplicitImport",
   "bundle": "psc-bundle \"output/*/*.js\" --output pulp.js --module Main --main Main",
-  "test": "mocha test-js --compilers js:babel/register",
+  "test": "mocha test-js --require babel/register",
 };
 
 const subcommand = process.argv[2];

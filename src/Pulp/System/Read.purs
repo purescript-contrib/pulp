@@ -2,7 +2,7 @@ module Pulp.System.Read ( read ) where
 
 import Prelude
 
-import Data.Function (Fn2(), runFn2)
+import Data.Function.Uncurried (Fn2(), runFn2)
 
 import Pulp.System.FFI (AffN(), Callback(), runNode)
 

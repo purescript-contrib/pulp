@@ -10,8 +10,7 @@ import Control.Monad.Eff.Class (liftEff)
 import Data.Either (Either(..))
 import Data.Array (sort, (!!), null)
 import Data.Foldable (foldr, maximum)
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Data.Maybe.Unsafe (fromJust)
+import Data.Maybe (Maybe(..), fromMaybe, maybe, fromJust)
 import Data.StrMap (StrMap(), keys, lookup, insert, empty)
 import Data.String as Str
 import Data.Traversable (sequence)
@@ -25,6 +24,8 @@ import Pulp.Args.Types as Type
 import Pulp.Outputter
 import Pulp.System.FFI
 
+import Partial.Unsafe
+
 foreign import pad :: Int -> String
 
 foreign import wrap :: String -> Int -> EffN String
@@ -33,19 +34,19 @@ formatTable :: StrMap String -> EffN String
 formatTable table =
   let headers = sort $ keys table
       longest = fromMaybe 0 $ maximum $ headers <#> Str.length
-      formatEntry key = fromJust (lookup key table) # \entry ->
+      formatEntry key = unsafePartial $ fromJust (lookup key table) # \entry ->
           let padding = longest - Str.length key
           in do
             formatted <- wrap entry (longest + 4)
-            return ("  " ++ key ++ pad (padding + 2) ++ formatted ++ "\n")
+            pure ("  " <> key <> pad (padding + 2) <> formatted <> "\n")
   in do
     entries <- sequence $ headers <#> formatEntry
-    return $ Str.joinWith "" entries
+    pure $ Str.joinWith "" entries
 
 describeOpt :: Option -> String
-describeOpt opt = opt.desc ++ case opt.defaultValue of
+describeOpt opt = opt.desc <> case opt.defaultValue of
   Nothing -> ""
-  Just def -> maybe "" (\d -> " [Default: " ++ d ++ "]") (tryDefault def)
+  Just def -> maybe "" (\d -> " [Default: " <> d <> "]") (tryDefault def)
   where
   tryDefault def =
     case read def :: F String of
@@ -60,9 +61,9 @@ describeOpt opt = opt.desc ++ case opt.defaultValue of
 
 prepareOpts :: Array Option -> StrMap String
 prepareOpts = foldr foldOpts empty
-  where formatKey n = (Str.joinWith " " n.match) ++ case n.parser.name of
+  where formatKey n = (Str.joinWith " " n.match) <> case n.parser.name of
           Nothing -> ""
-          Just arg -> " " ++ arg
+          Just arg -> " " <> arg
         foldOpts n = insert (formatKey n) (describeOpt n)
 
 formatOpts :: Array Option -> AffN String
@@ -78,7 +79,7 @@ formatCmds = liftEff <<< formatTable <<< prepareCmds
 formatPassThrough :: Maybe String -> AffN String
 formatPassThrough mdesc =
   let desc = fromMaybe "Passthrough options are ignored." mdesc
-  in liftEff (wrap ("  " ++ desc) 2)
+  in liftEff (wrap ("  " <> desc) 2)
 
 prepareArguments :: Array Argument -> StrMap String
 prepareArguments = foldr foldOpts empty
@@ -95,7 +96,7 @@ argumentSynopsis = map format  >>> Str.joinWith " "
     Str.toUpper $
       if arg.required
         then arg.name
-        else "[" ++ arg.name ++ "]"
+        else "[" <> arg.name <> "]"
 
 helpOpt :: Option
 helpOpt = option "help" ["--help", "-h"] Type.flag
@@ -104,25 +105,25 @@ helpOpt = option "help" ["--help", "-h"] Type.flag
 printHelp :: Outputter -> Array Option -> Array Command -> AffN Unit
 printHelp out globals commands = do
   commandName <- liftEff getCommandName
-  out.write $ "Usage: " ++ commandName ++ " [global-options] <command> [command-options]\n"
+  out.write $ "Usage: " <> commandName <> " [global-options] <command> [command-options]\n"
   out.bolded "\nGlobal options:\n"
-  formatOpts (globals ++ [helpOpt]) >>= out.write
+  formatOpts (globals <> [helpOpt]) >>= out.write
   out.bolded "\nCommands:\n"
   formatCmds commands >>= out.write
-  helpText <- liftEff $ wrap ("Use `" ++ commandName ++
-                              " <command> --help` to " ++
+  helpText <- liftEff $ wrap ("Use `" <> commandName <>
+                              " <command> --help` to " <>
                               "learn about command specific options.") 2
-  out.write $ "\n" ++ helpText ++ "\n\n"
+  out.write $ "\n" <> helpText <> "\n\n"
 
 printCommandHelp :: Outputter -> Array Option -> Command -> AffN Unit
 printCommandHelp out globals command = do
   commandName <- liftEff getCommandName
-  out.write $ "Usage: " ++ commandName ++ " [global-options] " ++
-                  command.name ++ " " ++
-                  (if hasArguments then argumentSynopsis command.arguments ++ " " else "") ++
-                  (if hasCommandOpts then "[command-options]" else "") ++ "\n"
-  out.bolded $ "\nCommand: " ++ command.name ++ "\n"
-  out.write $ "  " ++ command.desc ++ "\n"
+  out.write $ "Usage: " <> commandName <> " [global-options] " <>
+                  command.name <> " " <>
+                  (if hasArguments then argumentSynopsis command.arguments <> " " else "") <>
+                  (if hasCommandOpts then "[command-options]" else "") <> "\n"
+  out.bolded $ "\nCommand: " <> command.name <> "\n"
+  out.write $ "  " <> command.desc <> "\n"
   when hasArguments do
     out.bolded "\nArguments:\n"
     formatArguments command.arguments >>= out.write
@@ -130,7 +131,7 @@ printCommandHelp out globals command = do
     out.bolded "\nCommand options:\n"
     formatOpts (command.options) >>= out.write
   out.bolded "\nGlobal options:\n"
-  formatOpts (globals ++ [helpOpt]) >>= out.write
+  formatOpts (globals <> [helpOpt]) >>= out.write
   out.bolded "\nPassthrough options:\n"
   formatPassThrough command.passthroughDesc >>= out.write
   out.write "\n"

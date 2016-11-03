@@ -15,7 +15,7 @@ module Pulp.Files
 import Prelude
 import Data.Array (concat)
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Function
+import Data.Function.Uncurried
 import Data.Foreign.Class (class IsForeign)
 import Data.List as List
 import Data.Set (Set())
@@ -29,7 +29,7 @@ import Pulp.Args.Get
 
 recursiveGlobWithExtension :: String -> Set String -> Array String
 recursiveGlobWithExtension ext =
-  Set.toList >>> List.fromList >>> map (_ <> ("/**/*." <> ext))
+  Set.toUnfoldable >>> map (_ <> ("/**/*." <> ext))
 
 sources :: Set String -> Array String
 sources = recursiveGlobWithExtension "purs"
@@ -61,11 +61,11 @@ dependencyGlobs =
 includeGlobs :: Options -> AffN (Set String)
 includeGlobs opts = mkSet <$> getOption "includePaths" opts
   where
-  mkSet = Set.fromList <<< List.toList <<< fromMaybe []
+  mkSet = Set.fromFoldable <<< fromMaybe []
 
 defaultGlobs :: Options -> AffN (Set String)
 defaultGlobs opts =
-  Set.unions <$> sequence (List.toList
+  Set.unions <$> sequence (List.fromFoldable
                             [ localGlobs opts
                             , dependencyGlobs opts
                             , includeGlobs opts
@@ -73,7 +73,7 @@ defaultGlobs opts =
 
 outputModules :: String -> Array String
 outputModules buildPath =
-  [buildPath ++ "/*/*.js"]
+  [buildPath <> "/*/*.js"]
 
 resolveGlobs :: Array String -> AffN (Array String)
 resolveGlobs patterns = concat <$> traverse glob patterns

@@ -40,7 +40,7 @@
     "build": "node scripts.js build"
   },
   "dependencies": {
-    "browserify": "^11.0.0",
+    "browserify": "^13.1.0",
     "browserify-incremental": "^3.0.1",
     "concat-stream": "^1.4.6",
     "glob": "^4.0.2",
@@ -66,8 +66,8 @@
     "jshint": "^2.8.0",
     "mkdirp": "^0.5.1",
     "mocha": "^2.2.5",
-    "psvm": "ThomasCrvsr/psvm-js#80d318ccdd",
-    "purescript-psa": "^0.3.4",
+    "psvm": "^0.1.1",
+    "purescript-psa": "^0.3.9",
     "semver": "^5.1.0",
     "touch": "^1.0.0"
   }

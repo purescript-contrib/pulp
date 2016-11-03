@@ -29,7 +29,7 @@ import Pulp.System.FFI (AffN())
 halt :: forall a. String -> OptParser a
 halt err = lift $ throwError $ error err
 -- halt err = ParserT $ \s ->
---   return { consumed: true, input: s, result: Left (strMsg err) }
+--   pure { consumed: true, input: s, result: Left (strMsg err) }
 
 matchNamed :: forall a r. (Eq a) => { name :: a | r } -> a -> Boolean
 matchNamed o key = o.name == key
@@ -46,8 +46,8 @@ lookup :: forall m a b. (Monad m, Eq b, Show b) => (a -> b -> Boolean) -> Array 
 lookup match table = do
   next <- token
   case find (\i -> match i next) table of
-    Just entry -> return $ Tuple next entry
-    Nothing -> fail ("Unknown command: " ++ show next)
+    Just entry -> pure $ Tuple next entry
+    Nothing -> fail ("Unknown command: " <> show next)
 
 lookupOpt :: Array Option -> OptParser (Tuple String Option)
 lookupOpt = lookup matchOpt
@@ -61,7 +61,7 @@ opt opts = do
   case o of
     (Tuple key option) -> do
       val <- option.parser.parser key
-      return $ Map.singleton option.name val
+      pure $ Map.singleton option.name val
 
 arg :: Argument -> OptParser Options
 arg a | a.required = do
@@ -76,7 +76,7 @@ cmd :: Array Command -> OptParser Command
 cmd cmds = do
   o <- lookupCmd cmds <?> "command"
   case o of
-    (Tuple key option) -> return option
+    (Tuple key option) -> pure option
 
 extractDefault :: Option -> Options
 extractDefault o =
@@ -93,10 +93,10 @@ parseArgv globals commands = do
   commandArgs <- traverse arg command.arguments
   commandOpts <- many $ try $ opt command.options
   rest <- many token
-  return $ {
-    globalOpts: Map.unions (globalOpts ++ defs globals),
+  pure $ {
+    globalOpts: Map.unions (globalOpts <> defs globals),
     command: command,
-    commandOpts: Map.unions (commandOpts ++ defs command.options),
+    commandOpts: Map.unions (commandOpts <> defs command.options),
     commandArgs: Map.unions commandArgs,
     remainder: rest
     }

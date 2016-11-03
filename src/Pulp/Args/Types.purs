@@ -30,12 +30,12 @@ import Pulp.VersionBump
 
 argErr :: forall a. String -> String -> OptParser a
 argErr arg msg =
-  halt ("Argument " ++ arg ++ ": " ++ msg)
+  halt ("Argument " <> arg <> ": " <> msg)
 
 flag :: OptionParser
 flag = {
   name: Nothing,
-  parser: \_ -> return Nothing
+  parser: \_ -> pure Nothing
   }
 
 string :: OptionParser
@@ -52,15 +52,15 @@ int = {
     let err = argErr arg "Needs an int argument." :: forall a. OptParser a
     mint <- fromString <$> (token <|> err)
     case mint of
-      Just i -> return (Just (toForeign i))
+      Just i -> pure (Just (toForeign i))
       Nothing -> err
   }
 
 require :: (Stats -> Boolean) -> String -> String -> OptParser Unit
 require pred typ path = do
-  s <- lift (stat path) <|> halt (typ ++ " '" ++ path ++ "' not found.")
+  s <- lift (stat path) <|> halt (typ <> " '" <> path <> "' not found.")
   unless (pred s)
-    (halt ("Path '" ++ path ++ "' is not a " ++ typ ++ "."))
+    (halt ("Path '" <> path <> "' is not a " <> typ <> "."))
 
 requireFile :: String -> OptParser Unit
 requireFile = require isFile "File"
@@ -74,7 +74,7 @@ file = {
   parser: \arg -> do
     path <- token <|> argErr arg "Needs a file argument."
     requireFile path
-    return $ Just (toForeign path)
+    pure $ Just (toForeign path)
   }
 
 directory :: OptionParser
@@ -83,7 +83,7 @@ directory = {
   parser: \arg -> do
     path <- token <|> argErr arg "Needs a directory argument."
     requireDirectory path
-    return $ Just (toForeign path)
+    pure $ Just (toForeign path)
   }
 
 directories :: OptionParser
@@ -93,7 +93,7 @@ directories = {
     paths <- token <|> argErr arg "Needs a directory argument."
     let paths' = split Path.delimiter paths
     for_ paths' requireDirectory
-    return $ Just (toForeign paths')
+    pure $ Just (toForeign paths')
   }
 
 -- TODO: this is gross; we end up parsing the version twice. Probably should

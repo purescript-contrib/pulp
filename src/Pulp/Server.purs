@@ -10,7 +10,7 @@ import Data.Map as Map
 import Data.String as String
 import Data.Foreign (toForeign, Foreign())
 import Data.String.Regex (regex, noFlags)
-import Data.Function
+import Data.Function.Uncurried
 import Control.Monad.Eff.Class (liftEff)
 import Node.Path as Path
 import Node.FS.Aff as FS
@@ -57,7 +57,7 @@ action = Action \args -> do
   port <- getOption' "port" opts
   listen server host port
 
-  out.log $ "Server listening on http://" ++ host ++ ":" ++ show port ++ "/"
+  out.log $ "Server listening on http://" <> host <> ":" <> show port <> "/"
 
   watchAff ["src"] \path ->
     when (minimatch path "src/**/*.js")
@@ -87,8 +87,8 @@ defaultConfig opts = toForeign $
       loaders: [
         {
           test: regex "\\.purs$" noFlags,
-          loader: "purs-loader?output=" ++ opts.buildPath ++
-                  "&" ++ String.joinWith "&" (opts.sources ++ opts.ffis)
+          loader: "purs-loader?output=" <> opts.buildPath <>
+                  "&" <> String.joinWith "&" (opts.sources <> opts.ffis)
         }
       ]
     },

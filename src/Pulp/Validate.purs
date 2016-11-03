@@ -5,7 +5,7 @@ module Pulp.Validate
 import Prelude
 import Data.Maybe
 import Data.Either
-import Data.List (toList, List(..))
+import Data.List (fromFoldable, List(..))
 import Data.String (trim)
 import Data.Version.Haskell (Version(..), parseVersion, showVersion)
 import Control.Monad (when)
@@ -41,4 +41,4 @@ getPscVersion out = do
       throwError $ error "Couldn't parse version from psc"
 
 minimumPscVersion :: Version
-minimumPscVersion = Version (toList [0, 9, 0]) Nil
+minimumPscVersion = Version (fromFoldable [0, 9, 0]) Nil

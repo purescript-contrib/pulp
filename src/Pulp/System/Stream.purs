@@ -11,7 +11,7 @@ module Pulp.System.Stream
   ) where
 
 import Prelude
-import Data.Function (runFn2, Fn2)
+import Data.Function.Uncurried (runFn2, Fn2)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Aff (makeAff)
 import Node.Stream as Node

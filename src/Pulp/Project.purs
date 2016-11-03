@@ -36,11 +36,11 @@ findIn path file = do
   doesExist <- exists fullPath
 
   if doesExist
-    then return (Just fullPath)
+    then pure (Just fullPath)
     else
       let parent = P.dirname path
       in if path == parent
-           then return Nothing
+           then pure Nothing
            else findIn parent file
 
 -- | Read a project's bower file at the given path and construct a Project
@@ -55,7 +55,7 @@ readConfig configFilePath = do
       let cachePath = P.resolve [path] ".pulp-cache"
       liftEff $ Process.chdir path
       mkdirIfNotExist cachePath
-      return $ Project { bowerFile: pro, cache: cachePath, path: path }
+      pure $ Project { bowerFile: pro, cache: cachePath, path: path }
 
 -- | Use the provided bower file, or if it is Nothing, try to find a bower file
 -- | path in this or any parent directory.
@@ -80,4 +80,4 @@ instance isForeignProject :: IsForeign Project where
       bowerFile <- readProp "bowerFile" o
       path      <- readProp "path" o
       cache     <- readProp "cache" o
-      return $ { bowerFile, path, cache }
+      pure $ { bowerFile, path, cache }

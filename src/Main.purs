@@ -83,7 +83,7 @@ defaultDependencyPath =
 pathArgs :: Array Args.Option
 pathArgs = [
   Args.optionDefault "includePaths" ["--include", "-I"] Type.directories
-    ("Additional directories for PureScript source files, separated by `" ++ Path.delimiter ++ "`.")
+    ("Additional directories for PureScript source files, separated by `" <> Path.delimiter <> "`.")
     ([] :: Array String),
   Args.optionDefault "srcPath" ["--src-path"] Type.directory
     "Directory for PureScript source files." "src",
@@ -100,7 +100,7 @@ buildishArgs = [
     "Path for compiler output." "./output",
   Args.option "noPsa" ["--no-psa"] Type.flag
     "Do not attempt to use the psa frontend instead of psc"
-  ] ++ pathArgs
+  ] <> pathArgs
 
 buildArgs :: Array Args.Option
 buildArgs = [
@@ -112,7 +112,7 @@ buildArgs = [
     "Perform dead code elimination.",
   Args.option "skipEntryPoint" ["--skip-entry-point"] Type.flag
     "Don't add code to automatically invoke Main."
-  ] ++ buildishArgs
+  ] <> buildishArgs
 
 -- TODO: This is possibly just a temporary separation from buildArgs; at the
 --       moment, the browserify action doesn't support this option, but it's
@@ -128,7 +128,7 @@ remainderToPsc = Just "Passthrough options are sent to `psc`."
 
 remainderToTest :: Maybe String
 remainderToTest =
-  Just ("Passthrough options are sent to the test program. " ++
+  Just ("Passthrough options are sent to the test program. " <>
     "This can be useful for only running one particular test, for instance.")
 
 remainderToBundle :: Maybe String
@@ -155,13 +155,13 @@ commands = [
      ],
   Args.command "dep" "Invoke Bower for package management." Nothing Bower.action [],
   Args.command "build" "Build the project." remainderToPsc Build.action $
-    buildArgs ++ moduleArgs,
+    buildArgs <> moduleArgs,
   Args.command "test" "Run project tests." remainderToTest Test.action $ [
     Args.optionDefault "main" ["--main", "-m"] Type.string
       "Test entry point." "Test.Main",
     Args.optionDefault "runtime" ["--runtime", "-r"] Type.string
       "Run test script using this command instead of Node." "node"
-    ] ++ buildishArgs,
+    ] <> buildishArgs,
   Args.command "browserify"
     "Produce a deployable bundle using Browserify." remainderToBundle Browserify.action $ [
       Args.option "transform" ["--transform"] Type.string
@@ -172,17 +172,17 @@ commands = [
         "Force a non-incremental build by deleting the build cache.",
       Args.option "standalone" ["--standalone"] Type.string
         "Output a UMD bundle with the given external module name."
-      ] ++ buildArgs,
+      ] <> buildArgs,
   Args.command "run" "Compile and run the project." remainderToProgram Run.action $ [
     Args.optionDefault "runtime" ["--runtime", "-r"] Type.string
       "Run the program using this command instead of Node." "node"
-    ] ++ buildArgs,
+    ] <> buildArgs,
   Args.command "docs" "Generate project documentation." remainderToPscDocs Docs.action $ [
     Args.option "withTests" ["--with-tests", "-t"] Type.flag
       "Include tests.",
     Args.option "withDependencies" ["--with-dependencies", "-d"] Type.flag
       "Include external dependencies."
-    ] ++ pathArgs,
+    ] <> pathArgs,
   Args.command "psci"
     "Launch a PureScript REPL configured for the project." remainderToPsci
     Psci.action pathArgs,
@@ -199,7 +199,7 @@ commands = [
         "Display no info to the console, only warnings and errors.",
       Args.option "quiet" ["--quiet", "-q"] Type.flag
         "Display nothing to the console when rebuilding."
-    ] ++ buildishArgs,
+    ] <> buildishArgs,
   Args.command "login" "Obtain and store a token for uploading packages to Pursuit." Nothing Login.action [],
   Args.commandWithArgs "version" "Bump and tag a new version in preparation for release." Nothing BumpVersion.action []
     [Args.argument "bump" Type.versionBump "How to bump the version. Acceptable values: 'major', 'minor', 'patch', or any specific version. If omitted, Pulp will prompt you for a version." false],
@@ -213,7 +213,7 @@ commands = [
 
 failed :: forall a. Error -> EffN a
 failed err = do
-  Console.error $ "* ERROR: " ++ message err
+  Console.error $ "* ERROR: " <> message err
   -- logStack err
   Process.exit 1
 
@@ -223,15 +223,15 @@ succeeded :: Unit -> EffN Unit
 succeeded = const (pure unit)
 
 main :: EffN Unit
-main = runAff failed succeeded do
-  requireNodeAtLeast (version 4 0 0 Nil Nil)
-  argv <- drop 2 <$> liftEff Process.argv
-  args <- parse globals commands argv
-  case args of
-    Left (ParseError { message: err }) ->
-      handleParseError (head argv) err
-    Right args' -> do
-      runArgs args'
+main = void $ runAff failed succeeded do
+                requireNodeAtLeast (version 4 0 0 Nil Nil)
+                argv <- drop 2 <$> liftEff Process.argv
+                args <- parse globals commands argv
+                case args of
+                  Left (ParseError { message: err }) ->
+                    handleParseError (head argv) err
+                  Right args' -> do
+                    runArgs args'
   where
   handleParseError (Just x) err
     -- TODO: this is kind of gross, especially that --version and --help are
@@ -240,7 +240,7 @@ main = runAff failed succeeded do
     | x `elem` ["--help", "-h"]    = printHelp out globals commands
 
   handleParseError _ err = do
-    out.err $ "Error: " ++ err
+    out.err $ "Error: " <> err
     printHelp out globals commands
 
   out = makeOutputter false
@@ -274,11 +274,11 @@ runArgs args = do
   -- how to go about improving this.
   addProject args =
     if args.command.name `elem` noProject
-      then return args
+      then pure args
       else do
         proj <- getProject args.globalOpts
         let globalOpts' = insert "_project" (Just (toForeign proj)) args.globalOpts
-        return $ args { globalOpts = globalOpts' }
+        pure $ args { globalOpts = globalOpts' }
   runShellForOption option opts out = do
     triggerCommand <- getOption option opts
     case triggerCommand of
@@ -289,13 +289,13 @@ requireNodeAtLeast :: Version -> AffN Unit
 requireNodeAtLeast minimum = do
   case parseVersion (stripV Process.version) of
     Left (ParseError { message }) ->
-      throwError (error ("Failed to parse node.js version: " ++ message))
+      throwError (error ("Failed to parse node.js version: " <> message))
     Right actual ->
       when (actual < minimum)
         (throwError (error
-          ("Your node.js version is too old " ++
-           "(required: " ++ showVersion minimum ++
-           ", actual: " ++ showVersion actual ++ ")")))
+          ("Your node.js version is too old " <>
+           "(required: " <> showVersion minimum <>
+           ", actual: " <> showVersion actual <> ")")))
 
   where
   stripV str =
@@ -304,10 +304,10 @@ requireNodeAtLeast minimum = do
 argsParserDiagnostics :: Args.Args -> AffN Unit
 argsParserDiagnostics opts = do
   let out = makeOutputter false
-  out.log $ "Globals: " ++ show ((map <<< map) showForeign opts.globalOpts)
-  out.log $ "Command: " ++ opts.command.name
-  out.log $ "Locals: " ++ show ((map <<< map) showForeign opts.commandOpts)
-  out.log $ "Remainder: " ++ show opts.remainder
+  out.log $ "Globals: " <> show ((map <<< map) showForeign opts.globalOpts)
+  out.log $ "Command: " <> opts.command.name
+  out.log $ "Locals: " <> show ((map <<< map) showForeign opts.commandOpts)
+  out.log $ "Remainder: " <> show opts.remainder
   where
   showForeign :: Foreign -> String
   showForeign = unsafeInspect

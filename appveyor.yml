@@ -1,6 +1,10 @@
 # Test against this version of Node.js
 environment:
-  nodejs_version: "6.2"
+  nodejs_version: "6.9"
+
+# Only test on x64 machines (as we only provide x64 binaries).
+platform:
+  - x64
 
 # Cache bower packages.
 # This should speed builds up, but more importantly, reduce errors during
@@ -10,8 +14,7 @@ cache:
 
 # Install scripts. (runs after repo cloning)
 install:
-  - ps: Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:nodejs_version)
-  - ps: Install-Product node (Get-NodeJsLatestBuild $env:nodejs_version)
+  - ps: Install-Product node (Get-NodeJsLatestBuild $env:nodejs_version) x64
   - npm install -g bower
   - npm install
 

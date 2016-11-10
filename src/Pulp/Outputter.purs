@@ -25,8 +25,12 @@ type Outputter =
 
 -- | Get an outputter, with monochrome based on the command line arguments.
 getOutputter :: Args -> AffN Outputter
-getOutputter args =
-  makeOutputter <$> getFlag "monochrome" args.globalOpts
+getOutputter args = do
+  -- Bit of a hack, this is used in `pulp server`
+  q <- getFlag "_silenced" args.commandOpts
+  if q
+    then pure nullOutputter
+    else makeOutputter <$> getFlag "monochrome" args.globalOpts
 
 -- | Get an outputter. The argument represents "monochrome"; if true is
 -- | supplied, the returned logger will never use color. Otherwise, whether or
@@ -63,3 +67,15 @@ bullet :: WritableStream -> Color -> String -> AffN Unit
 bullet stream color text = do
   withGraphics (write stream) (foreground color) "* "
   write stream (text <> "\n")
+
+-- | An outputter which doesn't ever output anything.
+nullOutputter :: Outputter
+nullOutputter =
+  { log: dud
+  , err: dud
+  , write: dud
+  , bolded: dud
+  , monochrome: false
+  }
+  where
+  dud = const (pure unit)

@@ -5,135 +5,101 @@ module Pulp.Server
 
 import Prelude
 import Data.Maybe
+import Data.Either
 import Data.Map as Map
-import Data.String as String
-import Data.Foreign (toForeign, Foreign())
-import Data.String.Regex (regex)
-import Data.String.Regex.Flags (noFlags)
-import Data.Function.Uncurried
+import Data.Foreign (toForeign)
 import Control.Monad.Eff.Class (liftEff)
-import Node.Path as Path
-import Node.FS.Aff as FS
+import Control.Monad.Aff (makeAff, launchAff, attempt)
+import Control.Monad.Aff.AVar as AVar
+import Node.HTTP as HTTP
 import Node.Encoding (Encoding(..))
-import Node.Process as Process
-import Node.Globals (__dirname)
+import Node.Stream as Stream
 
 import Pulp.System.FFI
-import Pulp.System.Require (unsafeRequire)
+import Pulp.System.StaticServer as StaticServer
 import Pulp.Outputter
-import Pulp.System.Files (touch)
 import Pulp.Args
 import Pulp.Args.Get
-import Pulp.Files
-import Pulp.Run (makeEntry)
-import Pulp.Watch (watchAff, minimatch)
+import Pulp.Watch (watchAff, watchDirectories)
+import Pulp.Build as Build
+
+data BuildResult
+  = Succeeded
+  | Failed
+
+getBundleFileName :: Options -> AffN String
+getBundleFileName opts =
+  (_ <> "/app.js") <$> getOption' "buildPath" opts
 
 action :: Action
 action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
   out <- getOutputter args
 
-  buildPath <- Path.resolve [] <$> getOption' "buildPath" opts
-  globs <- defaultGlobs opts
-
-  let sources' = map ("src[]=" <> _) (sources globs)
-  let ffis'    = map ("ffi[]=" <> _) (ffis globs)
-
-  sourceFiles <- resolveGlobs sources'
-
-  main <- (("." <> Path.sep) <> _) <<< (_ <> ".purs") <<< String.replace (String.Pattern ".") (String.Replacement Path.sep) <$> getOption' "main" opts
-  let entryPath = Path.concat ["src", ".webpack.js"]
-  FS.writeTextFile UTF8 entryPath (makeEntry main)
-
-  mconfigPath <- getOption "config" opts
-  config <- case mconfigPath of
-              Just path -> liftEff $ unsafeRequire $ Path.resolve [] path
-              Nothing   -> liftEff $ getDefaultConfig buildPath sources' ffis'
-
-  options <- getWebpackOptions opts out
-
-  server <- liftEff $ makeDevServer config options
-  host <- getOption' "host" opts
+  bundleFileName <- getBundleFileName opts
+  hostname <- getOption' "host" opts
   port <- getOption' "port" opts
-  listen server host port
 
-  out.log $ "Server listening on http://" <> host <> ":" <> show port <> "/"
+  -- This AVar should be 'full' (i.e. contain a value) if and only if the
+  -- most recent build attempt has finished; in this case, the value inside
+  -- tells you whether the build was successful and the bundle can be served
+  -- to the client.
+  rebuildV <- AVar.makeVar
 
-  watchAff ["src"] \path ->
-    when (minimatch path "src/**/*.js")
-      (touch (Path.concat ["src", main]))
+  server <- liftEff $ createServer rebuildV bundleFileName
+  listen server { hostname, port, backlog: Nothing }
 
-getDefaultConfig :: String -> Array String -> Array String -> EffN Foreign
-getDefaultConfig buildPath sources ffis = do
-  cwd <- liftEff Process.cwd
-  let nodeModulesPath = Path.resolve [__dirname] "node_modules"
-  let context = Path.resolve [cwd] "src"
-  pure $ defaultConfig { dir: cwd, buildPath, sources, ffis, nodeModulesPath, context }
+  out.log $ "Server listening on http://" <> hostname <> ":" <> show port <> "/"
 
-defaultConfig :: WebpackConfigOptions -> Foreign
-defaultConfig opts = toForeign $
-  {
-    cache: true,
-    context: opts.context,
-    entry: "./.webpack.js",
-    debug: true,
-    devtool: "source-map",
-    output: {
-      path: opts.dir,
-      pathinfo: true,
-      filename: "app.js"
-    },
-    module: {
-      loaders: [
-        {
-          test: regex "\\.purs$" noFlags,
-          loader: "purs-loader?output=" <> opts.buildPath <>
-                  "&" <> String.joinWith "&" (opts.sources <> opts.ffis)
-        }
-      ]
-    },
-    resolve: {
-      modulesDirectories: [
-        "node_modules",
-        "bower_components/purescript-prelude/src",
-        opts.buildPath
-      ],
-      extensions: [ "", ".js", ".purs" ]
-    },
-    resolveLoader: {
-      root: opts.nodeModulesPath
-    }
-  }
+  quiet <- getFlag "quiet" opts
+  let rebuild = do
+        r <- attempt (rebuildWith { bundleFileName, quiet } args)
+        case r of
+          Right _ ->
+            AVar.putVar rebuildV Succeeded
+          Left _ -> do
+            AVar.putVar rebuildV Failed
+            out.err $ "Failed to rebuild; try to fix the compile errors"
+  rebuild
 
-type WebpackConfigOptions =
-  { sources :: Array String
-  , ffis :: Array String
-  , buildPath :: String
-  , dir :: String
-  , context :: String
-  , nodeModulesPath :: String
-  }
+  dirs <- watchDirectories opts
+  watchAff dirs \_ -> do
+    void $ AVar.takeVar rebuildV
+    rebuild
 
-getWebpackOptions :: Options -> Outputter -> AffN WebpackOptions
-getWebpackOptions opts out = do
-  noInfo     <- getFlag "noInfo" opts
-  quiet      <- getFlag "quiet" opts
-  let colors = not out.monochrome
-  liftEff $ webpackOptions { noInfo, quiet, colors }
+createServer :: AVar.AVar BuildResult -> String -> EffN HTTP.Server
+createServer rebuildV bundleFileName = do
+  static <- StaticServer.new "."
+  HTTP.createServer \req res ->
+    case (HTTP.requestURL req) of
+      "/app.js" ->
+        void $ unsafeToEffN $ launchAff do
+          -- The effect of this line should be to block until the current
+          -- rebuild is finished (if any).
+          r <- AVar.peekVar rebuildV
+          liftEff $ case r of
+            Succeeded ->
+              StaticServer.serveFile static bundleFileName 200 req res
+            Failed -> do
+              HTTP.setStatusCode res 400
+              HTTP.setStatusMessage res "Rebuild failed"
+              let resS = HTTP.responseAsStream res
+              void $
+                Stream.writeString resS UTF8 "Compile error in pulp server" $
+                  Stream.end resS (pure unit)
 
-type WebpackOptionsArgs =
-  { noInfo :: Boolean
-  , quiet :: Boolean
-  , colors :: Boolean
-  }
+      _ ->
+        StaticServer.serve static req res
 
-foreign import data WebpackOptions :: *
-foreign import webpackOptions :: WebpackOptionsArgs -> EffN WebpackOptions
+listen :: HTTP.Server -> HTTP.ListenOptions -> AffN Unit
+listen server opts =
+  -- TODO: error handling?
+  makeAff \_ done -> HTTP.listen server opts (done unit)
 
-foreign import data DevServer :: *
-foreign import makeDevServer :: Foreign -> WebpackOptions -> EffN DevServer
-
-foreign import listen' :: Fn4 DevServer String Int (Callback Unit) Unit
-
-listen :: DevServer -> String -> Int -> AffN Unit
-listen server host port = runNode $ runFn4 listen' server host port
+rebuildWith :: { bundleFileName :: String, quiet :: Boolean } -> Args -> AffN Unit
+rebuildWith { bundleFileName, quiet } args =
+  Build.build (args { commandOpts = addExtras args.commandOpts })
+  where
+  addExtras =
+    Map.insert "to" (Just (toForeign bundleFileName))
+    >>> if quiet then Map.insert "_silenced" Nothing else id

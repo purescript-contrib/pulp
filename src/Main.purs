@@ -186,17 +186,13 @@ commands = [
   Args.command "psci"
     "Launch a PureScript REPL configured for the project." remainderToPsci
     Psci.action pathArgs,
-  Args.command "server" "Launch a Webpack development server." Nothing Server.action $ [
+  Args.command "server" "Launch a development server." Nothing Server.action $ [
       Args.optionDefault "main" ["--main", "-m"] Type.string
         "Application's entry point." "Main",
-      Args.option "config" ["--config", "-c"] Type.file
-        "Override the default Webpack config.",
       Args.optionDefault "port" ["--port", "-p"] Type.int
         "Port number to listen on." 1337,
       Args.optionDefault "host" ["--host"] Type.string
         "IP address to bind the server to." "localhost",
-      Args.option "noInfo" ["--no-info"] Type.flag
-        "Display no info to the console, only warnings and errors.",
       Args.option "quiet" ["--quiet", "-q"] Type.flag
         "Display nothing to the console when rebuilding."
     ] <> buildishArgs,
@@ -255,7 +251,7 @@ runArgs args = do
     else do
       _ <- validate out
       watch <- getFlag "watch" args.globalOpts
-      if watch
+      if watch && args.command.name /= "server"
         then
           Args.runAction Watch.action args
         else do

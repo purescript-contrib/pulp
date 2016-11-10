@@ -42,5 +42,8 @@
   },
   "resolutions": {
     "purescript-unsafe-coerce": "^2.0.0"
+  },
+  "devDependencies": {
+    "purescript-debug": "^2.0.0"
   }
 }

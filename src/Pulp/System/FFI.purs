@@ -8,6 +8,7 @@ import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Exception (Error(), EXCEPTION())
 import Control.Monad.Eff.Console (CONSOLE())
 import Data.Function.Uncurried
+import Unsafe.Coerce (unsafeCoerce)
 
 import Node.FS (FS())
 import Node.ChildProcess (CHILD_PROCESS())
@@ -36,3 +37,9 @@ runNode fn = makeAff (\err win -> runFn3 runNode' err win fn)
 
 -- | This is quite unsafe but often useful.
 foreign import unsafeInspect :: forall a. a -> String
+
+unsafeToEffN :: forall eff a. Eff eff a -> EffN a
+unsafeToEffN = unsafeCoerce
+
+unsafeToAffN :: forall eff a. Aff eff a -> AffN a
+unsafeToAffN = unsafeCoerce

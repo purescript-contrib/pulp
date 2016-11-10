@@ -34,8 +34,7 @@ gitignore = unlines [
   "/.pulp-cache/",
   "/output/",
   "/.psc*",
-  "/.psa*",
-  "/src/.webpack.js"
+  "/.psa*"
   ]
 
 mainFile :: String

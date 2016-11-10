@@ -1,5 +1,11 @@
 # Pulp Release History
 
+## 9.1.0
+
+* Ignore .psc-ide-port, .psa-stash, and other dotfiles beginning with .psc or .psa in the default .gitignore file created by `pulp init` (@texastoland, #223, 225).
+* Bump version ranges in the default bower.json file created by `pulp init` to pick up the newest versions of core libraries (@Risto-Stevcev, #230).
+* Updated some npm dependencies to reduce the number of warnings you get when you run `npm install pulp`.
+
 ## 9.0.1
 
 * Improved error messages in the case where submitting a package to Pursuit as

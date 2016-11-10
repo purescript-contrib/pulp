@@ -80,7 +80,7 @@ showModuleName = String.joinWith "."
 extractModuleName :: String -> AffN (Maybe ModuleName)
 extractModuleName path = go <$> FS.readTextFile UTF8 path
   where
-  go = String.split "\n"
+  go = String.split (String.Pattern "\n")
         >>> map moduleNameFromLine
         >>> Array.catMaybes
         >>> Array.head
@@ -88,7 +88,7 @@ extractModuleName path = go <$> FS.readTextFile UTF8 path
 -- | Given a line in a PureScript source file, attempt to extract its name.
 moduleNameFromLine :: String -> Maybe ModuleName
 moduleNameFromLine =
-  String.stripPrefix "module "
+  String.stripPrefix (String.Pattern "module ")
   >>> map (   String.takeWhile (not <<< (_ `elem` [' ', '(']))
-          >>> String.split "."
+          >>> String.split (String.Pattern ".")
           )

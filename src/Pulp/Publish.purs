@@ -1,11 +1,11 @@
 module Pulp.Publish ( action ) where
 
 import Prelude
-import Control.Bind ((=<<))
 import Control.Monad.Eff.Class
 import Control.Monad.Eff.Exception
 import Control.Monad.Error.Class
 import Control.Monad.Aff
+import Control.Monad.Except (runExcept)
 import Data.Maybe
 import Data.Tuple
 import Data.Tuple.Nested ((/\))
@@ -113,7 +113,7 @@ newtype BowerJson = BowerJson Foreign
 readBowerJson :: AffN BowerJson
 readBowerJson = do
   json <- FS.readTextFile UTF8 "bower.json"
-  case parseJSON json of
+  case runExcept (parseJSON json) of
     Right parsedJson ->
       pure (BowerJson parsedJson)
     Left err ->
@@ -122,7 +122,7 @@ readBowerJson = do
 
 getBowerName :: BowerJson -> AffN String
 getBowerName (BowerJson json) =
-  case readProp "name" json of
+  case runExcept (readProp "name" json) of
     Right name ->
       pure name
     Left err ->
@@ -131,7 +131,7 @@ getBowerName (BowerJson json) =
 
 getBowerRepositoryUrl :: BowerJson -> AffN String
 getBowerRepositoryUrl (BowerJson json) =
-  case readProp "repository" json >>= readProp "url" of
+  case runExcept (readProp "repository" json >>= readProp "url") of
     Right url ->
       pure url
     Left err ->

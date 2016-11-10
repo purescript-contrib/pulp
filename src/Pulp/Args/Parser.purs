@@ -3,8 +3,8 @@ module Pulp.Args.Parser where
 import Prelude
 
 import Control.Monad.Eff.Exception (error)
+import Control.Monad.Trans.Class (lift)
 import Control.Monad.Error.Class
-import Control.Monad.Trans
 import Control.Alt
 import Data.Array (many)
 import Data.Either (Either)
@@ -105,6 +105,4 @@ parseArgv globals commands = do
 
 parse :: Array Option -> Array Command -> Array String -> AffN (Either ParseError Args)
 parse globals commands s =
-  runParserT initialState $ parseArgv globals commands
-  where
-  initialState = PState { input: List.fromFoldable s, position: Pos.initialPos }
+  runParserT (List.fromFoldable s) (parseArgv globals commands)

@@ -11,7 +11,7 @@ module Pulp.Exec
 
 import Prelude
 import Data.Either (Either(..), either)
-import Data.String (stripSuffix)
+import Data.String (stripSuffix, Pattern(..))
 import Data.StrMap (StrMap())
 import Data.Maybe (Maybe(..))
 import Data.Foldable (for_)
@@ -136,7 +136,7 @@ handleErrors cmd retry err
   | err.code == "ENOENT" = do
      -- On windows, if the executable wasn't found, try adding .cmd
      if Process.platform == Win32
-       then case stripSuffix ".cmd" cmd of
+       then case stripSuffix (Pattern ".cmd") cmd of
               Nothing      -> retry (cmd <> ".cmd")
               Just bareCmd -> throwError $ error $
                  "`" <> bareCmd <> "` executable not found. (nor `" <> cmd <> "`)"

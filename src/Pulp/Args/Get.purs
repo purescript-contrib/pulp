@@ -13,6 +13,7 @@ import Data.String (joinWith)
 import Data.Foreign
 import Data.Foreign.Class
 import Data.Map (lookup)
+import Control.Monad.Except (runExcept)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Error.Class (throwError)
 
@@ -68,7 +69,7 @@ hasOption name opts = isJust <$> opt
 
 readForeign :: forall a. (IsForeign a) => String -> Foreign -> AffN a
 readForeign name thing =
-  case read thing of
+  case runExcept (read thing) of
     Left e ->
       internalError $ joinWith "\n"
         [ "Failed to read option: " <> name

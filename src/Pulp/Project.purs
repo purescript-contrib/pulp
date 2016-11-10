@@ -7,6 +7,7 @@ module Pulp.Project
 import Prelude
 import Data.Maybe (Maybe(..), maybe)
 import Data.Either (Either(..))
+import Control.Monad.Except (runExcept)
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Eff.Class (liftEff)
@@ -48,8 +49,9 @@ findIn path file = do
 readConfig :: String -> AffN Project
 readConfig configFilePath = do
   json <- readTextFile UTF8 configFilePath
-  case parseJSON json of
-    Left err -> throwError (error ("Unable to parse bower.json: " <> show err))
+  case runExcept (parseJSON json) of
+    Left err ->
+      throwError (error ("Unable to parse bower.json: " <> show err))
     Right pro -> do
       let path = P.dirname configFilePath
       let cachePath = P.resolve [path] ".pulp-cache"

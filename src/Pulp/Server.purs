@@ -8,7 +8,8 @@ import Data.Maybe
 import Data.Map as Map
 import Data.String as String
 import Data.Foreign (toForeign, Foreign())
-import Data.String.Regex (regex, noFlags)
+import Data.String.Regex (regex)
+import Data.String.Regex.Flags (noFlags)
 import Data.Function.Uncurried
 import Control.Monad.Eff.Class (liftEff)
 import Node.Path as Path
@@ -40,7 +41,7 @@ action = Action \args -> do
 
   sourceFiles <- resolveGlobs sources'
 
-  main <- (("." <> Path.sep) <> _) <<< (_ <> ".purs") <<< String.replace "." Path.sep <$> getOption' "main" opts
+  main <- (("." <> Path.sep) <> _) <<< (_ <> ".purs") <<< String.replace (String.Pattern ".") (String.Replacement Path.sep) <$> getOption' "main" opts
   let entryPath = Path.concat ["src", ".webpack.js"]
   FS.writeTextFile UTF8 entryPath (makeEntry main)
 

@@ -8,6 +8,7 @@ import Control.Monad.Eff.Console as Console
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Eff.Exception
 import Control.Monad.Error.Class (throwError)
+import Control.Monad.Except (runExcept)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Either (Either(..))
 import Data.Map (insert)
@@ -17,8 +18,8 @@ import Data.Array (head, drop)
 import Data.Foldable (elem)
 import Data.List (List(Nil))
 import Data.Version (Version(), version, showVersion, parseVersion)
-import Data.String (stripPrefix)
-import Text.Parsing.Parser (ParseError(..))
+import Data.String (stripPrefix, Pattern(..))
+import Text.Parsing.Parser (parseErrorMessage)
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Sync (readTextFile)
 import Node.Path as Path
@@ -74,7 +75,7 @@ defaultDependencyPath =
   where
   readFromBowerRc = do
     json <- readTextFile UTF8 ".bowerrc"
-    case parseJSON json >>= readProp "directory" of
+    case runExcept (parseJSON json >>= readProp "directory") of
       Right dir -> pure dir
       Left err  -> throwException (error (show err))
 
@@ -227,8 +228,8 @@ main = void $ runAff failed succeeded do
                 argv <- drop 2 <$> liftEff Process.argv
                 args <- parse globals commands argv
                 case args of
-                  Left (ParseError { message: err }) ->
-                    handleParseError (head argv) err
+                  Left err ->
+                    handleParseError (head argv) (parseErrorMessage err)
                   Right args' -> do
                     runArgs args'
   where
@@ -269,15 +270,17 @@ runArgs args = do
               runShellForOption "then" args'.globalOpts out
   where
   noProject = ["init", "login"]
+
   -- This is really quite gross, especially with _project. Not sure exactly
   -- how to go about improving this.
-  addProject args =
-    if args.command.name `elem` noProject
-      then pure args
+  addProject as =
+    if as.command.name `elem` noProject
+      then pure as
       else do
-        proj <- getProject args.globalOpts
-        let globalOpts' = insert "_project" (Just (toForeign proj)) args.globalOpts
-        pure $ args { globalOpts = globalOpts' }
+        proj <- getProject as.globalOpts
+        let globalOpts' = insert "_project" (Just (toForeign proj)) as.globalOpts
+        pure $ as { globalOpts = globalOpts' }
+
   runShellForOption option opts out = do
     triggerCommand <- getOption option opts
     case triggerCommand of
@@ -287,8 +290,9 @@ runArgs args = do
 requireNodeAtLeast :: Version -> AffN Unit
 requireNodeAtLeast minimum = do
   case parseVersion (stripV Process.version) of
-    Left (ParseError { message }) ->
-      throwError (error ("Failed to parse node.js version: " <> message))
+    Left err ->
+      let message = parseErrorMessage err
+      in throwError (error ("Failed to parse node.js version: " <> message))
     Right actual ->
       when (actual < minimum)
         (throwError (error
@@ -298,7 +302,7 @@ requireNodeAtLeast minimum = do
 
   where
   stripV str =
-    fromMaybe str (stripPrefix "v" str)
+    fromMaybe str (stripPrefix (Pattern "v") str)
 
 argsParserDiagnostics :: Args.Args -> AffN Unit
 argsParserDiagnostics opts = do

@@ -7,6 +7,7 @@ import Prelude
 import Control.Monad.Eff.Exception
 import Control.Monad.Eff.Class
 import Control.Monad.Error.Class
+import Control.Monad.Except (runExcept)
 import Data.Maybe
 import Data.Tuple.Nested
 import Data.Either
@@ -77,7 +78,7 @@ checkToken out token = do
         in
           header <> "\n" <> resBody)
 
-  case parseJSON resBody >>= Foreign.readProp "login" of
+  case runExcept (parseJSON resBody >>= Foreign.readProp "login") of
     Right login' ->
       out.write ("Successfully authenticated as " <> login' <> ".\n")
     Left err ->
@@ -106,7 +107,7 @@ mkdirIfNotExist :: String -> AffN Unit
 mkdirIfNotExist dirname = do
   catchError (FS.mkdir dirname) \(err :: Error) ->
     let code = Foreign.readProp "code" (toForeign err)
-    in case code of
+    in case runExcept code of
       Right "EEXIST" ->
         pure unit
       _ ->

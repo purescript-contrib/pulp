@@ -9,7 +9,7 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Maybe
 import Data.Map (union)
-import Data.String (split)
+import Data.String (split, Pattern(..))
 import Data.Set as Set
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Aff (attempt)
@@ -89,7 +89,7 @@ bundle args = do
   out.log "Bundling JavaScript..."
 
   main      <- getOption' "main" opts
-  modules   <- fromMaybe [] <<< map (split ",") <$> getOption "modules" opts
+  modules   <- fromMaybe [] <<< map (split (Pattern ",")) <$> getOption "modules" opts
   buildPath <- getOption' "buildPath" opts
   skipEntry <- getFlag "skipEntryPoint" opts
 

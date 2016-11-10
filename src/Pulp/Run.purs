@@ -5,7 +5,7 @@ import Data.Maybe (Maybe(..))
 import Data.Map as Map
 import Data.StrMap (StrMap())
 import Data.StrMap as StrMap
-import Data.String (replace)
+import Data.String (replace, Pattern(..), Replacement(..))
 import Control.Monad.Eff.Class (liftEff)
 import Node.Path as Path
 import Node.FS.Aff as FS
@@ -64,7 +64,9 @@ prependPath newPath paths =
 
 -- | Escape a string for insertion into a JS string literal.
 jsEscape :: String -> String
-jsEscape = replace "'" "\\'" <<< replace "\\" "\\\\"
+jsEscape =
+  replace (Pattern "'") (Replacement "\\'") <<<
+  replace (Pattern "\\") (Replacement "\\\\")
 
 -- | Construct a JS string to be used as an entry point from a module name.
 makeEntry :: String -> String

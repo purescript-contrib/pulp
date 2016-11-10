@@ -31,8 +31,8 @@
     "node": ">= 4"
   },
   "config": {
-    "psc_build_version": "v0.9.3",
-    "psc_test_version": "v0.10.1"
+    "psc_build_version": "v0.10.2",
+    "psc_test_version": "v0.10.2"
   },
   "scripts": {
     "prepublish": "node scripts.js prepublish",

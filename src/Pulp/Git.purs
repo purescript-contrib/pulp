@@ -22,7 +22,7 @@ import Pulp.Exec
 requireCleanGitWorkingTree :: AffN Unit
 requireCleanGitWorkingTree = do
   out <- execQuiet "git" ["status", "--porcelain"] Nothing
-  if Foldable.all String.null (String.split "\n" out)
+  if Foldable.all String.null (String.split (String.Pattern "\n") out)
     then pure unit
     else throwError <<< error $
       "Your git working tree is dirty. Please commit or stash your changes " <>
@@ -42,7 +42,7 @@ getVersionFromGitTag =
 -- | and return the maximum.
 maxVersion :: String -> Maybe (Tuple String Version)
 maxVersion =
-  String.split "\n"
+  String.split (String.Pattern "\n")
   >>> Array.mapMaybe (String.trim >>> parseMay)
   >>> Foldable.maximumBy (compare `on` snd)
 
@@ -56,4 +56,4 @@ maxVersion =
 
 dropPrefix :: String -> String -> String
 dropPrefix prefix str =
-  fromMaybe str (String.stripPrefix prefix str)
+  fromMaybe str (String.stripPrefix (String.Pattern prefix) str)

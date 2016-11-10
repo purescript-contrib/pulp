@@ -6,6 +6,7 @@ module Pulp.Args.Help
 import Prelude
 
 import Control.Monad.Eff.Class (liftEff)
+import Control.Monad.Except (runExcept)
 import Data.Either (Either(..))
 import Data.Array (sort, (!!), null)
 import Data.Foldable (foldr, maximum)
@@ -48,11 +49,11 @@ describeOpt opt = opt.desc <> case opt.defaultValue of
   Just def -> maybe "" (\d -> " [Default: " <> d <> "]") (tryDefault def)
   where
   tryDefault def =
-    case read def :: F String of
+    case runExcept (read def :: F String) of
       Right str ->
         Just (show str)
       Left _ ->
-        case read def :: F Int of
+        case runExcept (read def :: F Int) of
           Right int ->
             Just (show int)
           Left _ ->

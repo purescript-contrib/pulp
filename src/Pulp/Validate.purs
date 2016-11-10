@@ -10,7 +10,7 @@ import Data.String (trim)
 import Data.Version.Haskell (Version(..), parseVersion, showVersion)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Error.Class (throwError)
-import Text.Parsing.Parser (ParseError(..))
+import Text.Parsing.Parser (parseErrorMessage)
 
 import Pulp.Exec (execQuiet)
 import Pulp.System.FFI
@@ -34,7 +34,8 @@ getPscVersion out = do
   case parseVersion verStr of
     Right v ->
       pure v
-    Left (ParseError { message: msg }) -> do
+    Left err -> do
+      let msg = parseErrorMessage err
       out.err $ "Unable to parse the version from psc. (It was: " <> verStr <> ")"
       out.err $ "Please check that the right psc is on your PATH."
       throwError $ error "Couldn't parse version from psc"

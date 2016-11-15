@@ -2,6 +2,7 @@
 module Pulp.Exec
   ( exec
   , execQuiet
+  , execWithStdio
   , execQuietWithStderr
   , execInteractive
   , psa
@@ -29,15 +30,23 @@ import Unsafe.Coerce
 import Pulp.System.Stream
 import Pulp.System.FFI
 
-psa :: Array String -> Array String -> Maybe (StrMap String) -> AffN String
+psa :: Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
 psa = compiler "psa"
 
-psc :: Array String -> Array String -> Maybe (StrMap String) -> AffN String
+psc :: Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
 psc = compiler "psc"
 
-compiler :: String ->  Array String -> Array String -> Maybe (StrMap String) -> AffN String
+compiler :: String ->  Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
 compiler name deps args env =
-  execQuiet name (args <> deps) env
+  execWithStdio inheritButOutToErr name (args <> deps) env
+  where
+  -- | Like Node.ChildProcess.inherit except the child process' standard output
+  -- | is sent to Pulp's standard error.
+  inheritButOutToErr = map Just
+    [ CP.ShareStream (unsafeCoerce Process.stdin)
+    , CP.ShareStream (unsafeCoerce Process.stderr)
+    , CP.ShareStream (unsafeCoerce Process.stderr)
+    ]
 
 pscBundle :: Array String -> Array String -> Maybe (StrMap String) -> AffN String
 pscBundle files args env =
@@ -46,7 +55,7 @@ pscBundle files args env =
 -- | Start a child process asynchronously, with the given command line
 -- | arguments and environment, and wait for it to exit.
 -- | On a non-zero exit code, throw an error.
---
+-- |
 -- | If the executable was not found and we are on Windows, retry with ".cmd"
 -- | appended.
 -- |
@@ -55,9 +64,12 @@ pscBundle files args env =
 -- | and any stdout and stderr from the child process are relayed back out by
 -- | pulp, which usually means they will immediately appear in the terminal).
 exec :: String -> Array String -> Maybe (StrMap String) -> AffN Unit
-exec cmd args env = do
-  child <- liftEff $ CP.spawn cmd args (def { env = env
-                                            , stdio = CP.inherit })
+exec = execWithStdio CP.inherit
+
+-- | Like exec, but allows you to supply your own StdIOBehaviour.
+execWithStdio :: Array (Maybe CP.StdIOBehaviour) -> String -> Array String -> Maybe (StrMap String) -> AffN Unit
+execWithStdio stdio cmd args env = do
+  child <- liftEff $ CP.spawn cmd args (def { env = env, stdio = stdio })
   wait child >>= either (handleErrors cmd retry) onExit
 
   where
@@ -71,7 +83,7 @@ exec cmd args env = do
         throwError $ error $
             "Subcommand terminated " <> showExit exit
 
-  retry newCmd = exec newCmd args env
+  retry newCmd = execWithStdio stdio newCmd args env
 
 -- | Same as exec, except instead of relaying stdout immediately, it is
 -- | captured and returned as a String.

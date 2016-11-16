@@ -102,19 +102,23 @@ buildishArgs = [
     "Do not attempt to use the psa frontend instead of psc"
   ] <> pathArgs
 
-buildArgs :: Array Args.Option
-buildArgs = [
+runArgs :: Array Args.Option
+runArgs = [
   Args.optionDefault "main" ["--main", "-m"] Type.string
     "Application's entry point." "Main",
+  Args.option "jobs" ["--jobs", "-j"] Type.int
+    "Tell psc to use the specified number of cores."
+  ] <> buildishArgs
+
+buildArgs :: Array Args.Option
+buildArgs = [
   Args.option "to" ["--to", "-t"] Type.string
     "Output file name (stdout if not specified).",
   Args.option "optimise" ["--optimise", "-O"] Type.flag
     "Perform dead code elimination.",
   Args.option "skipEntryPoint" ["--skip-entry-point"] Type.flag
-    "Don't add code to automatically invoke Main.",
-  Args.option "jobs" ["--jobs", "-j"] Type.int
-    "Tell psc to use the specified number of cores."
-  ] <> buildishArgs
+    "Don't add code to automatically invoke Main."
+  ] <> runArgs
 
 -- TODO: This is possibly just a temporary separation from buildArgs; at the
 --       moment, the browserify action doesn't support this option, but it's
@@ -178,7 +182,7 @@ commands = [
   Args.command "run" "Compile and run the project." remainderToProgram Run.action $ [
     Args.optionDefault "runtime" ["--runtime", "-r"] Type.string
       "Run the program using this command instead of Node." "node"
-    ] <> buildArgs,
+    ] <> runArgs,
   Args.command "docs" "Generate project documentation." remainderToPscDocs Docs.action $ [
     Args.option "withTests" ["--with-tests", "-t"] Type.flag
       "Include tests.",
@@ -229,7 +233,7 @@ main = void $ runAff failed succeeded do
                   Left err ->
                     handleParseError (head argv) (parseErrorMessage err)
                   Right args' -> do
-                    runArgs args'
+                    runWithArgs args'
   where
   handleParseError (Just x) err
     -- TODO: this is kind of gross, especially that --version and --help are
@@ -243,8 +247,8 @@ main = void $ runAff failed succeeded do
 
   out = makeOutputter false
 
-runArgs :: Args.Args -> AffN Unit
-runArgs args = do
+runWithArgs :: Args.Args -> AffN Unit
+runWithArgs args = do
   out <- getOutputter args
   if "--help" `elem` args.remainder
     then if args.command.name == "dep"

@@ -11,10 +11,8 @@ exports.bowerFile = function bowerFile(name) {
       "output"
     ],
     dependencies: {
-      "purescript-console": "^2.0.0"
     },
     devDependencies: {
-      "purescript-psci-support": "^2.0.0"
     },
   }, null, 2) + "\n";
 };

@@ -71,8 +71,7 @@ projectFiles pathRoot projectName =
   , { path: fullPath ["test", "Main.purs"], content: testFile }
   ]
   where
-    fullPath pathParts = Path.concat ([pathRoot] <> pathParts)
-
+  fullPath pathParts = Path.concat ([pathRoot] <> pathParts)
 
 init :: Boolean -> Outputter -> AffN Unit
 init force out = do
@@ -95,8 +94,8 @@ init force out = do
     when (dir /= cwd) (mkdirIfNotExist dir)
     writeTextFile UTF8 f.path f.content
 
-  launchBower ["update"]
-
+  launchBower ["install --save purescript-prelude purescript-console"]
+  launchBower ["install --save-dev purescript-psci-support"]
 
 action :: Action
 action = Action \args -> do

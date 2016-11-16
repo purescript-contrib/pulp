@@ -22,6 +22,7 @@ import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Watch (watchAff, watchDirectories)
 import Pulp.Build as Build
+import Pulp.Utils (orErr)
 
 data BuildResult
   = Succeeded
@@ -62,7 +63,7 @@ action = Action \args -> do
             out.err $ "Failed to rebuild; try to fix the compile errors"
   rebuild
 
-  dirs <- watchDirectories opts
+  dirs <- watchDirectories opts >>= orErr "Internal error: unexpected Nothing"
   watchAff dirs \_ -> do
     void $ AVar.takeVar rebuildV
     rebuild

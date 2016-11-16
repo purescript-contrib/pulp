@@ -4,17 +4,16 @@ module Pulp.Watch
   , watchDirectories
   , action
   , minimatch
-  , removeErrLabel
   ) where
 
 import Prelude
-import Data.Maybe (fromMaybe)
+import Data.Maybe
+import Data.Traversable (traverse, sequence)
 import Data.Array as Array
 import Data.Set as Set
 import Data.Map as Map
 import Data.Foldable (any, notElem)
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff.Exception (EXCEPTION())
 import Control.Monad.Aff (launchAff)
 import Control.Monad.Aff.AVar as AVar
 import Node.Process as Process
@@ -27,41 +26,43 @@ import Pulp.Files
 import Pulp.System.FFI
 import Pulp.System.TreeKill (treeKill)
 import Pulp.Outputter
-
-import Unsafe.Coerce
+import Pulp.Utils
 
 foreign import watch ::
   Array String
   -> (String -> EffN Unit)
   -> EffN Unit
 
-removeErrLabel :: forall f e a. f (err :: EXCEPTION | e) a -> f e a
-removeErrLabel = unsafeCoerce
-
 watchAff ::  Array String -> (String -> AffN Unit) -> AffN Unit
 watchAff dirs callback =
-  liftEff $ watch dirs $ \path -> void $ launchAff (removeErrLabel $ callback path)
+  liftEff $ watch dirs (void <<< launchAff <<< removeErrLabel <<< callback)
 
 foreign import minimatch :: String -> String -> Boolean
 
-watchDirectories :: Options -> AffN (Array String)
+-- Returns Nothing if the given Options did not include the relevant options
+-- i.e. watching does not make sense with this command.
+watchDirectories :: Options -> AffN (Maybe (Array String))
 watchDirectories opts = do
-  srcPath        <- getOption' "srcPath" opts
-  testPath       <- getOption' "testPath" opts
-  dependencyPath <- getOption' "dependencyPath" opts
-  includePaths   <- fromMaybe [] <$> getOption "includePaths" opts
-  pure $ [ srcPath, testPath, dependencyPath ] <> includePaths
+  -- If any of these give Nothing, we shouldn't be using watchDirectories
+  let basicPathOpts = ["srcPath", "testPath", "dependencyPath"]
+  basicPaths <- traverse (flip getOption opts) basicPathOpts
+
+  -- It's ok if this is Nothing, though.
+  includePaths <- fromMaybe [] <$> getOption "includePaths" opts
+
+  pure $ map (_ <> includePaths) (sequence basicPaths)
 
 action :: Action
 action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
   out <- getOutputter args
 
+  -- It is important to do this before attempting to `fork` a separate process.
+  directories <- watchDirectories opts >>= orErr "This command does not work with --watch"
+
   argv' <- liftEff $ Array.filter (_ `notElem` ["-w", "--watch"]) <<< Array.drop 2 <$> Process.argv
   childV <- AVar.makeVar
   liftEff (fork __filename argv') >>= AVar.putVar childV
-
-  directories <- watchDirectories opts
 
   globs <- Set.union <$> defaultGlobs opts <*> testGlobs opts
   let fileGlobs = sources globs <> ffis globs

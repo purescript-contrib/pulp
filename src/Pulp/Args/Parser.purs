@@ -1,25 +1,26 @@
 module Pulp.Args.Parser where
 
-import Prelude
+import Prelude hiding (when)
 
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Error.Class
+import Control.Monad.State.Class (get)
 import Control.Alt
 import Data.Array (many)
-import Data.Either (Either)
+import Data.Either
 import Data.Foldable (find, elem)
 import Data.Traversable (traverse)
 import Data.List (List)
 import Data.List as List
+import Data.String (joinWith)
+import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..))
 import Data.Foreign (toForeign)
 
-import Data.Map as Map
-
 import Text.Parsing.Parser
-import Text.Parsing.Parser.Combinators ((<?>), try)
+import Text.Parsing.Parser.Combinators ((<?>), try, optionMaybe)
 import Text.Parsing.Parser.Token as Token
 import Text.Parsing.Parser.Pos as Pos
 
@@ -42,10 +43,20 @@ matchOpt o key = elem key o.match
 token :: forall m a. (Monad m) => ParserT (List a) m a
 token = Token.token (const Pos.initialPos)
 
+-- | A version of Text.Parsing.Parser.Token.match which lies about the position,
+-- | since we don't care about it here.
+match :: forall m a. (Monad m, Eq a) => a -> ParserT (List a) m a
+match = Token.match (const Pos.initialPos)
+
+-- | A version of Text.Parsing.Parser.Token.when which lies about the position,
+-- | since we don't care about it here.
+when :: forall m a. (Monad m) => (a -> Boolean) -> ParserT (List a) m a
+when = Token.when (const Pos.initialPos)
+
 lookup :: forall m a b. (Monad m, Eq b, Show b) => (a -> b -> Boolean) -> Array a -> ParserT (List b) m (Tuple b a)
-lookup match table = do
+lookup matches table = do
   next <- token
-  case find (\i -> match i next) table of
+  case find (\i -> matches i next) table of
     Just entry -> pure $ Tuple next entry
     Nothing -> fail ("Unknown command: " <> show next)
 
@@ -86,23 +97,49 @@ extractDefault o =
     Nothing ->
       Map.empty
 
-parseArgv :: Array Option -> Array Command -> OptParser Args
-parseArgv globals commands = do
-  globalOpts <- many $ try $ opt globals
-  command <- cmd commands
-  commandArgs <- traverse arg command.arguments
-  commandOpts <- many $ try $ opt command.options
-  rest <- many token
-  pure $ {
-    globalOpts: Map.unions (globalOpts <> defs globals),
-    command: command,
-    commandOpts: Map.unions (commandOpts <> defs command.options),
-    commandArgs: Map.unions commandArgs,
-    remainder: rest
-    }
-  where
-  defs = map extractDefault
+-- See also https://github.com/purescript-contrib/purescript-parsing/issues/25
+eof :: forall m a. (Monad m) => (List a -> String) -> ParserT (List a) m Unit
+eof msg =
+  get >>= \(ParseState (input :: List a) _ _) ->
+    unless (List.null input) (fail (msg input))
 
-parse :: Array Option -> Array Command -> Array String -> AffN (Either ParseError Args)
+parseArgv :: Array Option -> Array Command -> OptParser (Either Help Args)
+parseArgv globals commands = do
+  globalOpts <- globalDefaults <$> many (try (opt globals))
+  command <- cmd commands
+  helpForCommand command <|> normalCommand globalOpts command
+
+  where
+  normalCommand globalOpts command = do
+    commandArgs <- traverse arg command.arguments
+    commandOpts <- many $ try $ opt command.options
+    restSep <- optionMaybe $ match "--"
+    remainder <- maybe (pure []) (const (many token)) restSep
+    eof unrecognised
+    pure $ Right {
+      globalOpts,
+      command,
+      commandOpts: Map.unions (commandOpts <> defs command.options),
+      commandArgs: Map.unions commandArgs,
+      remainder
+      }
+
+  helpForCommand command =
+    matchHelp *> pure (Left (Help command))
+
+  defs = map extractDefault
+  unrecognised =
+    ("Unrecognised arguments: " <> _)
+    <<< joinWith ", "
+    <<< List.toUnfoldable
+
+  globalDefaults opts =
+    Map.unions (opts <> defs globals)
+
+  -- match a single "-h" or "--help"
+  matchHelp =
+    void (when (_ `elem` ["-h", "--help"]))
+
+parse :: Array Option -> Array Command -> Array String -> AffN (Either ParseError (Either Help Args))
 parse globals commands s =
   runParserT (List.fromFoldable s) (parseArgv globals commands)

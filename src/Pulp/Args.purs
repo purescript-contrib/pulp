@@ -23,6 +23,8 @@ runAction (Action f) = f
 
 type OptParser a = ParserT (List String) (Aff PulpEffects) a
 
+newtype Help = Help Command
+
 -- | We use Foreign for the result of the parser because we want to be able to
 -- | put any type in at first. Then, we can use other functions in Data.Foreign
 -- | to get it out again, or throw an error if the types don't match.

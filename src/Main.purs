@@ -232,7 +232,9 @@ main = void $ runAff failed succeeded do
                 case args of
                   Left err ->
                     handleParseError (head argv) (parseErrorMessage err)
-                  Right args' -> do
+                  Right (Left (Args.Help command)) ->
+                    printCommandHelp out globals command
+                  Right (Right args') ->
                     runWithArgs args'
   where
   handleParseError (Just x) err
@@ -250,26 +252,21 @@ main = void $ runAff failed succeeded do
 runWithArgs :: Args.Args -> AffN Unit
 runWithArgs args = do
   out <- getOutputter args
-  if "--help" `elem` args.remainder
-    then if args.command.name == "dep"
-      then Bower.printHelp out
-      else printCommandHelp out globals args.command
+  _ <- validate out
+  watch <- getFlag "watch" args.globalOpts
+  if watch && args.command.name /= "server"
+    then
+      Args.runAction Watch.action args
     else do
-      _ <- validate out
-      watch <- getFlag "watch" args.globalOpts
-      if watch && args.command.name /= "server"
-        then
-          Args.runAction Watch.action args
-        else do
-          args' <- addProject args
-          runShellForOption "before" args'.globalOpts out
-          result <- attempt $ Args.runAction args.command.action args'
-          case result of
-            Left e  -> do
-              runShellForOption "else" args'.globalOpts out
-              liftEff $ throwException e
-            Right r ->
-              runShellForOption "then" args'.globalOpts out
+      args' <- addProject args
+      runShellForOption "before" args'.globalOpts out
+      result <- attempt $ Args.runAction args.command.action args'
+      case result of
+        Left e  -> do
+          runShellForOption "else" args'.globalOpts out
+          liftEff $ throwException e
+        Right r ->
+          runShellForOption "then" args'.globalOpts out
   where
   noProject = ["init", "login"]
 

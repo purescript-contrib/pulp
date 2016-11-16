@@ -91,13 +91,15 @@ describe("integration tests", function() {
     assert.equal(err.trim(), bowerMissing);
   }));
 
-  it("pulp build --help", run(function*(sh, pulp, assert) {
-    const [_, err] = yield pulp("build --help");
-    buildHelp.forEach(function(h) {
-      assert.ok(err.indexOf(h) > -1,
-          "output did not contain '" + h + "'\noutput was:\n" + err)
-    });
-  }));
+  ["build --help", "build -h"].forEach((cmdline) => {
+    it("pulp " + cmdline, run(function*(sh, pulp, assert) {
+      const [_, err] = yield pulp(cmdline);
+      buildHelp.forEach(function(h) {
+        assert.ok(err.indexOf(h) > -1,
+            "output did not contain '" + h + "'\noutput was:\n" + err)
+      });
+    }));
+  });
 
   it("pulp docs --help", run(function*(sh, pulp, assert) {
     const [_, err] = yield pulp("docs --help");
@@ -397,7 +399,8 @@ if (process.argv[2] === "--version") {
     const [out3, err3] = yield pulp("build --no-psa", undefined, {path: p});
     assert.match(err3, /assert psc/);
 
-    const [out4, err4] = yield pulp("build --monochrome", undefined, {path: p});
+    // This tests passthrough arguments with psa.
+    const [out4, err4] = yield pulp("build -- --monochrome", undefined, {path: p});
     assert.match(err4, /--monochrome/);
     assert.match(err4, /--is-lib=bower_components/);
   }));

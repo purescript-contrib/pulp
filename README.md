@@ -153,20 +153,14 @@ $ pulp build --optimise
 #### Pass-Through Options
 
 Finally, `pulp` commands sometimes allows you to pass flags through to
-the `psc` compiler. Any unrecognised options appearing after any
-command specific options will be passed through to the compiler, or
-whichever process a `pulp` command spawns. For instance, if you want
-to tell `psc` to skip applying tail call optimisations, you would
+the `psc` compiler. Any options appearing after `--` will be passed through to
+the compiler, or whichever process a `pulp` command spawns. For instance, if
+you want to tell `psc` to skip applying tail call optimisations, you would
 invoke `pulp build` like this:
 
 ```sh
-$ pulp build --no-tco
+$ pulp build -- --no-tco
 ```
-
-The `--no-tco` flag isn't recognised by `pulp`, so it will simply
-append it to the `psc` command line for you when it launches the
-compiler. Take care, though, that such options should appear _after_
-`pulp`'s own command specific options.
 
 ## Building Projects
 

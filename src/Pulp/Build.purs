@@ -56,9 +56,11 @@ go buildType = Action \args -> do
 
   buildPath <- getOption' "buildPath" args.commandOpts
   noPsa <- getFlag "noPsa" args.commandOpts
+  jobs :: Maybe Int <- getOption "jobs" args.commandOpts
+  let jobsArgs = maybe [] (\j -> ["+RTS", "-N" <> show j, "-RTS"]) jobs
 
   let sourceGlobs = sources globs
-      binArgs = ["-o", buildPath] <> args.remainder
+      binArgs = ["-o", buildPath] <> jobsArgs <> args.remainder
       runPsc = psc sourceGlobs binArgs Nothing
 
   if noPsa

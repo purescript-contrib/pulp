@@ -111,7 +111,9 @@ buildArgs = [
   Args.option "optimise" ["--optimise", "-O"] Type.flag
     "Perform dead code elimination.",
   Args.option "skipEntryPoint" ["--skip-entry-point"] Type.flag
-    "Don't add code to automatically invoke Main."
+    "Don't add code to automatically invoke Main.",
+  Args.option "jobs" ["--jobs", "-j"] Type.int
+    "Tell psc to use the specified number of cores."
   ] <> buildishArgs
 
 -- TODO: This is possibly just a temporary separation from buildArgs; at the

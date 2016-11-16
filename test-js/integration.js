@@ -435,4 +435,11 @@ if (process.argv[2] === "--version") {
       assert.match(err, pattern);
     }));
   });
+
+  it("pulp build -j 4", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+    yield pulp("build -j 4");
+
+    assert.exists(path.join("output", "Main", "index.js"));
+  }));
 });

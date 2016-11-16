@@ -1,5 +1,35 @@
 # Pulp Release History
 
+## 10.0.0
+
+### Breaking changes
+
+* Explicit separation of passthrough arguments (#220). The original behaviour
+  that unrecognised arguments were passed through to `psc` (or whichever
+  underlying program `pulp` calls) has turned out to be confusing. Instead,
+  passthrough arguments are now separated from pulp's arguments with a `--`.
+  Any unrecognised arguments before the `--` will now cause pulp to complain.
+* `pulp server` has been broken since 9.0.0 and is now fixed! It also no longer
+  uses webpack and purs-loader, instead it builds with the same mechanisms that
+  `pulp build` uses, which should make things more reliable and easier (#151).
+  This is a breaking change because some command line options for `pulp server`
+  were removed as they were webpack-specific and therefore no longer
+  applicable.
+* Remove options from `pulp run` which were not applicable and should never
+  have been there: `--skip-entry-point`, `--to`, and `--optimise`.
+* Remove `pulp dep` (#234). `pulp dep` has been deprecated for quite a long
+  time now.
+
+### Other changes
+
+* Add `--jobs` for specifying parallelism in `psc` (#93).
+* Fix swallowing of "Compiling \<module\>" messages from `psc`.
+* Stop hardcoding version ranges in the initial bower.json created by `pulp
+  init` (#231). Now, pulp delegates to `bower install --save` to select an
+  appropriate version range.
+* Fix a bug where some arguments were mistakenly dropped instead of being
+  passed to `psc-bundle` (#188).
+
 ## 9.1.0
 
 * Ignore .psc-ide-port, .psa-stash, and other dotfiles beginning with .psc or .psa in the default .gitignore file created by `pulp init` (@texastoland, #223, 225).

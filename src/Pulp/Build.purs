@@ -11,6 +11,7 @@ import Data.Maybe
 import Data.Map (union)
 import Data.String (split, Pattern(..))
 import Data.Set as Set
+import Data.Foldable (fold)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Aff (attempt)
 import Node.Process as Process
@@ -91,23 +92,26 @@ bundle args = do
   out.log "Bundling JavaScript..."
 
   main      <- getOption' "main" opts
-  modules   <- fromMaybe [] <<< map (split (Pattern ",")) <$> getOption "modules" opts
+  modules   <- parseModulesOption <$> getOption "modules" opts
   buildPath <- getOption' "buildPath" opts
   skipEntry <- getFlag "skipEntryPoint" opts
 
-  bundledJs <- pscBundle (outputModules buildPath)
-                         (["--module=" <> main]
-                          <> if skipEntry
-                             then []
-                             else ["--main=" <> main]
-                          <> map (\m -> "--module=" <> m) modules
-                          <> args.remainder)
-                         Nothing
+  let bundleArgs = fold
+        [ ["--module=" <> main]
+        , if skipEntry then [] else ["--main=" <> main]
+        , map (\m -> "--module=" <> m) modules
+        , args.remainder
+        ]
+
+  bundledJs <- pscBundle (outputModules buildPath) bundleArgs Nothing
 
   withOutputStream opts $ \out' -> do
     write out' bundledJs
 
   out.log "Bundled."
+
+  where
+  parseModulesOption = maybe [] (split (Pattern ","))
 
 -- | Get a writable stream which output should be written to, based on the
 -- | value of the 'to' option.

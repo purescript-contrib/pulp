@@ -94,8 +94,8 @@ init force out = do
     when (dir /= cwd) (mkdirIfNotExist dir)
     writeTextFile UTF8 f.path f.content
 
-  launchBower ["install --save purescript-prelude purescript-console"]
-  launchBower ["install --save-dev purescript-psci-support"]
+  launchBower ["install", "--save", "purescript-prelude", "purescript-console"]
+  launchBower ["install", "--save-dev", "purescript-psci-support"]
 
 action :: Action
 action = Action \args -> do

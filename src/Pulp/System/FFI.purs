@@ -2,25 +2,27 @@ module Pulp.System.FFI where
 
 import Prelude
 
-import Control.Monad.Aff (Aff(), makeAff)
-import Control.Monad.Aff.AVar (AVAR())
-import Control.Monad.Eff (Eff())
-import Control.Monad.Eff.Exception (Error(), EXCEPTION())
-import Control.Monad.Eff.Console (CONSOLE())
+import Control.Monad.Aff (Aff, makeAff)
+import Control.Monad.Aff.AVar (AVAR)
+import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.Exception (Error, EXCEPTION)
+import Control.Monad.Eff.Console (CONSOLE)
+import Control.Monad.Eff.Now (NOW)
+import Control.Monad.Eff.Ref (REF)
 import Data.Function.Uncurried
 import Unsafe.Coerce (unsafeCoerce)
 
-import Node.FS (FS())
-import Node.ChildProcess (CHILD_PROCESS())
-import Node.Buffer (BUFFER())
-import Node.Process (PROCESS())
-import Node.ReadLine (READLINE())
-import Node.HTTP (HTTP())
+import Node.FS (FS)
+import Node.ChildProcess (CHILD_PROCESS)
+import Node.Buffer (BUFFER)
+import Node.Process (PROCESS)
+import Node.ReadLine (READLINE)
+import Node.HTTP (HTTP)
 
 foreign import data Node :: !
 foreign import data NodeError :: *
 
-type PulpEffects = (node :: Node, console :: CONSOLE, buffer :: BUFFER, fs :: FS, avar :: AVAR, err :: EXCEPTION, process :: PROCESS, cp :: CHILD_PROCESS, http :: HTTP, readline :: READLINE)
+type PulpEffects = (node :: Node, console :: CONSOLE, buffer :: BUFFER, fs :: FS, avar :: AVAR, err :: EXCEPTION, process :: PROCESS, cp :: CHILD_PROCESS, http :: HTTP, readline :: READLINE, now :: NOW, ref :: REF)
 
 type EffN a = Eff PulpEffects a
 type AffN a = Aff PulpEffects a

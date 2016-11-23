@@ -38,7 +38,8 @@
     "purescript-strings": "^2.0.2",
     "purescript-unsafe-coerce": "^2.0.0",
     "purescript-versions": "^3.0.0",
-    "purescript-foreign-generic": "^2.0.0"
+    "purescript-foreign-generic": "^2.0.0",
+    "purescript-now": "^2.0.0"
   },
   "resolutions": {
     "purescript-unsafe-coerce": "^2.0.0"

@@ -14,7 +14,7 @@ cache:
 
 # Install scripts. (runs after repo cloning)
 install:
-  - ps: Install-Product node (Get-NodeJsLatestBuild $env:nodejs_version) x64
+  - ps: Install-Product node $env:nodejs_version x64
   - npm install -g bower
   - npm install
 

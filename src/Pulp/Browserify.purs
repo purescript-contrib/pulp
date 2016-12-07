@@ -6,6 +6,7 @@ import Control.Monad.Aff (apathize)
 import Control.Monad.Eff.Class (liftEff)
 import Data.Function.Uncurried
 import Data.Maybe
+import Data.Foldable
 import Data.Map as Map
 import Data.Nullable (Nullable(), toNullable)
 import Node.Path as Path
@@ -52,7 +53,7 @@ optimising = Action \args -> do
   out <- getOutputter args
 
   let munge = Map.delete "to" >>> Map.delete "optimise"
-  Build.build $ args { commandOpts = munge args.commandOpts }
+  Build.build $ args { commandOpts = munge args.commandOpts, remainder = [] }
 
   let opts = Map.union args.globalOpts args.commandOpts
 
@@ -64,13 +65,13 @@ optimising = Action \args -> do
   skipEntryPoint' <- getFlag "skipEntryPoint" opts
   let skipEntryPoint = skipEntryPoint' || isJust standalone
 
-  bundledJs <- pscBundle (outputModules buildPath)
-                         (["--module=" <> main]
-                          <> if skipEntryPoint
-                             then []
-                             else ["--main=" <> main]
-                          <> args.remainder)
-                         Nothing
+  let bundleArgs = fold
+        [ ["--module=" <> main]
+        , if skipEntryPoint then [] else ["--main=" <> main]
+        , args.remainder
+        ]
+
+  bundledJs <- pscBundle (outputModules buildPath) bundleArgs Nothing
 
   out.log "Browserifying..."
 
@@ -90,7 +91,7 @@ incremental = Action \args -> do
   out <- getOutputter args
 
   let munge = Map.delete "to"
-  Build.build $ args { commandOpts = munge args.commandOpts }
+  Build.build $ args { commandOpts = munge args.commandOpts, remainder = [] }
 
   let opts = Map.union args.globalOpts args.commandOpts
 

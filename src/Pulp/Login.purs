@@ -12,7 +12,7 @@ import Data.Maybe
 import Data.Tuple.Nested
 import Data.Either
 import Data.Foldable (fold)
-import Data.Foreign (toForeign, parseJSON)
+import Data.Foreign (parseJSON)
 import Data.Foreign.Class as Foreign
 import Data.String as String
 import Data.StrMap as StrMap

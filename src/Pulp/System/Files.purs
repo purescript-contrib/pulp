@@ -10,11 +10,13 @@ module Pulp.System.Files
 import Prelude
 import Data.Function.Uncurried
 import Data.Maybe
+import Data.Either
+import Control.Monad.Aff
 import Control.Monad.Eff.Exception (Error())
-import Control.Monad.Error.Class (catchJust)
+import Control.Monad.Error.Class (catchJust, throwError)
 
-import Node.FS (FileDescriptor())
-import Node.FS.Aff (mkdir)
+import Node.FS (FileDescriptor)
+import Node.FS.Aff as FS
 
 import Pulp.System.FFI
 import Pulp.System.Stream (WritableStream())
@@ -24,7 +26,7 @@ foreign import isEEXIST :: Error -> Boolean
 mkdirIfNotExist :: String -> AffN Unit
 mkdirIfNotExist dir =
   catchJust (\e -> if isEEXIST e then Just unit else Nothing)
-            (mkdir dir)
+            (FS.mkdir dir)
             pure
 
 type TempOptions = { prefix :: String, suffix :: String }

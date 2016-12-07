@@ -16,6 +16,7 @@ import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Aff (attempt)
 import Node.Process as Process
 import Node.Path as Path
+import Node.FS.Aff as FS
 
 import Pulp.System.FFI
 import Pulp.System.Stream (write, end, WritableStream())
@@ -121,9 +122,12 @@ withOutputStream opts aff = do
   to <- getOption "to" opts
   case to of
     Just path -> do
-      Files.mkdirIfNotExist (Path.dirname path)
-      stream <- liftEff $ Files.createWriteStream path
+      info <- Files.openTemp { prefix: "pulp-output", suffix: "" }
+      stream <- liftEff $ Files.createWriteStream info.path
       aff stream
       end stream
+      FS.fdClose info.fd
+      Files.mkdirIfNotExist (Path.dirname path)
+      FS.rename info.path path
     Nothing ->
       aff Process.stdout

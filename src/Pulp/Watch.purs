@@ -95,5 +95,6 @@ action = Action \args -> do
     when (any (minimatch path) fileGlobs) do
       child <- AVar.takeVar childV
       liftEff $ treeKill (pid child) "SIGTERM"
+      out.write "---\n"
       out.log "Source tree changed; restarting:"
       liftEff (fork __filename argv') >>= AVar.putVar childV

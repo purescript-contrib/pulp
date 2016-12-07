@@ -28,6 +28,7 @@ import Node.HTTP.Client as HTTP
 import Pulp.System.HTTP
 import Pulp.System.FFI
 import Pulp.System.Stream (concatStream)
+import Pulp.System.Files (mkdirIfNotExist)
 import Pulp.System.Read as Read
 import Pulp.Outputter
 import Pulp.Args
@@ -102,16 +103,6 @@ writeTokenFile token = do
   mkdirIfNotExist (Path.dirname filepath)
   FS.writeTextFile UTF8 filepath token
   FS.chmod filepath (mkPerms (read + write) none none)
-
-mkdirIfNotExist :: String -> AffN Unit
-mkdirIfNotExist dirname = do
-  catchError (FS.mkdir dirname) \(err :: Error) ->
-    let code = Foreign.readProp "code" (toForeign err)
-    in case runExcept code of
-      Right "EEXIST" ->
-        pure unit
-      _ ->
-        throwError err
 
 tokenFilePath :: AffN String
 tokenFilePath =

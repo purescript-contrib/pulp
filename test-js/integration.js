@@ -186,6 +186,13 @@ describe("integration tests", function() {
     assert.equal(out.trim(), hello);
   }));
 
+  it("pulp build --to creates parent directories", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+    yield pulp("build --to nonexistent/out.js");
+    const [out] = yield sh("node nonexistent/out.js");
+    assert.equal(out.trim(), hello);
+  }));
+
   it("pulp build --skip-entry-point --to", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield pulp(`--then "echo module.exports = PS >> out.js" build --skip-entry-point --to out.js`);

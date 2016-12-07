@@ -15,6 +15,7 @@ import Data.Foldable (fold)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Aff (attempt)
 import Node.Process as Process
+import Node.Path as Path
 
 import Pulp.System.FFI
 import Pulp.System.Stream (write, end, WritableStream())
@@ -120,6 +121,7 @@ withOutputStream opts aff = do
   to <- getOption "to" opts
   case to of
     Just path -> do
+      Files.mkdirIfNotExist (Path.dirname path)
       stream <- liftEff $ Files.createWriteStream path
       aff stream
       end stream

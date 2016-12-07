@@ -35,6 +35,7 @@ action = Action \args -> do
   optimise <- getFlag "optimise" args.commandOpts
   let act = if optimise then optimising else incremental
 
+  buildForBrowserify args
   runAction act args
 
   out.log "Browserified."
@@ -48,12 +49,16 @@ makeExport main export =
 makeOptExport :: String -> String
 makeOptExport main = "module.exports = PS[\"" <> jsEscape main <> "\"];\n"
 
+buildForBrowserify :: Args -> AffN Unit
+buildForBrowserify args = do
+  skip <- getFlag "skipCompile" args.commandOpts
+  when (not skip) do
+    let munge = Map.delete "to" >>> Map.delete "optimise"
+    Build.build $ args { commandOpts = munge args.commandOpts, remainder = [] }
+
 optimising :: Action
 optimising = Action \args -> do
   out <- getOutputter args
-
-  let munge = Map.delete "to" >>> Map.delete "optimise"
-  Build.build $ args { commandOpts = munge args.commandOpts, remainder = [] }
 
   let opts = Map.union args.globalOpts args.commandOpts
 
@@ -89,9 +94,6 @@ optimising = Action \args -> do
 incremental :: Action
 incremental = Action \args -> do
   out <- getOutputter args
-
-  let munge = Map.delete "to"
-  Build.build $ args { commandOpts = munge args.commandOpts, remainder = [] }
 
   let opts = Map.union args.globalOpts args.commandOpts
 

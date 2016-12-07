@@ -264,6 +264,15 @@ describe("integration tests", function() {
     assert.equal(out.trim(), hello);
   }));
 
+  it("pulp browserify --skip-compile", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+    yield fs.rename(path.join(temp, "src"), path.join(temp, "alt"));
+    yield pulp("build --src-path alt");
+    yield pulp("browserify --to out.js --skip-compile");
+    const [out] = yield sh("node out.js");
+    assert.equal(out.trim(), hello);
+  }));
+
   it("pulp docs", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("docs");

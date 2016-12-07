@@ -10,7 +10,7 @@
     "output"
   ],
   "dependencies": {
-    "purescript-aff": "^2.0.0",
+    "purescript-aff": "^2.0.2",
     "purescript-ansi": "^2.0.0",
     "purescript-console": "^2.0.0",
     "purescript-eff": "^2.0.0",

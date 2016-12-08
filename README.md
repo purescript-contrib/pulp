@@ -51,8 +51,8 @@ This installs the PureScript compiler, the Pulp build tool, and the
 [Bower](http://bower.io/) package manager.
 
 *Aside: if you're familiar with the JavaScript ecosystem and you're wondering
-why PureScript uses bower and not npm, you might be interested to read [Why the
-PureScript community uses bower](http://harry.garrood.me/blog/purescript-why-bower/).
+why PureScript uses Bower and not npm, you might be interested to read [Why the
+PureScript community uses Bower](http://harry.garrood.me/blog/purescript-why-bower/).
 Otherwise, please ignore this and read on.*
 
 ## Getting Started with a Pulp Project

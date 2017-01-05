@@ -547,39 +547,42 @@ $ bower update
 Bower packages are installed directly from Git repositories, and
 versioning follows Git tags. Imagine you've created a new PureScript
 library for working with zygohistomorphic prepromorphisms (because who
-doesn't need zygohistomorphic prepromorphisms); this is how you would
-register your new package in the Bower registry (we'll call the
-package `purescript-zygo` to save typing):
+doesn't need zygohistomorphic prepromorphisms), called
+`purescript-zygo`.
+
+Note that there is a convention of prefixing PureScript package names
+with `purescript-`. Please stick with that unless you have an
+especially good reason not to, as `pulp` and many other tools expect
+installed dependencies to follow this convention.
+
+You would start by tagging an initial version:
 
 ```sh
-$ bower register purescript-zygo git://github.com/me/purescript-zygo.git
+$ cd /path/to/purescript-zygo
+$ pulp version 0.1.0
 ```
 
-Note the convention of prefixing PureScript package names with
-`purescript-`. Please stick with that unless you have an especially
-good reason not to, as `pulp` and many other tools expect installed
-dependencies to follow this convention.
+This runs a few checks to ensure that your package is properly set up
+for publishing, and if they pass, creates a Git tag `v0.1.0`.
 
-Once you're registered, all you need to do to make a new release
-version is to make a Git tag. Bower provides a command for doing this
-easily:
+Once you've tagged a version, all you need to do to make a new release
+is push that tag to GitHub, register your package in the Bower
+registry, and upload your package's documentation to Pursuit. Pulp is
+able to do all of this for you:
 
 ```sh
-$ bower version patch
+$ pulp publish
 ```
 
-This will take your current version (as determined by the most recent
-tag in your repository), increment the patch number by one, and make a
-tagged Git commit for you recording the new version. All you need to
-do to publish the new release is:
-
-```sh
-$ git push && git push --tags
-```
-
-The `patch` argument to `bower version` can be substituted with
-`minor` or `major`, depending on what sort of release you want to
-make.
+For subsequent releases, the process is the same: `pulp version
+<newversion>` followed by `pulp publish`. When tagging a new version,
+`pulp version` also allows you to supply an argument of the form
+`patch`, `minor`, or `major`, in addition to specific versions. If you
+run `pulp version patch`, for example, Pulp will look through your Git
+tags to find the version number for the latest release, and then
+generate the new verision number by bumping the patch component.
+The `minor` and `major` arguments respectively perform minor and major
+version bumps in the same way.
 
 ## Licence
 

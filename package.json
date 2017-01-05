@@ -9,6 +9,9 @@
     "cabal"
   ],
   "author": "Bodil Stokke",
+  "contributors": [
+    "Harry Garrood"
+  ],
   "license": "LGPL-3.0+",
   "homepage": "https://github.com/bodil/pulp",
   "repository": {

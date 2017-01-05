@@ -586,7 +586,7 @@ version bumps in the same way.
 
 ## Licence
 
-Copyright 2014 Bodil Stokke
+Copyright 2014-2017 Bodil Stokke, Harry Garrood
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as

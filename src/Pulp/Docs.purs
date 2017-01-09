@@ -68,7 +68,7 @@ makeDocgen path = do
 -- | Given a module name, return the file path where its documentation should
 -- | be written to.
 docPath :: ModuleName -> String
-docPath mn = "docs/" <> String.joinWith "/" mn <> ".md"
+docPath mn = "generated-docs/" <> String.joinWith "/" mn <> ".md"
 
 type ModuleName = Array String
 

@@ -33,6 +33,7 @@ gitignore = unlines [
   "/node_modules/",
   "/.pulp-cache/",
   "/output/",
+  "/generated-docs/",
   "/.psc*",
   "/.psa*"
   ]

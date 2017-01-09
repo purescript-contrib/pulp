@@ -378,11 +378,13 @@ extracted into Markdown files using the `psc-docs` command. `pulp`
 provides the `pulp docs` command to make this process easy:
 
 ```sh
-$ pulp docs
+$ pulp docs [--with-dependencies]
 ```
 
 This extracts the documentation from your source files, and places it
-in the `docs` folder under your project's root folder.
+in the `generated-docs` folder under your project's root folder. By
+default, dependencies are not included, but this can be enabled
+with the `--with-dependencies` flag.
 
 You can also extract documentation from your tests, if you like:
 

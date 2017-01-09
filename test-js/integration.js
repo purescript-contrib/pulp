@@ -276,21 +276,21 @@ describe("integration tests", function() {
   it("pulp docs", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("docs");
-    assert.file("docs/Main.md", (c) =>
+    assert.file("generated-docs/Main.md", (c) =>
       assert.equal(c.split(newlines)[0], docLine1));
   }));
 
   it("pulp docs --with-tests", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("docs --with-tests");
-    assert.file("docs/Test/Main.md", (c) =>
+    assert.file("generated-docs/Test/Main.md", (c) =>
       assert.equal(c.split(newlines)[0], testDocLine1));
   }));
 
   it("pulp docs --with-dependencies", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("docs --with-dependencies");
-    assert.file("docs/Control/Monad/Eff/Console.md", (c) =>
+    assert.file("generated-docs/Control/Monad/Eff/Console.md", (c) =>
       assert.equal(c.split(newlines)[0], consoleDocLine1));
   }));
 

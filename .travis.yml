@@ -7,4 +7,3 @@ before_install:
   - npm install -g bower
 script:
   - npm test
-sudo: false

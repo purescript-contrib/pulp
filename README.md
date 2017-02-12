@@ -226,7 +226,7 @@ If you want to pass command line arguments to your application, `pulp`
 lets you do that too:
 
 ```sh
-$ pulp run file1.txt file2.txt file3.txt
+$ pulp run -- file1.txt file2.txt file3.txt
 ```
 
 Beware, though, that these are processed as pass-through options by

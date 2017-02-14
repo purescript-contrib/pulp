@@ -38,7 +38,7 @@ action = Action \args -> do
       buildPath <- getOption' "buildPath" opts
       env <- setupEnv buildPath
       exec runtime
-           (["-e", "require('" <> main <> "').main()"] <> args.remainder)
+           (["-e", "require('" <> main <> "').main()", "--"] <> args.remainder)
            (Just env)
     else do
       to <- getOption' "to" buildArgs.commandOpts

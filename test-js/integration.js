@@ -236,6 +236,12 @@ describe("integration tests", function() {
     assert.equal(out.trim(), test);
   }));
 
+  it("pulp test -- --something-node-wouldnt-like", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+    const [out] = yield pulp("test");
+    assert.equal(out.trim(), test);
+  }));
+
   it("pulp browserify", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const [src] = yield pulp("browserify");

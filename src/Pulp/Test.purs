@@ -4,16 +4,21 @@ module Pulp.Test
   ) where
 
 import Prelude
+import Control.Monad.Eff.Class (liftEff)
 import Data.Maybe
 import Data.Map as Map
 import Data.Foreign (toForeign)
+import Node.Buffer as Buffer
+import Node.Encoding (Encoding(UTF8))
+import Node.FS.Aff as FS
 
 import Pulp.Outputter
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec (exec)
 import Pulp.Build as Build
-import Pulp.Run (setupEnv)
+import Pulp.Run (setupEnv, makeEntry)
+import Pulp.System.Files (openTemp)
 
 action :: Action
 action = Action \args -> do
@@ -37,8 +42,12 @@ action = Action \args -> do
       main <- getOption' "main" opts
       buildPath <- getOption' "buildPath" opts
       env <- setupEnv buildPath
+      info <- openTemp { prefix: "pulp-test", suffix: ".js" }
+      src <- liftEff $ Buffer.fromString (makeEntry main) UTF8
+      FS.fdAppend info.fd src
+      FS.fdClose info.fd
       exec runtime
-           (["-e", "require('" <> main <> "').main()"] <> args.remainder)
+           ([info.path] <> args.remainder)
            (Just env)
     else do
       to <- getOption' "to" buildArgs.commandOpts

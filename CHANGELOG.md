@@ -1,5 +1,9 @@
 # Pulp Release History
 
+## 10.0.1
+
+* Fix an issue where extra command line arguments were not being passed to test programs properly (#239, @mcoffin).
+
 ## 10.0.0
 
 ### Breaking changes

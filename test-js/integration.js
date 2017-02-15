@@ -236,6 +236,16 @@ describe("integration tests", function() {
     assert.equal(out.trim(), test);
   }));
 
+  it("pulp test --test-path test2 -- --something-node-wouldnt-like", run(function*(sh, pulp, assert, temp) {
+    const newTest = path.join(temp, "test2");
+    yield pulp("init");
+    yield fs.mkdir(newTest);
+    yield fs.copy(path.resolve(__dirname, "resources/Main.purs"), path.join(newTest, "Main.purs"));
+    yield fs.copy(path.resolve(__dirname, "resources/Main.js"), path.join(newTest, "Main.js"));
+    const [out] = yield pulp("test --test-path test2 -- --something-node-wouldnt-like");
+    assert.equal(out.trim(), "--something-node-wouldnt-like");
+  }));
+
   it("pulp browserify", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const [src] = yield pulp("browserify");

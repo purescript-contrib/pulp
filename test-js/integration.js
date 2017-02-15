@@ -7,7 +7,6 @@ import which from "which";
 
 const hello = "Hello sailor!";
 const test = "You should add some tests.";
-const testArguments = "--something-node-wouldnt-like"
 const docLine1 = "## Module Main";
 const bowerMissing = "* ERROR: No bower.json found in current or parent directories. Are you in a PureScript project?";
 const initWithoutForce = f => new RegExp('\\* ERROR: Found .*'+f+': There\'s already a project here. Run `pulp init --force` if you\'re sure you want to overwrite it.');
@@ -243,7 +242,6 @@ describe("integration tests", function() {
     yield fs.mkdir(newTest);
     yield fs.copy(path.resolve(__dirname, "resources/Main.purs"), path.join(newTest, "Main.purs"));
     yield fs.copy(path.resolve(__dirname, "resources/Main.js"), path.join(newTest, "Main.js"));
-    yield sh("bower i purescript-arrays --save");
     const [out] = yield pulp("test --test-path test2 -- --something-node-wouldnt-like");
     assert.equal(out.trim(), "--something-node-wouldnt-like");
   }));

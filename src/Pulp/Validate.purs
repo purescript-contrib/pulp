@@ -6,7 +6,7 @@ import Prelude
 import Data.Maybe
 import Data.Either
 import Data.List (fromFoldable, List(..))
-import Data.String (trim)
+import Data.String (trim, takeWhile)
 import Data.Version.Haskell (Version(..), parseVersion, showVersion)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Error.Class (throwError)
@@ -30,7 +30,7 @@ validate out = do
 
 getPscVersion :: Outputter -> AffN Version
 getPscVersion out = do
-  verStr <- trim <$> execQuiet "psc" ["--version"] Nothing
+  verStr <- takeWhile (_ /= ' ') <$> trim <$> execQuiet "psc" ["--version"] Nothing
   case parseVersion verStr of
     Right v ->
       pure v

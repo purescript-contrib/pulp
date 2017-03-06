@@ -27,7 +27,7 @@ action = Action \args -> do
   out <- getOutputter args
 
   cwd <- liftEff Process.cwd
-  out.log $ "Building project in" <> cwd
+  out.log $ "Building project in " <> cwd
 
   globs <- defaultGlobs opts
 

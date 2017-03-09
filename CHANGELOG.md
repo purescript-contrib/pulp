@@ -1,5 +1,10 @@
 # Pulp Release History
 
+## 10.0.2
+
+* Allow pulp to work with recent development builds of the PureScript compiler (#255, @sloosch).
+* Fix a missing space character in a message during 'pulp run' (#256, @bionicbrian).
+
 ## 10.0.1
 
 * Fix an issue where extra command line arguments were not being passed to test programs properly (#239, @mcoffin).

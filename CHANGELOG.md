@@ -1,5 +1,9 @@
 # Pulp Release History
 
+## 10.0.3
+
+Nothing changed this release, I just messed up the 10.0.2 release so published another patch-level update.
+
 ## 10.0.2
 
 * Allow pulp to work with recent development builds of the PureScript compiler (#255, @sloosch).

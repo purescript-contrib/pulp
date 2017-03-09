@@ -4,6 +4,6 @@ language: node_js
 node_js:
   - "stable"
 before_install:
-  - npm install -g bower
+  - travis_retry npm install -g bower
 script:
   - npm test

@@ -10,10 +10,8 @@ module Pulp.System.Files
 import Prelude
 import Data.Function.Uncurried
 import Data.Maybe
-import Data.Either
-import Control.Monad.Aff
 import Control.Monad.Eff.Exception (Error())
-import Control.Monad.Error.Class (catchJust, throwError)
+import Control.Monad.Error.Class (catchJust)
 
 import Node.FS (FileDescriptor)
 import Node.FS.Aff as FS

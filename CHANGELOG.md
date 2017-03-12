@@ -1,5 +1,9 @@
 # Pulp Release History
 
+## 10.0.4
+
+* Fix an issue causing "EXDEV: cross-device link not permitted" errors in some configurations (#252).
+
 ## 10.0.3
 
 Nothing changed this release, I just messed up the 10.0.2 release so published another patch-level update.

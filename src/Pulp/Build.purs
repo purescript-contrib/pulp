@@ -13,7 +13,8 @@ import Data.String (split, Pattern(..))
 import Data.Set as Set
 import Data.Foldable (fold)
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Aff (attempt)
+import Control.Monad.Error.Class (throwError)
+import Control.Monad.Aff (attempt, apathize)
 import Node.Process as Process
 import Node.Path as Path
 import Node.FS.Aff as FS
@@ -121,13 +122,19 @@ withOutputStream :: Options -> (WritableStream -> AffN Unit) -> AffN Unit
 withOutputStream opts aff = do
   to <- getOption "to" opts
   case to of
-    Just path -> do
-      info <- Files.openTemp { prefix: "pulp-output", suffix: "" }
-      stream <- liftEff $ Files.createWriteStream info.path
-      aff stream
-      end stream
-      FS.fdClose info.fd
-      Files.mkdirIfNotExist (Path.dirname path)
-      FS.rename info.path path
+    Just destFile -> do
+      let dir = Path.dirname destFile
+      let tmpFile = dir <> Path.sep <> "." <> Path.basename destFile
+      Files.mkdirIfNotExist dir
+      res <- attempt do
+               stream <- liftEff $ Files.createWriteStream tmpFile
+               void $ aff stream
+               void $ end stream
+      case res of
+        Right _ ->
+          FS.rename tmpFile destFile
+        Left err -> do
+          void $ apathize $ FS.unlink tmpFile
+          throwError err
     Nothing ->
       aff Process.stdout

@@ -38,6 +38,11 @@ gitignore = unlines [
   "/.psa*"
   ]
 
+pursReplFile :: String
+pursReplFile = unlines [
+  "import Prelude"
+  ]
+
 mainFile :: String
 mainFile = unlines [
   "module Main where",
@@ -68,6 +73,7 @@ projectFiles :: String -> String -> Array { path :: String, content :: String }
 projectFiles pathRoot projectName =
   [ { path: fullPath ["bower.json"],        content: bowerFile projectName }
   , { path: fullPath [".gitignore"],        content: gitignore }
+  , { path: fullPath [".purs-repl"],        content: pursReplFile }
   , { path: fullPath ["src", "Main.purs"],  content: mainFile }
   , { path: fullPath ["test", "Main.purs"], content: testFile }
   ]

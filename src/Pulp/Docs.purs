@@ -50,12 +50,12 @@ action = Action \args -> do
     for_ fails (out.log <<< ("  " <> _))
     out.err $ "This may be a bug."
 
-  _ <- execQuiet "psc-docs" (args.remainder <> sources globSrc <> docgen) Nothing
+  _ <- execQuiet "purs docs" (args.remainder <> sources globSrc <> docgen) Nothing
 
   out.log "Documentation generated."
 
 -- | Given a file path to be included in the documentation, return a --docgen
--- | argument for it, to be passsed to psc-docs.
+-- | argument for it, to be passed to `purs docs`.
 makeDocgen :: String -> AffN (Tuple (Array String) (Array String))
 makeDocgen path = do
   maybeModName <- extractModuleName path

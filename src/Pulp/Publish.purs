@@ -47,7 +47,7 @@ action = Action \args -> do
 
   requireCleanGitWorkingTree
   authToken <- readTokenFile
-  gzippedJson <- pscPublish >>= gzip
+  gzippedJson <- pursPublish >>= gzip
 
   Tuple tagStr tagVersion <- getVersion
   bowerJson <- readBowerJson
@@ -89,8 +89,8 @@ gzip str = do
   end gzipStream
   concatStreamToBuffer gzipStream
 
-pscPublish :: AffN String
-pscPublish = execQuiet "psc-publish" [] Nothing
+pursPublish :: AffN String
+pursPublish = execQuiet "purs publish" [] Nothing
 
 confirmRun :: Outputter -> String -> Array String -> AffN Unit
 confirmRun out cmd args = do

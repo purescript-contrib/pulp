@@ -1,4 +1,4 @@
-module Pulp.Psci where
+module Pulp.Repl where
 
 import Prelude
 import Data.Maybe
@@ -14,4 +14,4 @@ action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
   globs <- Set.union <$> defaultGlobs opts
                      <*> testGlobs opts
-  execInteractive "psci" (sources globs <> args.remainder) Nothing
+  execInteractive "purs repl" (sources globs <> args.remainder) Nothing

@@ -26,17 +26,17 @@ action = Action \args -> do
   out <- getOutputter args
 
   requireCleanGitWorkingTree
-  checkPscPublish out
+  checkPursPublish out
   version <- bumpVersion args
   tagNewVersion version
   out.log ("Bumped to: v" <> Version.showVersion version)
 
--- | Try running `psc-publish --dry-run` to make sure the code is suitable for
+-- | Try running `purs publish --dry-run` to make sure the code is suitable for
 -- | release.
-checkPscPublish :: Outputter -> AffN Unit
-checkPscPublish out = do
-  out.log "Checking your package using psc-publish..."
-  exec "psc-publish" ["--dry-run"] Nothing
+checkPursPublish :: Outputter -> AffN Unit
+checkPursPublish out = do
+  out.log "Checking your package using purs publish..."
+  exec "purs publish" ["--dry-run"] Nothing
 
 -- | Returns the new version that we should bump to.
 bumpVersion :: Args -> AffN Version

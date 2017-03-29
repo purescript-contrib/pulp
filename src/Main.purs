@@ -189,9 +189,10 @@ commands = [
     Args.option "withDependencies" ["--with-dependencies", "-d"] Type.flag
       "Include external dependencies."
     ] <> pathArgs,
-  Args.command "repl"
+  Args.commandWithAlias "repl"
     "Launch a PureScript REPL configured for the project." remainderToRepl
-    Repl.action pathArgs,
+    Repl.action pathArgs
+    ["psci"],
   Args.command "server" "Launch a development server." Nothing Server.action $ [
       Args.optionDefault "main" ["--main", "-m"] Type.string
         "Application's entry point." "Main",

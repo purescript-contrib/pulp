@@ -34,9 +34,9 @@ psa :: Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
 psa = compiler "psa"
 
 pursBuild :: Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
-pursBuild = compiler "purs" <<< append ["build"]
+pursBuild deps args = compiler "purs" deps (["compile"] <> args)
 
-compiler :: String ->  Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
+compiler :: String -> Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
 compiler name deps args env =
   execWithStdio inheritButOutToErr name (args <> deps) env
   where

@@ -36,7 +36,7 @@ action = Action \args -> do
 checkPursPublish :: Outputter -> AffN Unit
 checkPursPublish out = do
   out.log "Checking your package using purs publish..."
-  exec "purs publish" ["--dry-run"] Nothing
+  exec "purs" ["publish", "--dry-run"] Nothing
 
 -- | Returns the new version that we should bump to.
 bumpVersion :: Args -> AffN Version

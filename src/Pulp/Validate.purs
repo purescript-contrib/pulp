@@ -24,7 +24,7 @@ validate out = do
               <> showVersion minimumPursVersion <> " of the PureScript compiler "
               <> "or higher."
     out.err $ "Your installed version is " <> showVersion ver <> "."
-    out.err $ "Please either upgrade PureScript or downgrade Pulp to version 8.x."
+    out.err $ "Please either upgrade PureScript or downgrade Pulp to version 10.x."
     throwError $ error "Minimum purs version not satisfied"
   pure ver
 

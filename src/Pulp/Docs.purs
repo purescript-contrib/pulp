@@ -50,7 +50,7 @@ action = Action \args -> do
     for_ fails (out.log <<< ("  " <> _))
     out.err $ "This may be a bug."
 
-  _ <- execQuiet "purs docs" (args.remainder <> sources globSrc <> docgen) Nothing
+  _ <- execQuiet "purs" (["docs"] <> args.remainder <> sources globSrc <> docgen) Nothing
 
   out.log "Documentation generated."
 

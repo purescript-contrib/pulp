@@ -20,6 +20,7 @@ import Pulp.Outputter
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Git
+import Pulp.Publish (resolutionsFile)
 
 action :: Action
 action = Action \args -> do
@@ -36,7 +37,8 @@ action = Action \args -> do
 checkPursPublish :: Outputter -> AffN Unit
 checkPursPublish out = do
   out.log "Checking your package using purs publish..."
-  exec "purs" ["publish", "--dry-run"] Nothing
+  resolutions <- resolutionsFile
+  exec "purs" ["publish", "--manifest", "bower.json", "--resolutions", resolutions, "--dry-run"] Nothing
 
 -- | Returns the new version that we should bump to.
 bumpVersion :: Args -> AffN Version

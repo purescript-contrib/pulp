@@ -398,22 +398,22 @@ if (process.argv[2] === "--version") {
 }
 `;
     const p = path.resolve(temp, "bin");
-    const psc = path.resolve(p, windowsify("psc"));
+    const purs = path.resolve(p, windowsify("purs"));
     const psa = path.resolve(p, windowsify("psa"));
-    const pscJs = path.resolve(p, "psc.js");
+    const pursJs = path.resolve(p, "purs.js");
     const psaJs = path.resolve(p, "psa.js");
     const echoOff = process.platform === "win32" ? "@echo off\r\n" : "";
     const args = process.platform === "win32" ? "%*" : "$@";
 
     yield fs.mkdir(p);
-    yield fs.writeFile(psc, `${echoOff}"${node}" "${pscJs}" ${args}`, "utf-8");
-    yield fs.chmod(psc, 0o755);
-    yield fs.writeFile(pscJs, prog("psc", "1.0.0.0"), "utf-8");
+    yield fs.writeFile(purs, `${echoOff}"${node}" "${pursJs}" ${args}`, "utf-8");
+    yield fs.chmod(purs, 0o755);
+    yield fs.writeFile(pursJs, prog("purs", "1.0.0.0"), "utf-8");
 
     yield pulp("init");
 
     const [out1, err1] = yield pulp("build", undefined, {path: p});
-    assert.match(err1, /assert psc/);
+    assert.match(err1, /assert purs/);
 
     yield fs.writeFile(psa, `${echoOff}"${node}" "${psaJs}" "${args}"`, "utf-8");
     yield fs.chmod(psa, 0o755);
@@ -423,7 +423,7 @@ if (process.argv[2] === "--version") {
     assert.match(err2, /assert psa/);
 
     const [out3, err3] = yield pulp("build --no-psa", undefined, {path: p});
-    assert.match(err3, /assert psc/);
+    assert.match(err3, /assert purs/);
 
     // This tests passthrough arguments with psa.
     const [out4, err4] = yield pulp("build -- --monochrome", undefined, {path: p});

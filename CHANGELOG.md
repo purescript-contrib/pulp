@@ -1,5 +1,10 @@
 # Pulp Release History
 
+## 11.0.0
+
+* Compatibility with PureScript 0.11.x. Compatibility with 0.10.x and previous versions of the PureScript compiler has been dropped (@natefaubion).
+* Create a .purs-repl file during pulp init, to automatically import Prelude in new projects (@chexxor).
+
 ## 10.0.4
 
 * Fix an issue causing "EXDEV: cross-device link not permitted" errors in some configurations (#252).

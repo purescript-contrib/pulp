@@ -35,6 +35,7 @@ gitignore = unlines [
   "/output/",
   "/generated-docs/",
   "/.psc*",
+  "/.purs*",
   "/.psa*"
   ]
 

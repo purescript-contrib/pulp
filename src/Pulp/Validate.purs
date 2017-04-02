@@ -18,27 +18,27 @@ import Pulp.Outputter (Outputter())
 
 validate :: Outputter -> AffN Version
 validate out = do
-  ver <- getPscVersion out
-  when (ver < minimumPscVersion) $ do
+  ver <- getPursVersion out
+  when (ver < minimumPursVersion) $ do
     out.err $ "This version of Pulp requires version "
-              <> showVersion minimumPscVersion <> " of the PureScript compiler "
+              <> showVersion minimumPursVersion <> " of the PureScript compiler "
               <> "or higher."
     out.err $ "Your installed version is " <> showVersion ver <> "."
-    out.err $ "Please either upgrade PureScript or downgrade Pulp to version 8.x."
-    throwError $ error "Minimum psc version not satisfied"
+    out.err $ "Please either upgrade PureScript or downgrade Pulp to version 10.x."
+    throwError $ error "Minimum purs version not satisfied"
   pure ver
 
-getPscVersion :: Outputter -> AffN Version
-getPscVersion out = do
-  verStr <- takeWhile (_ /= ' ') <$> trim <$> execQuiet "psc" ["--version"] Nothing
+getPursVersion :: Outputter -> AffN Version
+getPursVersion out = do
+  verStr <- takeWhile (_ /= ' ') <$> trim <$> execQuiet "purs" ["--version"] Nothing
   case parseVersion verStr of
     Right v ->
       pure v
     Left err -> do
       let msg = parseErrorMessage err
-      out.err $ "Unable to parse the version from psc. (It was: " <> verStr <> ")"
-      out.err $ "Please check that the right psc is on your PATH."
-      throwError $ error "Couldn't parse version from psc"
+      out.err $ "Unable to parse the version from purs. (It was: " <> verStr <> ")"
+      out.err $ "Please check that the right purs is on your PATH."
+      throwError $ error "Couldn't parse version from purs"
 
-minimumPscVersion :: Version
-minimumPscVersion = Version (fromFoldable [0, 9, 0]) Nil
+minimumPursVersion :: Version
+minimumPursVersion = Version (fromFoldable [0, 11, 0]) Nil

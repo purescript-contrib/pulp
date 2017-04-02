@@ -1,10 +1,10 @@
 module Test.Main where
 
 import Prelude
-import Control.Monad.Eff (Eff, foreachE)
+import Control.Monad.Eff (kind Effect, Eff, foreachE)
 import Control.Monad.Eff.Console (log)
 
-foreign import data PROCESS :: !
+foreign import data PROCESS :: Effect
 
 foreign import argv :: forall eff. Eff (process :: PROCESS | eff) (Array String)
 foreign import slice :: forall a. Int -> Array a -> Array a

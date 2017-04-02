@@ -32,8 +32,8 @@ halt err = lift $ throwError $ error err
 -- halt err = ParserT $ \s ->
 --   pure { consumed: true, input: s, result: Left (strMsg err) }
 
-matchNamed :: forall a r. (Eq a) => { name :: a | r } -> a -> Boolean
-matchNamed o key = o.name == key
+matchNamed :: forall a r. (Eq a) => { name :: a, alias :: Array a | r } -> a -> Boolean
+matchNamed o key = o.name == key || elem key o.alias
 
 matchOpt :: Option -> String -> Boolean
 matchOpt o key = elem key o.match

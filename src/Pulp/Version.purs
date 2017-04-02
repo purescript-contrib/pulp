@@ -43,9 +43,9 @@ versionString =
 
 printVersion :: AffN Unit
 printVersion = do
-  pscVersion <- execQuiet "psc" ["--version"] Nothing
-  pscPath <- attempt $ which "psc"
+  pursVersion <- execQuiet "purs" ["--version"] Nothing
+  pursPath <- attempt $ which "purs"
   liftEff $ Console.log $
     "Pulp version " <> showVersion version <>
-    "\npsc version " <> trim pscVersion <>
-    either (const "") (\p -> " using " <> trim p) pscPath
+    "\npurs version " <> trim pursVersion <>
+    either (const "") (\p -> " using " <> trim p) pursPath

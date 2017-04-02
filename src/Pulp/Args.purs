@@ -59,6 +59,7 @@ type Argument = {
 type Command = {
   name :: String,
   desc :: String,
+  alias :: Array String,
   passthroughDesc :: Maybe String,
   options :: Array Option,
   arguments :: Array Argument,
@@ -101,9 +102,14 @@ command name desc passthroughDesc action options = {
   passthroughDesc,
   options,
   action,
-  arguments: []
+  arguments: [],
+  alias: []
   }
 
 commandWithArgs :: String -> String -> Maybe String -> Action -> Array Option -> Array Argument -> Command
 commandWithArgs name desc passthroughDesc action options args =
   (command name desc passthroughDesc action options) { arguments = args }
+
+commandWithAlias :: String -> String -> Maybe String -> Action -> Array Option -> Array String -> Command
+commandWithAlias name desc passthroughDesc action options alias =
+  (command name desc passthroughDesc action options) { alias = alias }

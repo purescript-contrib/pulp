@@ -6,8 +6,8 @@ module Pulp.Exec
   , execQuietWithStderr
   , execInteractive
   , psa
-  , psc
-  , pscBundle
+  , pursBuild
+  , pursBundle
   ) where
 
 import Prelude
@@ -33,10 +33,10 @@ import Pulp.System.FFI
 psa :: Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
 psa = compiler "psa"
 
-psc :: Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
-psc = compiler "psc"
+pursBuild :: Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
+pursBuild deps args = compiler "purs" deps (["compile"] <> args)
 
-compiler :: String ->  Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
+compiler :: String -> Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
 compiler name deps args env =
   execWithStdio inheritButOutToErr name (args <> deps) env
   where
@@ -48,9 +48,9 @@ compiler name deps args env =
     , CP.ShareStream (unsafeCoerce Process.stderr)
     ]
 
-pscBundle :: Array String -> Array String -> Maybe (StrMap String) -> AffN String
-pscBundle files args env =
-  execQuiet "psc-bundle" (files <> args) env
+pursBundle :: Array String -> Array String -> Maybe (StrMap String) -> AffN String
+pursBundle files args env =
+  execQuiet "purs" (["bundle"] <> files <> args) env
 
 -- | Start a child process asynchronously, with the given command line
 -- | arguments and environment, and wait for it to exit.

@@ -19,7 +19,7 @@ import Pulp.System.Stream (WritableStream())
 import Pulp.Outputter
 import Pulp.Args
 import Pulp.Args.Get
-import Pulp.Exec (pscBundle)
+import Pulp.Exec (pursBundle)
 import Pulp.Files
 import Pulp.Build as Build
 import Pulp.Run (makeEntry, jsEscape)
@@ -76,7 +76,7 @@ optimising = Action \args -> do
         , args.remainder
         ]
 
-  bundledJs <- pscBundle (outputModules buildPath) bundleArgs Nothing
+  bundledJs <- pursBundle (outputModules buildPath) bundleArgs Nothing
 
   out.log "Browserifying..."
 

@@ -26,7 +26,7 @@ import Pulp.System.Files as Files
 import Pulp.System.Which
 import Pulp.Args
 import Pulp.Args.Get
-import Pulp.Exec (psa, psc, pscBundle)
+import Pulp.Exec (psa, pursBuild, pursBundle)
 import Pulp.Files
 
 data BuildType = NormalBuild | TestBuild
@@ -65,7 +65,7 @@ go buildType = Action \args -> do
 
   let sourceGlobs = sources globs
       binArgs = ["-o", buildPath] <> jobsArgs <> args.remainder
-      runPsc = psc sourceGlobs binArgs Nothing
+      runPsc = pursBuild sourceGlobs binArgs Nothing
 
   if noPsa
     then runPsc
@@ -106,7 +106,7 @@ bundle args = do
         , args.remainder
         ]
 
-  bundledJs <- pscBundle (outputModules buildPath) bundleArgs Nothing
+  bundledJs <- pursBundle (outputModules buildPath) bundleArgs Nothing
 
   withOutputStream opts $ \out' -> do
     write out' bundledJs

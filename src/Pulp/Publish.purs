@@ -1,4 +1,4 @@
-module Pulp.Publish ( action ) where
+module Pulp.Publish ( action, resolutionsFile ) where
 
 import Prelude
 import Control.Monad.Eff.Class
@@ -19,7 +19,7 @@ import Data.String as String
 import Data.StrMap as StrMap
 import Data.Options ((:=))
 import Node.Encoding (Encoding(..))
-import Node.Buffer (Buffer)
+import Node.Buffer (Buffer, fromString)
 import Node.ChildProcess as CP
 import Node.FS.Aff as FS
 import Node.HTTP.Client as HTTP
@@ -47,7 +47,8 @@ action = Action \args -> do
 
   requireCleanGitWorkingTree
   authToken <- readTokenFile
-  gzippedJson <- pscPublish >>= gzip
+
+  gzippedJson <- pursPublish >>= gzip
 
   Tuple tagStr tagVersion <- getVersion
   bowerJson <- readBowerJson
@@ -81,7 +82,6 @@ action = Action \args -> do
               <> " report this: https://github.com/bodil/pulp/issues/new")))
           pure
 
-
 gzip :: String -> AffN Buffer
 gzip str = do
   gzipStream <- liftEff createGzip
@@ -89,8 +89,18 @@ gzip str = do
   end gzipStream
   concatStreamToBuffer gzipStream
 
-pscPublish :: AffN String
-pscPublish = execQuiet "psc-publish" [] Nothing
+resolutionsFile :: AffN String
+resolutionsFile = do
+  resolutions <- execQuiet "bower" ["list", "--json", "--offline"] Nothing
+  info <- openTemp { prefix: "pulp-publish", suffix: ".json" }
+  FS.fdAppend info.fd =<< liftEff (fromString resolutions UTF8)
+  FS.fdClose info.fd
+  pure info.path
+
+pursPublish :: AffN String
+pursPublish = do
+  resolutions <- resolutionsFile
+  execQuiet "purs" ["publish", "--manifest", "bower.json", "--resolutions", resolutions] Nothing
 
 confirmRun :: Outputter -> String -> Array String -> AffN Unit
 confirmRun out cmd args = do

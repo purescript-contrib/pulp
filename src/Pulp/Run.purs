@@ -33,7 +33,7 @@ action = Action \args -> do
 
   buildPath <- getOption' "buildPath" opts
 
-  psc (sources globs) ["-o", buildPath] Nothing
+  pursBuild (sources globs) ["-o", buildPath] Nothing
   out.log "Build successful."
 
   main <- getOption' "main" opts

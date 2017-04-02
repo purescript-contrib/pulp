@@ -42,7 +42,7 @@ import Pulp.Run as Run
 import Pulp.Test as Test
 import Pulp.Browserify as Browserify
 import Pulp.Docs as Docs
-import Pulp.Psci as Psci
+import Pulp.Repl as Repl
 import Pulp.Server as Server
 import Pulp.Login as Login
 import Pulp.BumpVersion as BumpVersion
@@ -98,7 +98,7 @@ buildishArgs = [
   Args.optionDefault "buildPath" ["--build-path", "-o"] Type.string
     "Path for compiler output." "./output",
   Args.option "noPsa" ["--no-psa"] Type.flag
-    "Do not attempt to use the psa frontend instead of psc"
+    "Do not attempt to use the psa frontend instead of purs build"
   ] <> pathArgs
 
 runArgs :: Array Args.Option
@@ -106,7 +106,7 @@ runArgs = [
   Args.optionDefault "main" ["--main", "-m"] Type.string
     "Application's entry point." "Main",
   Args.option "jobs" ["--jobs", "-j"] Type.int
-    "Tell psc to use the specified number of cores."
+    "Tell purs to use the specified number of cores."
   ] <> buildishArgs
 
 buildArgs :: Array Args.Option
@@ -128,8 +128,8 @@ moduleArgs = [
     "Additional modules to be included in the output bundle (comma-separated list)."
   ]
 
-remainderToPsc :: Maybe String
-remainderToPsc = Just "Passthrough options are sent to `psc`."
+remainderToPurs :: Maybe String
+remainderToPurs = Just "Passthrough options are sent to `purs build`."
 
 remainderToTest :: Maybe String
 remainderToTest =
@@ -138,19 +138,19 @@ remainderToTest =
 
 remainderToBundle :: Maybe String
 remainderToBundle =
-  Just "Passthrough options are sent to `psc-bundle`."
+  Just "Passthrough options are sent to `purs bundle`."
 
 remainderToProgram :: Maybe String
 remainderToProgram =
   Just "Passthrough options are sent to your program."
 
-remainderToPscDocs :: Maybe String
-remainderToPscDocs =
-  Just "Passthrough options are sent to `psc-docs`."
+remainderToDocs :: Maybe String
+remainderToDocs =
+  Just "Passthrough options are sent to `purs docs`."
 
-remainderToPsci :: Maybe String
-remainderToPsci =
-  Just "Passthrough options are sent to `psci`."
+remainderToRepl :: Maybe String
+remainderToRepl =
+  Just "Passthrough options are sent to `purs repl`."
 
 commands :: Array Args.Command
 commands = [
@@ -158,7 +158,7 @@ commands = [
      Args.option "force" ["--force"] Type.flag
        "Overwrite any project found in the current directory."
      ],
-  Args.command "build" "Build the project." remainderToPsc Build.action $
+  Args.command "build" "Build the project." remainderToPurs Build.action $
     buildArgs <> moduleArgs,
   Args.command "test" "Run project tests." remainderToTest Test.action $ [
     Args.optionDefault "main" ["--main", "-m"] Type.string
@@ -177,21 +177,22 @@ commands = [
       Args.option "standalone" ["--standalone"] Type.string
         "Output a UMD bundle with the given external module name.",
       Args.option "skipCompile" ["--skip-compile"] Type.flag
-        "Assume PureScript code has already been compiled. Useful for when you want to pass options to psc."
+        "Assume PureScript code has already been compiled. Useful for when you want to pass options to purs."
       ] <> buildArgs,
   Args.command "run" "Compile and run the project." remainderToProgram Run.action $ [
     Args.optionDefault "runtime" ["--runtime", "-r"] Type.string
       "Run the program using this command instead of Node." "node"
     ] <> runArgs,
-  Args.command "docs" "Generate project documentation." remainderToPscDocs Docs.action $ [
+  Args.command "docs" "Generate project documentation." remainderToDocs Docs.action $ [
     Args.option "withTests" ["--with-tests", "-t"] Type.flag
       "Include tests.",
     Args.option "withDependencies" ["--with-dependencies", "-d"] Type.flag
       "Include external dependencies."
     ] <> pathArgs,
-  Args.command "psci"
-    "Launch a PureScript REPL configured for the project." remainderToPsci
-    Psci.action pathArgs,
+  Args.commandWithAlias "repl"
+    "Launch a PureScript REPL configured for the project." remainderToRepl
+    Repl.action pathArgs
+    ["psci"],
   Args.command "server" "Launch a development server." Nothing Server.action $ [
       Args.optionDefault "main" ["--main", "-m"] Type.string
         "Application's entry point." "Main",

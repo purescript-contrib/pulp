@@ -72,6 +72,15 @@ function setupPackage(cwd, sh) {
     .then(() => sh("git tag v1.0.0"));
 }
 
+function* createModule(sh, temp, name) {
+  yield sh("mkdir " + name);
+
+  yield fs.writeFile(path.join(temp, name, name + ".purs"),
+                     "module " + name + " where\n\nfoo = 1");
+
+  return path.join("output", name, "index.js");
+}
+
 describe("integration tests", function() {
   // This is, unfortunately, required, as CI is horrendously slow.
   this.timeout(90000);
@@ -156,14 +165,36 @@ describe("integration tests", function() {
 
   it("pulp build --include", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
-    yield sh("mkdir extras");
+    var extras = yield createModule(sh, temp, "Extras");
 
-    yield fs.writeFile(path.join(temp, "extras", "Extras.purs"),
-                       "module Extras where\n\nfoo = 1");
+    yield pulp("build --include Extras");
 
-    yield pulp("build --include extras");
+    assert.exists(extras);
+  }));
 
-    assert.exists(path.join("output", "Extras", "index.js"));
+  it("handles empty string after --include", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+    yield pulp("build --include ''");
+  }));
+
+  it("handles consecutive delimiters for --include", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+    var extras = yield createModule(sh, temp, "Extras");
+    var extras2 = yield createModule(sh, temp, "Extras2");
+
+    yield pulp("build --include Extras::Extras2");
+
+    assert.exists(extras);
+    assert.exists(extras2);
+  }));
+
+  it("handles delimiter as last character for --include", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+    var extras = yield createModule(sh, temp, "Extras");
+
+    yield pulp("build --include Extras:");
+
+    assert.exists(extras);
   }));
 
   it("pulp run", run(function*(sh, pulp, assert) {

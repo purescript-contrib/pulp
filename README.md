@@ -158,9 +158,9 @@ $ pulp build --optimise
 #### Pass-Through Options
 
 Finally, `pulp` commands sometimes allows you to pass flags through to
-the `psc` compiler. Any options appearing after `--` will be passed through to
+the `purs` compiler. Any options appearing after `--` will be passed through to
 the compiler, or whichever process a `pulp` command spawns. For instance, if
-you want to tell `psc` to skip applying tail call optimisations, you would
+you want to tell `purs` to skip applying tail call optimisations, you would
 invoke `pulp build` like this:
 
 ```sh
@@ -170,8 +170,8 @@ $ pulp build -- --no-tco
 ## Building Projects
 
 At heart, `pulp` is just a frontend for the PureScript compiler,
-`psc`. Its basic function is to compile your project, which you can do
-by running `pulp build`. This will simply run `psc` with all your
+`purs`. Its basic function is to compile your project, which you can do
+by running `pulp build`. This will simply run `purs compile` with all your
 source files, leaving the compiled JavaScript files in the `output`
 folder. These files will all be CommonJS modules, which you can
 `require()` using anything which supports CommonJS, such as `node`.
@@ -183,8 +183,8 @@ cases.
 
 ### Making a JavaScript Bundle
 
-`pulp build` can also call `psc-bundle` for you, which is a compiler
-tool whose job it is to take the output from `psc`, remove the code
+`pulp build` can also call `purs bundle` for you, which is a compiler
+tool whose job it is to take the output from `purs compile`, remove the code
 which isn't actually being used by your program, and bundle it all up
 into a single compact JavaScript file.
 
@@ -374,7 +374,7 @@ myBundle.main();
 ### Building Documentation
 
 PureScript has an inline syntax for documentation, which can be
-extracted into Markdown files using the `psc-docs` command. `pulp`
+extracted into Markdown files using the `purs docs` command. `pulp`
 provides the `pulp docs` command to make this process easy:
 
 ```sh
@@ -394,16 +394,16 @@ $ pulp docs --with-tests
 
 ### Launching a REPL
 
-The `psci` interactive shell for PureScript is fantastically useful,
+The `purs repl` interactive shell for PureScript is fantastically useful,
 but setting it up can be a bit of a chore, especially with a large
-number of dependencies. That's where `pulp psci` comes in.
+number of dependencies. That's where `pulp repl` comes in.
 
-`pulp psci` will generate a `.psci` file for your project
-automatically whenever you invoke it, and launch `psci` for you
+`pulp repl` will generate a `.purs-repl` file for your project
+automatically whenever you invoke it, and launch `purs repl` for you
 directly. It's as simple as:
 
 ```sh
-$ pulp psci
+$ pulp repl
 ```
 
 ### Launching a Development Server

@@ -98,7 +98,7 @@ buildishArgs = [
   Args.optionDefault "buildPath" ["--build-path", "-o"] Type.string
     "Path for compiler output." "./output",
   Args.option "noPsa" ["--no-psa"] Type.flag
-    "Do not attempt to use the psa frontend instead of purs build"
+    "Do not attempt to use the psa frontend instead of purs compile"
   ] <> pathArgs
 
 runArgs :: Array Args.Option
@@ -129,7 +129,7 @@ moduleArgs = [
   ]
 
 remainderToPurs :: Maybe String
-remainderToPurs = Just "Passthrough options are sent to `purs build`."
+remainderToPurs = Just "Passthrough options are sent to `purs compile`."
 
 remainderToTest :: Maybe String
 remainderToTest =

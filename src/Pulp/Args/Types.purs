@@ -12,7 +12,8 @@ import Prelude
 
 import Control.Alt
 import Control.Monad.Trans.Class (lift)
-import Data.String (split, Pattern(..))
+import Data.Array (filter)
+import Data.String (null, split, Pattern(..))
 import Data.Maybe (Maybe(..))
 import Data.Int (fromString)
 import Data.Foldable (for_)
@@ -90,7 +91,7 @@ directories = {
   name: Just "<dir:dir:...>",
   parser: \arg -> do
     paths <- token <|> argErr arg "Needs a directory argument."
-    let paths' = split (Pattern Path.delimiter) paths
+    let paths' = filter (not <<< null) $ split (Pattern Path.delimiter) paths
     for_ paths' requireDirectory
     pure $ Just (toForeign paths')
   }

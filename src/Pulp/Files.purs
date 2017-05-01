@@ -1,4 +1,3 @@
-
 module Pulp.Files
   ( sources
   , ffis
@@ -13,11 +12,19 @@ module Pulp.Files
   ) where
 
 import Prelude
-import Data.Array (concat)
+import Control.Monad.Except (runExcept)
+import Data.Array (concat, mapMaybe)
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Function.Uncurried
+import Data.Foreign (readString)
+import Data.Foreign.Index (readProp)
 import Data.Foreign.Class (class Decode)
 import Data.List as List
+import Data.String (stripSuffix, Pattern(..))
+import Data.String.Regex (split)
+import Data.String.Regex.Flags (noFlags)
+import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.Set (Set())
 import Data.Set as Set
 import Data.Traversable (sequence, traverse)
@@ -26,6 +33,8 @@ import Node.Path as Path
 import Pulp.System.FFI
 import Pulp.Args
 import Pulp.Args.Get
+import Pulp.Exec (execQuiet)
+import Pulp.Project (Project(..))
 
 recursiveGlobWithExtension :: String -> Set String -> Array String
 recursiveGlobWithExtension ext =
@@ -54,9 +63,20 @@ testGlobs :: Options -> AffN (Set String)
 testGlobs = globsFromOption "testPath"
 
 dependencyGlobs :: Options -> AffN (Set String)
-dependencyGlobs =
-  globsFromOption' (\path -> Path.concat [path, "purescript-*", "src"])
-                   "dependencyPath"
+dependencyGlobs opts = do
+  Project pro <- getOption' "_project" opts
+  -- If project file has a `set` property we assume it's a psc-package project file
+  case runExcept (readProp "set" pro.projectFile >>= readString) of
+    Right _ -> pscPackageGlobs
+    _ -> globsFromOption' (\path -> Path.concat [path, "purescript-*", "src"]) "dependencyPath" opts
+
+pscPackageGlobs :: AffN (Set String)
+pscPackageGlobs = do
+  execQuiet "psc-package" ["sources"] Nothing <#>
+  Set.fromFoldable <<<
+  -- Strip the glob.purs suffixes just to append them later so it plays well with the other globs
+  mapMaybe (stripSuffix (Pattern "/**/*.purs")) <<<
+  split (unsafeRegex "\r\n|\n" noFlags)
 
 includeGlobs :: Options -> AffN (Set String)
 includeGlobs opts = mkSet <$> getOption "includePaths" opts

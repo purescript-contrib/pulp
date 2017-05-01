@@ -111,6 +111,7 @@ init bower force out = do
           launchPscPackage ["init"]
           launchPscPackage ["install", "eff"]
           launchPscPackage ["install", "console"]
+          launchPscPackage ["install", "psci-support"]
 
 action :: Action
 action = Action \args -> do

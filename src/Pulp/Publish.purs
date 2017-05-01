@@ -45,6 +45,8 @@ import Pulp.Login (tokenFilePath)
 
 action :: Action
 action = Action \args -> do
+  checkBowerProject
+
   out <- getOutputter args
 
   requireCleanGitWorkingTree
@@ -83,6 +85,13 @@ action = Action \args -> do
               <> " in this repository. This should not have happened. Please"
               <> " report this: https://github.com/bodil/pulp/issues/new")))
           pure
+
+checkBowerProject :: AffN Unit
+checkBowerProject = do
+  bower <- FS.exists "bower.json"
+  if bower then pure unit
+    else throwError
+         (error "No bower.json found, publishing is currently only implemented for Bower projects.")
 
 gzip :: String -> AffN Buffer
 gzip str = do

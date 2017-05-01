@@ -1,26 +1,25 @@
-
 module Pulp.Init
   ( action
   ) where
 
 import Prelude
-import Data.String (joinWith)
-import Control.Monad.Eff.Exception (error)
-import Control.Monad.Error.Class (throwError)
-import Control.Monad.Eff.Class (liftEff)
-import Node.Path as Path
-import Node.FS.Aff (writeTextFile, exists)
-import Node.Encoding (Encoding(UTF8))
-import Node.Process as Process
-import Data.Traversable (for)
-import Data.Foldable (for_)
-
 import Pulp.Outputter
 import Pulp.System.FFI
 import Pulp.Args
+import Node.Path as Path
+import Node.Process as Process
+import Control.Monad.Eff.Class (liftEff)
+import Control.Monad.Eff.Exception (error)
+import Control.Monad.Error.Class (throwError)
+import Data.Array (cons)
+import Data.Foldable (for_)
+import Data.String (joinWith)
+import Data.Traversable (for)
+import Node.Encoding (Encoding(UTF8))
+import Node.FS.Aff (writeTextFile, exists)
 import Pulp.Args.Get (getFlag)
+import Pulp.PackageManager (launchBower, launchPscPackage)
 import Pulp.System.Files (mkdirIfNotExist)
-import Pulp.Bower (launchBower)
 
 foreign import bowerFile :: String -> String
 
@@ -34,6 +33,7 @@ gitignore = unlines [
   "/.pulp-cache/",
   "/output/",
   "/generated-docs/",
+  "/.psc-package/",
   "/.psc*",
   "/.purs*",
   "/.psa*"
@@ -70,24 +70,25 @@ testFile = unlines [
   "  log \"You should add some tests.\""
   ]
 
-projectFiles :: String -> String -> Array { path :: String, content :: String }
-projectFiles pathRoot projectName =
-  [ { path: fullPath ["bower.json"],        content: bowerFile projectName }
-  , { path: fullPath [".gitignore"],        content: gitignore }
-  , { path: fullPath [".purs-repl"],        content: pursReplFile }
-  , { path: fullPath ["src", "Main.purs"],  content: mainFile }
-  , { path: fullPath ["test", "Main.purs"], content: testFile }
-  ]
+projectFiles :: Boolean -> String -> String -> Array { path :: String, content :: String }
+projectFiles bower pathRoot projectName =
+  let bowerJson = { path: fullPath ["bower.json"],        content: bowerFile projectName }
+      def = [ { path: fullPath [".gitignore"],        content: gitignore }
+            , { path: fullPath [".purs-repl"],        content: pursReplFile }
+            , { path: fullPath ["src", "Main.purs"],  content: mainFile }
+            , { path: fullPath ["test", "Main.purs"], content: testFile }
+            ]
+      in if bower then cons bowerJson def else def
   where
   fullPath pathParts = Path.concat ([pathRoot] <> pathParts)
 
-init :: Boolean -> Outputter -> AffN Unit
-init force out = do
+init :: Boolean -> Boolean -> Outputter -> AffN Unit
+init bower force out = do
   cwd <- liftEff Process.cwd
   let projectName = Path.basename cwd
   out.log $ "Generating project skeleton in " <> cwd
 
-  let files = projectFiles cwd projectName
+  let files = projectFiles bower cwd projectName
 
   when (not force) do
     for_ files \f -> do
@@ -102,11 +103,18 @@ init force out = do
     when (dir /= cwd) (mkdirIfNotExist dir)
     writeTextFile UTF8 f.path f.content
 
-  launchBower ["install", "--save", "purescript-prelude", "purescript-console"]
-  launchBower ["install", "--save-dev", "purescript-psci-support"]
+  if bower
+     then do
+          launchBower ["install", "--save", "purescript-prelude", "purescript-console"]
+          launchBower ["install", "--save-dev", "purescript-psci-support"]
+     else do
+          launchPscPackage ["init"]
+          launchPscPackage ["install", "eff"]
+          launchPscPackage ["install", "console"]
 
 action :: Action
 action = Action \args -> do
-  force <- getFlag "force" args.commandOpts
-  out   <- getOutputter args
-  init force out
+  force      <- getFlag "force" args.commandOpts
+  pscPackage <- getFlag "psc-package" args.commandOpts
+  out        <- getOutputter args
+  init (not pscPackage) force out

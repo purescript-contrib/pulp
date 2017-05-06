@@ -20,7 +20,7 @@ import Node.Path as Path
 import Node.FS.Aff as FS
 
 import Pulp.System.FFI
-import Pulp.System.Stream (write, end, WritableStream())
+import Pulp.System.Stream (write, end, WritableStream, stdout)
 import Pulp.Outputter
 import Pulp.System.Files as Files
 import Pulp.System.Which
@@ -137,4 +137,4 @@ withOutputStream opts aff = do
           void $ apathize $ FS.unlink tmpFile
           throwError err
     Nothing ->
-      aff Process.stdout
+      aff stdout

@@ -10,9 +10,12 @@ import Data.Either (Either(..))
 import Control.Monad.Except (runExcept)
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Eff.Exception (error)
+import Control.Monad.Eff.Unsafe (unsafeCoerceEff)
 import Control.Monad.Eff.Class (liftEff)
-import Data.Foreign (Foreign(), parseJSON)
-import Data.Foreign.Class (class IsForeign, readProp)
+import Data.Foreign (Foreign, readString)
+import Data.Foreign.Index (readProp)
+import Data.Foreign.JSON (parseJSON)
+import Data.Foreign.Class (class Decode)
 
 import Node.FS.Aff (exists, readTextFile)
 import Node.Encoding (Encoding(UTF8))
@@ -21,7 +24,7 @@ import Node.Process as Process
 
 import Pulp.System.FFI
 import Pulp.System.Files (mkdirIfNotExist)
-import Pulp.Args (Options())
+import Pulp.Args (Options)
 import Pulp.Args.Get (getOption)
 
 newtype Project = Project
@@ -55,7 +58,7 @@ readConfig configFilePath = do
     Right pro -> do
       let path = P.dirname configFilePath
       let cachePath = P.resolve [path] ".pulp-cache"
-      liftEff $ Process.chdir path
+      liftEff $ unsafeCoerceEff $ Process.chdir path
       mkdirIfNotExist cachePath
       pure $ Project { bowerFile: pro, cache: cachePath, path: path }
 
@@ -76,10 +79,10 @@ getProject :: Options -> AffN Project
 getProject args =
   getOption "bowerFile" args >>= getBowerFile >>= readConfig
 
-instance isForeignProject :: IsForeign Project where
-  read o =
+instance decodeProject :: Decode Project where
+  decode o =
     map Project $ do
       bowerFile <- readProp "bowerFile" o
-      path      <- readProp "path" o
-      cache     <- readProp "cache" o
+      path      <- readProp "path" o >>= readString
+      cache     <- readProp "cache" o >>= readString
       pure $ { bowerFile, path, cache }

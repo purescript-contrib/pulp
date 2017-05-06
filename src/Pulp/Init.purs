@@ -97,7 +97,7 @@ init force out = do
                                <> "There's already a project here. Run `pulp init --force` "
                                <> "if you're sure you want to overwrite it."
 
-  for files \f -> do
+  for_ files \f -> do
     let dir = Path.dirname f.path
     when (dir /= cwd) (mkdirIfNotExist dir)
     writeTextFile UTF8 f.path f.content

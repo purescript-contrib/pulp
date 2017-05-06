@@ -12,8 +12,9 @@ import Data.Maybe
 import Data.Tuple.Nested
 import Data.Either
 import Data.Foldable (fold)
-import Data.Foreign (parseJSON)
-import Data.Foreign.Class as Foreign
+import Data.Foreign (readString)
+import Data.Foreign.Index (readProp)
+import Data.Foreign.JSON (parseJSON)
 import Data.String as String
 import Data.StrMap as StrMap
 import Data.Options ((:=))
@@ -79,7 +80,7 @@ checkToken out token = do
         in
           header <> "\n" <> resBody)
 
-  case runExcept (parseJSON resBody >>= Foreign.readProp "login") of
+  case runExcept (parseJSON resBody >>= readProp "login" >>= readString) of
     Right login' ->
       out.write ("Successfully authenticated as " <> login' <> ".\n")
     Left err ->

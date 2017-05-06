@@ -15,7 +15,7 @@ const path = require("path");
 const scripts = {
   "lint": "jshint src",
   "compile": "psa -c \"src/**/*.purs\" \"bower_components/purescript-*/src/**/*.purs\" --censor-lib --censor-codes=ImplicitImport,HidingImport",
-  "bundle": "psc-bundle \"output/*/*.js\" --output pulp.js --module Main --main Main",
+  "bundle": "purs bundle \"output/*/*.js\" --output pulp.js --module Main --main Main",
   "test": "mocha test-js --require babel/register",
 };
 

@@ -16,8 +16,9 @@ import Control.Monad.Except (runExcept)
 import Node.FS.Sync as FS
 import Node.Encoding (Encoding(..))
 import Node.Path as Path
-import Data.Foreign (parseJSON)
-import Data.Foreign.Class (readProp)
+import Data.Foreign (readString)
+import Data.Foreign.Index (readProp)
+import Data.Foreign.JSON (parseJSON)
 import Node.Globals (__dirname)
 
 import Pulp.System.FFI (AffN)
@@ -35,7 +36,7 @@ versionString :: String
 versionString =
   unsafePerformEff $ do
     json <- FS.readTextFile UTF8 (Path.concat [__dirname, "package.json"])
-    case runExcept (parseJSON json >>= readProp "version") of
+    case runExcept (parseJSON json >>= readProp "version" >>= readString) of
       Left err ->
         throwException (error ("pulp: Unable to parse package.json: " <> show err))
       Right v ->

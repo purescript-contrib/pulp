@@ -11,15 +11,17 @@ import Data.Tuple
 import Data.Tuple.Nested ((/\))
 import Data.Either
 import Data.Foldable (fold)
-import Data.Foreign (Foreign, parseJSON)
-import Data.Foreign.Class (readProp)
+import Data.Foreign (Foreign, readString)
+import Data.Foreign.Index (readProp)
+import Data.Foreign.JSON (parseJSON)
 import Data.Version (Version)
 import Data.Version as Version
 import Data.String as String
 import Data.StrMap as StrMap
 import Data.Options ((:=))
 import Node.Encoding (Encoding(..))
-import Node.Buffer (Buffer, fromString)
+import Node.Buffer (Buffer)
+import Node.Buffer as Buffer
 import Node.ChildProcess as CP
 import Node.FS.Aff as FS
 import Node.HTTP.Client as HTTP
@@ -93,8 +95,8 @@ resolutionsFile :: AffN String
 resolutionsFile = do
   resolutions <- execQuiet "bower" ["list", "--json", "--offline"] Nothing
   info <- openTemp { prefix: "pulp-publish", suffix: ".json" }
-  FS.fdAppend info.fd =<< liftEff (fromString resolutions UTF8)
-  FS.fdClose info.fd
+  _ <- FS.fdAppend info.fd =<< liftEff (Buffer.fromString resolutions UTF8)
+  _ <- FS.fdClose info.fd
   pure info.path
 
 pursPublish :: AffN String
@@ -132,7 +134,7 @@ readBowerJson = do
 
 getBowerName :: BowerJson -> AffN String
 getBowerName (BowerJson json) =
-  case runExcept (readProp "name" json) of
+  case runExcept (readProp "name" json >>= readString) of
     Right name ->
       pure name
     Left err ->
@@ -141,7 +143,7 @@ getBowerName (BowerJson json) =
 
 getBowerRepositoryUrl :: BowerJson -> AffN String
 getBowerRepositoryUrl (BowerJson json) =
-  case runExcept (readProp "repository" json >>= readProp "url") of
+  case runExcept (readProp "repository" json >>= readProp "url" >>= readString) of
     Right url ->
       pure url
     Left err ->

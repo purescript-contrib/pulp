@@ -32,7 +32,7 @@ halt err = lift $ throwError $ error err
 -- halt err = ParserT $ \s ->
 --   pure { consumed: true, input: s, result: Left (strMsg err) }
 
-matchNamed :: forall a r. (Eq a) => { name :: a, alias :: Array a | r } -> a -> Boolean
+matchNamed :: forall a r. Eq a => { name :: a, alias :: Array a | r } -> a -> Boolean
 matchNamed o key = o.name == key || elem key o.alias
 
 matchOpt :: Option -> String -> Boolean
@@ -40,20 +40,20 @@ matchOpt o key = elem key o.match
 
 -- | A version of Text.Parsing.Parser.Token.token which lies about the position,
 -- | since we don't care about it here.
-token :: forall m a. (Monad m) => ParserT (List a) m a
+token :: forall m a. Monad m => ParserT (List a) m a
 token = Token.token (const Pos.initialPos)
 
 -- | A version of Text.Parsing.Parser.Token.match which lies about the position,
 -- | since we don't care about it here.
-match :: forall m a. (Monad m, Eq a) => a -> ParserT (List a) m a
+match :: forall m a. Monad m => Eq a => a -> ParserT (List a) m a
 match = Token.match (const Pos.initialPos)
 
 -- | A version of Text.Parsing.Parser.Token.when which lies about the position,
 -- | since we don't care about it here.
-when :: forall m a. (Monad m) => (a -> Boolean) -> ParserT (List a) m a
+when :: forall m a. Monad m => (a -> Boolean) -> ParserT (List a) m a
 when = Token.when (const Pos.initialPos)
 
-lookup :: forall m a b. (Monad m, Eq b, Show b) => (a -> b -> Boolean) -> Array a -> ParserT (List b) m (Tuple b a)
+lookup :: forall m a b. Monad m => Eq b => Show b => (a -> b -> Boolean) -> Array a -> ParserT (List b) m (Tuple b a)
 lookup matches table = do
   next <- token
   case find (\i -> matches i next) table of
@@ -98,7 +98,7 @@ extractDefault o =
       Map.empty
 
 -- See also https://github.com/purescript-contrib/purescript-parsing/issues/25
-eof :: forall m a. (Monad m) => (List a -> String) -> ParserT (List a) m Unit
+eof :: forall m a. Monad m => (List a -> String) -> ParserT (List a) m Unit
 eof msg =
   get >>= \(ParseState (input :: List a) _ _) ->
     unless (List.null input) (fail (msg input))

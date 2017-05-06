@@ -12,8 +12,9 @@ import Control.Monad.Except (runExcept)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Either (Either(..))
 import Data.Map (insert)
-import Data.Foreign (parseJSON, Foreign(), toForeign)
-import Data.Foreign.Class (readProp)
+import Data.Foreign (Foreign, toForeign, readString)
+import Data.Foreign.JSON (parseJSON)
+import Data.Foreign.Index (readProp)
 import Data.Array (head, drop)
 import Data.Foldable (elem)
 import Data.List (List(Nil))
@@ -74,7 +75,7 @@ defaultDependencyPath =
   where
   readFromBowerRc = do
     json <- readTextFile UTF8 ".bowerrc"
-    case runExcept (parseJSON json >>= readProp "directory") of
+    case runExcept (parseJSON json >>= readProp "directory" >>= readString) of
       Right dir -> pure dir
       Left err  -> throwException (error (show err))
 

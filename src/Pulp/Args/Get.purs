@@ -24,7 +24,7 @@ import Pulp.Args
 -- | was not specified at the command line, the result will be `Nothing`. For
 -- | options which do have defaults, you probably want the primed version
 -- | instead, `getOption'`.
-getOption :: forall a. (IsForeign a) => String -> Options -> AffN (Maybe a)
+getOption :: forall a. Decode a => String -> Options -> AffN (Maybe a)
 getOption name opts = do
   case lookup name opts of
     Just (Just thing) ->
@@ -37,7 +37,7 @@ getOption name opts = do
 
 -- | Get an option which was declared with a default value, and therefore
 -- | should always have a value.
-getOption' :: forall a. (IsForeign a) => String -> Options -> AffN a
+getOption' :: forall a. Decode a => String -> Options -> AffN a
 getOption' name opts = do
   mval <- getOption name opts
   case mval of
@@ -67,9 +67,9 @@ hasOption name opts = isJust <$> opt
   opt :: AffN (Maybe Foreign)
   opt = getOption name opts
 
-readForeign :: forall a. (IsForeign a) => String -> Foreign -> AffN a
+readForeign :: forall a. Decode a => String -> Foreign -> AffN a
 readForeign name thing =
-  case runExcept (read thing) of
+  case runExcept (decode thing) of
     Left e ->
       internalError $ joinWith "\n"
         [ "Failed to read option: " <> name

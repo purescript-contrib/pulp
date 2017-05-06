@@ -16,7 +16,7 @@ import Prelude
 import Data.Array (concat)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Function.Uncurried
-import Data.Foreign.Class (class IsForeign)
+import Data.Foreign.Class (class Decode)
 import Data.List as List
 import Data.Set (Set())
 import Data.Set as Set
@@ -37,14 +37,14 @@ sources = recursiveGlobWithExtension "purs"
 ffis :: Set String -> Array String
 ffis = recursiveGlobWithExtension "js"
 
-globsFromOption' :: forall a. (IsForeign a) => (a -> a) -> String -> Options -> AffN (Set a)
+globsFromOption' :: forall a. Decode a => (a -> a) -> String -> Options -> AffN (Set a)
 globsFromOption' f name opts = do
   value <- getOption name opts
   pure $ case value of
           Just v  -> Set.singleton (f v)
           Nothing -> Set.empty
 
-globsFromOption :: forall a. (IsForeign a) => String -> Options -> AffN (Set a)
+globsFromOption :: forall a. Decode a => String -> Options -> AffN (Set a)
 globsFromOption = globsFromOption' id
 
 localGlobs :: Options -> AffN (Set String)

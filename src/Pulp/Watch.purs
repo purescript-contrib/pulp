@@ -43,9 +43,9 @@ watchAff ::  Array String -> (String -> AffN Unit) -> AffN Unit
 watchAff dirs callback = liftEff do
   debouncedCallback <- debounce (Milliseconds 100.0)
                                 (callback
-                                 >>> removeErrLabel
-                                 >>> launchAff
-                                 >>> void)
+                                >>> removeExceptionLabel
+                                >>> launchAff
+                                >>> void)
   watch dirs debouncedCallback
 
 -- | Ensure that a callback is only called at some given maximum frequency,

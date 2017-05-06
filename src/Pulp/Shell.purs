@@ -40,7 +40,7 @@ shell' out cmd opts = do
   out.log $ "Executing " <> cmd
   cmdBuf <- liftEff $ Buffer.fromString cmd UTF8
   info <- openTemp { prefix: "pulp-cmd-", suffix: opts.extension }
-  FS.fdAppend info.fd cmdBuf
-  FS.fdClose info.fd
+  _ <- FS.fdAppend info.fd cmdBuf
+  _ <- FS.fdClose info.fd
   exec opts.executable (opts.extraArgs <> [info.path]) Nothing
   out.log "Done."

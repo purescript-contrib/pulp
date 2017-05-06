@@ -4,7 +4,7 @@ import Prelude
 import Node.HTTP as HTTP
 import Pulp.System.FFI (EffN)
 
-foreign import data StaticServer :: *
+foreign import data StaticServer :: Type
 
 -- | Create a static file server, given a base directory to serve files from.
 foreign import new :: String -> EffN StaticServer

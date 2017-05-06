@@ -60,6 +60,15 @@ function assertThrows(promise) {
     );
 }
 
+function notWindowsIt(name, fn) {
+  if (process.platform === "win32") {
+    it("Skipping: " + name + " (since we are on windows)",
+        function() { return true; });
+  } else {
+    it(name, fn);
+  }
+}
+
 function setupPackage(cwd, sh) {
   return sh("git init")
     .then(() => fs.writeFile(path.join(cwd, "LICENSE"),
@@ -172,7 +181,7 @@ describe("integration tests", function() {
     assert.exists(extras);
   }));
 
-  it("handles empty string after --include", run(function*(sh, pulp, assert, temp) {
+  notWindowsIt("handles empty string after --include", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield pulp("build --include ''");
   }));
@@ -182,7 +191,8 @@ describe("integration tests", function() {
     var extras = yield createModule(sh, temp, "Extras");
     var extras2 = yield createModule(sh, temp, "Extras2");
 
-    yield pulp("build --include Extras::Extras2");
+    var includeArg = ["Extras", "", "Extras2"].join(path.delimiter);
+    yield pulp("build --include " + includeArg);
 
     assert.exists(extras);
     assert.exists(extras2);
@@ -192,7 +202,7 @@ describe("integration tests", function() {
     yield pulp("init");
     var extras = yield createModule(sh, temp, "Extras");
 
-    yield pulp("build --include Extras:");
+    yield pulp("build --include Extras" + path.delimiter);
 
     assert.exists(extras);
   }));

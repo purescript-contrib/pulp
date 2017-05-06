@@ -34,8 +34,8 @@
     "node": ">= 4"
   },
   "config": {
-    "psc_build_version": "v0.10.7",
-    "psc_test_version": "v0.11.3"
+    "psc_build_version": "v0.11.4",
+    "psc_test_version": "v0.11.4"
   },
   "scripts": {
     "prepublish": "node scripts.js prepublish",
@@ -67,8 +67,8 @@
     "jshint": "^2.8.0",
     "mkdirp": "^0.5.1",
     "mocha": "^3.1.2",
-    "psvm": "^0.1.3",
-    "purescript-psa": "^0.4.0",
+    "psvm": "^0.1.4",
+    "purescript-psa": "^0.5.0",
     "semver": "^5.1.0",
     "touch": "^1.0.0"
   }

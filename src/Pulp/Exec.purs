@@ -99,7 +99,7 @@ execQuietWithStderr stderrBehaviour cmd args env = do
               ]
   child <- liftEff $ CP.spawn cmd args (def { env = env, stdio = stdio })
   outVar <- makeVar
-  forkAff (concatStream (CP.stdout child) >>= putVar outVar)
+  _ <- forkAff (concatStream (CP.stdout child) >>= putVar outVar)
   wait child >>= either (handleErrors cmd retry) (onExit outVar)
 
   where
@@ -111,7 +111,7 @@ execQuietWithStderr stderrBehaviour cmd args env = do
         CP.Normally 0 ->
           pure childOut
         _ -> do
-          write Process.stderr childOut
+          write stderr childOut
           throwError $ error $ "Subcommand terminated " <> showExit exit
 
   retry newCmd = execQuietWithStderr stderrBehaviour newCmd args env

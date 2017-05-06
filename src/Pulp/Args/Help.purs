@@ -15,7 +15,7 @@ import Data.StrMap (StrMap(), keys, lookup, insert, empty)
 import Data.String as Str
 import Data.Traversable (sequence)
 import Data.Foreign (F())
-import Data.Foreign.Class (read)
+import Data.Foreign.Class (decode)
 import Node.Process as Process
 import Node.Path as Path
 
@@ -49,11 +49,11 @@ describeOpt opt = opt.desc <> case opt.defaultValue of
   Just def -> maybe "" (\d -> " [Default: " <> d <> "]") (tryDefault def)
   where
   tryDefault def =
-    case runExcept (read def :: F String) of
+    case runExcept (decode def :: F String) of
       Right str ->
         Just (show str)
       Left _ ->
-        case runExcept (read def :: F Int) of
+        case runExcept (decode def :: F Int) of
           Right int ->
             Just (show int)
           Left _ ->

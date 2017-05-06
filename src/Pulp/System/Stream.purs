@@ -5,6 +5,8 @@ module Pulp.System.Stream
   , end
   , forget
   , write
+  , stdout
+  , stderr
   , concatStream
   , concatStreamToBuffer
   , createGzip
@@ -17,6 +19,7 @@ import Control.Monad.Aff (makeAff)
 import Node.Stream as Node
 import Node.Buffer (Buffer)
 import Node.Buffer as Buffer
+import Node.Process as Process
 import Node.Encoding (Encoding(UTF8))
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -26,7 +29,7 @@ type ReadableStream = Node.Readable () PulpEffects
 type WritableStream = Node.Writable () PulpEffects
 
 -- | A stream which might or might not be readable or writable.
-foreign import data AnyStream :: *
+foreign import data AnyStream :: Type
 
 -- | Forget about whether a particular stream is readable or writable.
 forget :: forall eff r. Node.Stream r eff -> AnyStream
@@ -49,3 +52,9 @@ concatStreamToBuffer stream = runNode $ runFn2 concatStreamToBuffer' stream
 foreign import concatStreamToBuffer' :: forall w. Fn2 (Node.Readable w PulpEffects) (Callback Buffer) Unit
 
 foreign import createGzip :: EffN (Node.Duplex PulpEffects)
+
+stdout :: WritableStream
+stdout = unsafeCoerce Process.stdout
+
+stderr :: WritableStream
+stderr = unsafeCoerce Process.stderr

@@ -44,8 +44,8 @@ action = Action \args -> do
       env <- setupEnv buildPath
       info <- openTemp { prefix: "pulp-test", suffix: ".js" }
       src <- liftEff $ Buffer.fromString (makeEntry main) UTF8
-      FS.fdAppend info.fd src
-      FS.fdClose info.fd
+      _ <- FS.fdAppend info.fd src
+      _ <- FS.fdClose info.fd
       exec runtime
            ([info.path] <> args.remainder)
            (Just env)

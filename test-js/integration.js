@@ -192,6 +192,13 @@ describe("integration tests", function() {
     assert.exists(path.join("output", "Main", "index.js"));
   }));
 
+  notWindowsIt("pulp build with psc-package", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init --psc-package");
+    yield pulp("build");
+
+    assert.exists(path.join("output", "Main", "index.js"));
+  }));
+
   it("finds bower.json in parent directories", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield pulp("build", null, { cwd: path.join(temp, "src") });
@@ -410,8 +417,23 @@ describe("integration tests", function() {
       assert.equal(c.split(newlines)[0], consoleDocLine1));
   }));
 
+  notWindowsIt("pulp docs --with-dependencies with psc-package", run(function*(sh, pulp, assert) {
+    yield pulp("init --psc-package");
+    yield pulp("docs --with-dependencies");
+    assert.file("generated-docs/Control/Monad/Eff/Console.md", (c) =>
+      assert.equal(c.split(newlines)[0], consoleDocLine1));
+  }));
+
   it("pulp psci includes dependencies", run(function*(sh, pulp, assert) {
     yield pulp("init");
+    yield pulp("psci");
+
+    const [out] = yield pulp("psci", "import Prelude\n\"hello, \" <> \"world\"");
+    assert.match(out, /hello, world/);
+  }));
+
+  notWindowsIt("pulp psci includes dependencies with psc-package", run(function*(sh, pulp, assert) {
+    yield pulp("init --psc-package");
     yield pulp("psci");
 
     const [out] = yield pulp("psci", "import Prelude\n\"hello, \" <> \"world\"");

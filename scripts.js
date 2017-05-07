@@ -87,6 +87,9 @@ function ensurePscVersionsInstalled() {
   const versions = ['psc_build_version', 'psc_test_version'].map(getConfig);
 
   versions.forEach((version) => {
+    if (!subcommandEnv.GITHUB_API_TOKEN) {
+      console.error("Warning: GitHub API token not set.");
+    }
     spawnSync("psvm install " + version);
   });
 }

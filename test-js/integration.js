@@ -1,4 +1,5 @@
 import fs from "fs-promise";
+import co from "co";
 import path from "path";
 import run from "./sh";
 import semver from "semver";
@@ -68,6 +69,38 @@ function notWindowsIt(name, fn) {
     it(name, fn);
   }
 }
+
+const psaHelper = co.wrap(function*(temp) {
+  const node = yield resolvePath("node");
+  const prog = (name, version) => `
+if (process.argv[2] === "--version") {
+  process.stdout.write("${version}\\n");
+} else {
+  process.stderr.write("assert ${name}\\n");
+  process.stderr.write(process.argv.join(" ") + "\\n");
+}
+`;
+
+  const p = path.resolve(temp, "bin");
+  yield fs.mkdir(p);
+
+  const writeProg = co.wrap(function* (name, version) {
+    const fullProgPath = path.resolve(p, windowsify(name));
+    const progJs = path.resolve(p, name + ".js");
+    const echoOff = process.platform === "win32" ? "@echo off\r\n" : "";
+    const args = process.platform === "win32" ? "%*" : "$@";
+
+    yield fs.writeFile(fullProgPath,
+        `${echoOff}"${node}" "${progJs}" ${args}`, "utf-8");
+    yield fs.chmod(fullProgPath, 0o755);
+    yield fs.writeFile(progJs, prog(name, version), "utf-8");
+  });
+
+  return {
+    binPath: p,
+    writeProg
+  };
+});
 
 function setupPackage(cwd, sh) {
   return sh("git init")
@@ -428,48 +461,54 @@ describe("integration tests", function() {
     assert.equal(out2.trim(), test);
   }));
 
-  it("pulp chooses psa over psc when available", run(function*(sh, pulp, assert, temp) {
-    const node = yield resolvePath("node");
-    const prog = (name, version) => `
-if (process.argv[2] === "--version") {
-  process.stdout.write("${version}\\n");
-} else {
-  process.stderr.write("assert ${name}\\n");
-  process.stderr.write(process.argv.join(" ") + "\\n");
-}
-`;
-    const p = path.resolve(temp, "bin");
-    const purs = path.resolve(p, windowsify("purs"));
-    const psa = path.resolve(p, windowsify("psa"));
-    const pursJs = path.resolve(p, "purs.js");
-    const psaJs = path.resolve(p, "psa.js");
-    const echoOff = process.platform === "win32" ? "@echo off\r\n" : "";
-    const args = process.platform === "win32" ? "%*" : "$@";
-
-    yield fs.mkdir(p);
-    yield fs.writeFile(purs, `${echoOff}"${node}" "${pursJs}" ${args}`, "utf-8");
-    yield fs.chmod(purs, 0o755);
-    yield fs.writeFile(pursJs, prog("purs", "1.0.0.0"), "utf-8");
-
+  it("pulp uses purs when psa is not available", run(function*(sh, pulp, assert, temp) {
+    const h = yield psaHelper(temp);
+    yield h.writeProg("purs", "0.11.4");
     yield pulp("init");
 
-    const [out1, err1] = yield pulp("build", undefined, {path: p});
-    assert.match(err1, /assert purs/);
+    const [out, err] = yield pulp("build", undefined, {path: h.binPath});
+    assert.match(err, /assert purs/);
+  }));
 
-    yield fs.writeFile(psa, `${echoOff}"${node}" "${psaJs}" "${args}"`, "utf-8");
-    yield fs.chmod(psa, 0o755);
-    yield fs.writeFile(psaJs, prog("psa", "1.0.0"), "utf-8");
+  it("pulp ignores psa when it is too old", run(function*(sh, pulp, assert, temp) {
+    const h = yield psaHelper(temp);
+    yield h.writeProg("purs", "0.11.4");
+    yield h.writeProg("psa", "0.4.0");
+    yield pulp("init");
 
-    const [out2, err2] = yield pulp("build", undefined, {path: p});
-    assert.match(err2, /assert psa/);
+    const [out, err] = yield pulp("build", undefined, {path: h.binPath});
+    assert.match(err, /assert purs/);
+  }));
 
-    const [out3, err3] = yield pulp("build --no-psa", undefined, {path: p});
-    assert.match(err3, /assert purs/);
+  it("pulp uses psa when it is available", run(function*(sh, pulp, assert, temp) {
+    const h = yield psaHelper(temp);
+    yield h.writeProg("purs", "0.11.4");
+    yield h.writeProg("psa", "0.5.0");
+    yield pulp("init");
 
-    // This tests passthrough arguments with psa.
-    const [out4, err4] = yield pulp("build -- --monochrome", undefined, {path: p});
-    assert.match(err4, /--monochrome/);
-    assert.match(err4, /--is-lib=bower_components/);
+    const [out, err] = yield pulp("build", undefined, {path: h.binPath});
+    assert.match(err, /assert psa/);
+  }));
+
+  it("pulp ignores psa when --no-psa is passed", run(function*(sh, pulp, assert, temp) {
+    const h = yield psaHelper(temp);
+    yield h.writeProg("purs", "0.11.4");
+    yield h.writeProg("psa", "0.5.0");
+    yield pulp("init");
+
+    const [out, err] = yield pulp("build --no-psa", undefined, {path: h.binPath});
+    assert.match(err, /assert purs/);
+  }));
+
+  it("pulp passes arguments through to psa", run(function*(sh, pulp, assert, temp) {
+    const h = yield psaHelper(temp);
+    yield h.writeProg("purs", "0.11.4");
+    yield h.writeProg("psa", "0.5.0");
+    yield pulp("init");
+
+    const [out, err] = yield pulp("build -- --monochrome", undefined, {path: h.binPath});
+    assert.match(err, /--monochrome/);
+    assert.match(err, /--is-lib=bower_components/);
   }));
 
   it("pulp version requires a clean working tree", run(function*(sh, pulp, assert, temp) {

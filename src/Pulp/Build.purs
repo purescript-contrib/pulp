@@ -12,6 +12,8 @@ import Data.Map (union)
 import Data.String (split, Pattern(..))
 import Data.Set as Set
 import Data.Foldable (fold)
+import Data.List (fromFoldable, List(..))
+import Data.Version.Haskell (Version(..))
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Aff (attempt, apathize)
@@ -23,11 +25,11 @@ import Pulp.System.FFI
 import Pulp.System.Stream (write, end, WritableStream, stdout)
 import Pulp.Outputter
 import Pulp.System.Files as Files
-import Pulp.System.Which
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec (psa, pursBuild, pursBundle)
 import Pulp.Files
+import Pulp.Validate (getPsaVersion)
 
 data BuildType = NormalBuild | TestBuild
 
@@ -65,27 +67,44 @@ go buildType = Action \args -> do
 
   let sourceGlobs = sources globs
       binArgs = ["-o", buildPath] <> jobsArgs <> args.remainder
-      runPsc = pursBuild sourceGlobs binArgs Nothing
 
-  if noPsa
-    then runPsc
-    else do
-      psaBin <- attempt (which "psa")
-      case psaBin of
-        Left _ -> runPsc
-        Right _ -> do
-          monochrome <- getFlag "monochrome" args.globalOpts
-          dependencyPath <- getOption' "dependencyPath" args.commandOpts
-          let binArgs' = binArgs <> ["--is-lib=" <> dependencyPath]
-                                 <> (if monochrome
-                                       then ["--monochrome"]
-                                       else [])
-          psa sourceGlobs binArgs' Nothing
+  usePsa <- shouldUsePsa args
+  if usePsa
+    then do
+      monochrome <- getFlag "monochrome" args.globalOpts
+      dependencyPath <- getOption' "dependencyPath" args.commandOpts
+      let binArgs' = binArgs <> ["--is-lib=" <> dependencyPath]
+                             <> (if monochrome
+                                then ["--monochrome"]
+                                else [])
+      psa sourceGlobs binArgs' Nothing
+    else
+      pursBuild sourceGlobs binArgs Nothing
 
   out.log "Build successful."
 
   shouldBundle <- (||) <$> getFlag "optimise" opts <*> hasOption "to" opts
   when shouldBundle (bundle args)
+
+shouldUsePsa :: Args -> AffN Boolean
+shouldUsePsa args = do
+  noPsa <- getFlag "noPsa" args.commandOpts
+
+  if noPsa
+    then
+      pure false
+    else do
+      out <- getOutputter args
+      r <- attempt (getPsaVersion out)
+      case r of
+        Left _ ->
+          pure false
+        Right v ->
+          pure (v >= minimumPsaVersion)
+
+  where
+  -- TODO this is actually semver
+  minimumPsaVersion = Version (fromFoldable [0,5,0]) Nil
 
 bundle :: Args -> AffN Unit
 bundle args = do

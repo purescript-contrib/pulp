@@ -1,5 +1,7 @@
 module Pulp.Validate
   ( validate
+  , getPursVersion
+  , getPsaVersion
   ) where
 
 import Prelude
@@ -29,16 +31,22 @@ validate out = do
   pure ver
 
 getPursVersion :: Outputter -> AffN Version
-getPursVersion out = do
-  verStr <- takeWhile (_ /= ' ') <$> trim <$> execQuiet "purs" ["--version"] Nothing
+getPursVersion = getVersionFrom "purs"
+
+minimumPursVersion :: Version
+minimumPursVersion = Version (fromFoldable [0, 11, 0]) Nil
+
+getPsaVersion :: Outputter -> AffN Version
+getPsaVersion = getVersionFrom "psa"
+
+getVersionFrom :: String -> Outputter -> AffN Version
+getVersionFrom bin out = do
+  verStr <- takeWhile (_ /= ' ') <$> trim <$> execQuiet bin ["--version"] Nothing
   case parseVersion verStr of
     Right v ->
       pure v
     Left err -> do
       let msg = parseErrorMessage err
-      out.err $ "Unable to parse the version from purs. (It was: " <> verStr <> ")"
-      out.err $ "Please check that the right purs is on your PATH."
-      throwError $ error "Couldn't parse version from purs"
-
-minimumPursVersion :: Version
-minimumPursVersion = Version (fromFoldable [0, 11, 0]) Nil
+      out.err $ "Unable to parse the version from " <> bin <> ". (It was: " <> verStr <> ")"
+      out.err $ "Please check that the right executable is on your PATH."
+      throwError $ error ("Couldn't parse version from " <> bin)

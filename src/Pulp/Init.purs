@@ -23,6 +23,8 @@ import Pulp.PackageManager (launchBower, launchPscPackage)
 
 foreign import bowerFile :: String -> String
 
+data InitStyle = Bower | PscPackage
+
 unlines :: Array String -> String
 unlines arr = joinWith "\n" arr <> "\n"
 
@@ -70,25 +72,27 @@ testFile = unlines [
   "  log \"You should add some tests.\""
   ]
 
-projectFiles :: Boolean -> String -> String -> Array { path :: String, content :: String }
-projectFiles bower pathRoot projectName =
-  let bowerJson = { path: fullPath ["bower.json"],        content: bowerFile projectName }
-      def = [ { path: fullPath [".gitignore"],        content: gitignore }
+projectFiles :: InitStyle -> String -> String -> Array { path :: String, content :: String }
+projectFiles initStyle pathRoot projectName =
+  case initStyle of
+    Bower      -> cons bowerJson common
+    PscPackage -> common
+  where
+  fullPath pathParts = Path.concat ([pathRoot] <> pathParts)
+  bowerJson = { path: fullPath ["bower.json"],        content: bowerFile projectName }
+  common  = [ { path: fullPath [".gitignore"],        content: gitignore }
             , { path: fullPath [".purs-repl"],        content: pursReplFile }
             , { path: fullPath ["src", "Main.purs"],  content: mainFile }
             , { path: fullPath ["test", "Main.purs"], content: testFile }
             ]
-      in if bower then cons bowerJson def else def
-  where
-  fullPath pathParts = Path.concat ([pathRoot] <> pathParts)
 
-init :: Boolean -> Boolean -> Outputter -> AffN Unit
-init bower force out = do
+init :: InitStyle -> Boolean -> Outputter -> AffN Unit
+init initStyle force out = do
   cwd <- liftEff Process.cwd
   let projectName = Path.basename cwd
   out.log $ "Generating project skeleton in " <> cwd
 
-  let files = projectFiles bower cwd projectName
+  let files = projectFiles initStyle cwd projectName
 
   when (not force) do
     for_ files \f -> do
@@ -103,19 +107,22 @@ init bower force out = do
     when (dir /= cwd) (mkdirIfNotExist dir)
     writeTextFile UTF8 f.path f.content
 
-  if bower
-     then do
-          launchBower ["install", "--save", "purescript-prelude", "purescript-console"]
-          launchBower ["install", "--save-dev", "purescript-psci-support"]
-     else do
-          launchPscPackage ["init"]
-          launchPscPackage ["install", "eff"]
-          launchPscPackage ["install", "console"]
-          launchPscPackage ["install", "psci-support"]
+  install initStyle
+
+  where
+    install Bower = do
+      launchBower ["install", "--save", "purescript-prelude", "purescript-console"]
+      launchBower ["install", "--save-dev", "purescript-psci-support"]
+
+    install PscPackage = do
+      launchPscPackage ["init"]
+      launchPscPackage ["install", "eff"]
+      launchPscPackage ["install", "console"]
+      launchPscPackage ["install", "psci-support"]
 
 action :: Action
 action = Action \args -> do
   force      <- getFlag "force" args.commandOpts
   pscPackage <- getFlag "psc-package" args.commandOpts
   out        <- getOutputter args
-  init (not pscPackage) force out
+  init (if pscPackage then PscPackage else Bower) force out

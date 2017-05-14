@@ -21,10 +21,7 @@ import Data.Foreign (readString)
 import Data.Foreign.Index (readProp)
 import Data.Foreign.Class (class Decode)
 import Data.List as List
-import Data.String (stripSuffix, Pattern(..))
-import Data.String.Regex (split)
-import Data.String.Regex.Flags (noFlags)
-import Data.String.Regex.Unsafe (unsafeRegex)
+import Data.String (stripSuffix, Pattern(..), split)
 import Data.Set (Set())
 import Data.Set as Set
 import Data.Traversable (sequence, traverse)
@@ -71,12 +68,15 @@ dependencyGlobs opts = do
     _ -> globsFromOption' (\path -> Path.concat [path, "purescript-*", "src"]) "dependencyPath" opts
 
 pscPackageGlobs :: AffN (Set String)
-pscPackageGlobs = do
-  execQuiet "psc-package" ["sources"] Nothing <#>
-  Set.fromFoldable <<<
-  -- Strip the glob.purs suffixes just to append them later so it plays well with the other globs
-  mapMaybe (stripSuffix (Pattern "/**/*.purs")) <<<
-  split (unsafeRegex "\r\n|\n" noFlags)
+pscPackageGlobs =
+  execQuiet "psc-package" ["sources"] Nothing <#> processGlobs
+  where
+    -- Split on newlines and strip the /**/*/.purs suffixes just to
+    -- append them later so it plays well with the other globs
+    processGlobs =
+      (split (Pattern "\r\n") >=> split (Pattern "\n")) >>>
+      mapMaybe (stripSuffix (Pattern "/**/*.purs")) >>>
+      Set.fromFoldable
 
 includeGlobs :: Options -> AffN (Set String)
 includeGlobs opts = mkSet <$> getOption "includePaths" opts

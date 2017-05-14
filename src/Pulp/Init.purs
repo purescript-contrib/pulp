@@ -3,9 +3,6 @@ module Pulp.Init
   ) where
 
 import Prelude
-import Pulp.Outputter
-import Pulp.System.FFI
-import Pulp.Args
 import Node.Path as Path
 import Node.Process as Process
 import Control.Monad.Eff.Class (liftEff)
@@ -17,8 +14,12 @@ import Data.String (joinWith)
 import Data.Traversable (for)
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff (writeTextFile, exists)
+
+import Pulp.Args
 import Pulp.Args.Get (getFlag)
+import Pulp.Outputter
 import Pulp.PackageManager (launchBower, launchPscPackage)
+import Pulp.System.FFI
 import Pulp.System.Files (mkdirIfNotExist)
 
 foreign import bowerFile :: String -> String

@@ -192,7 +192,7 @@ describe("integration tests", function() {
     assert.exists(path.join("output", "Main", "index.js"));
   }));
 
-  notWindowsIt("pulp build with psc-package", run(function*(sh, pulp, assert, temp) {
+  it("pulp build with psc-package", run(function*(sh, pulp, assert, temp) {
     yield pulp("init --psc-package");
     yield pulp("build");
 
@@ -417,7 +417,7 @@ describe("integration tests", function() {
       assert.equal(c.split(newlines)[0], consoleDocLine1));
   }));
 
-  notWindowsIt("pulp docs --with-dependencies with psc-package", run(function*(sh, pulp, assert) {
+  it("pulp docs --with-dependencies with psc-package", run(function*(sh, pulp, assert) {
     yield pulp("init --psc-package");
     yield pulp("docs --with-dependencies");
     assert.file("generated-docs/Control/Monad/Eff/Console.md", (c) =>
@@ -432,7 +432,7 @@ describe("integration tests", function() {
     assert.match(out, /hello, world/);
   }));
 
-  notWindowsIt("pulp psci includes dependencies with psc-package", run(function*(sh, pulp, assert) {
+  it("pulp psci includes dependencies with psc-package", run(function*(sh, pulp, assert) {
     yield pulp("init --psc-package");
     yield pulp("psci");
 

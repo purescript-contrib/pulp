@@ -9,30 +9,33 @@ A build tool for PureScript.
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-  - [Installation](#installation)
-  - [Getting Started with a Pulp Project](#getting-started-with-a-pulp-project)
-    - [What if I need something a bit more complicated?](#what-if-i-need-something-a-bit-more-complicated)
-  - [Pulp Commands](#pulp-commands)
-    - [Global, Command Specific and Pass-Through Options](#global-command-specific-and-pass-through-options)
-      - [Pass-Through Options](#pass-through-options)
-  - [Building Projects](#building-projects)
-    - [Making a JavaScript Bundle](#making-a-javascript-bundle)
-    - [Running Your PureScript Project](#running-your-purescript-project)
-    - [Running Test Suites](#running-test-suites)
-    - [CommonJS Aware Builds](#commonjs-aware-builds)
-      - [Optimising Code Size](#optimising-code-size)
-      - [Reimporting Browserified Bundles](#reimporting-browserified-bundles)
-    - [Building Documentation](#building-documentation)
-    - [Launching a REPL](#launching-a-repl)
-    - [Launching a Development Server](#launching-a-development-server)
-      - [A Quick Example](#a-quick-example)
-      - [I Need More](#i-need-more)
-  - [Dependency Management](#dependency-management)
-    - [Dependency Management Cheat Sheet](#dependency-management-cheat-sheet)
-      - [Installing Dependencies](#installing-dependencies)
-      - [Housekeeping](#housekeeping)
-    - [Releasing Packages](#releasing-packages)
-  - [Licence](#licence)
+
+- [Installation](#installation)
+- [Getting Started with a Pulp Project](#getting-started-with-a-pulp-project)
+  - [What if I need something a bit more complicated?](#what-if-i-need-something-a-bit-more-complicated)
+- [Pulp Commands](#pulp-commands)
+  - [Global, Command Specific and Pass-Through Options](#global-command-specific-and-pass-through-options)
+    - [Pass-Through Options](#pass-through-options)
+- [Building Projects](#building-projects)
+  - [Making a JavaScript Bundle](#making-a-javascript-bundle)
+  - [Running Your PureScript Project](#running-your-purescript-project)
+  - [Running Test Suites](#running-test-suites)
+  - [Running Commands Before and After an Action](#running-commands-before-and-after-an-action)
+  - [CommonJS Aware Builds](#commonjs-aware-builds)
+    - [Optimising Code Size](#optimising-code-size)
+    - [Reimporting Browserified Bundles](#reimporting-browserified-bundles)
+  - [Building Documentation](#building-documentation)
+  - [Launching a REPL](#launching-a-repl)
+  - [Launching a Development Server](#launching-a-development-server)
+    - [A Quick Example](#a-quick-example)
+    - [I Need More](#i-need-more)
+- [Dependency Management](#dependency-management)
+  - [Dependency Management Cheat Sheet](#dependency-management-cheat-sheet)
+    - [Installing Dependencies](#installing-dependencies)
+    - [Housekeeping](#housekeeping)
+  - [Releasing Packages](#releasing-packages)
+- [Development](#development)
+- [Licence](#licence)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -585,6 +588,29 @@ tags to find the version number for the latest release, and then
 generate the new verision number by bumping the patch component.
 The `minor` and `major` arguments respectively perform minor and major
 version bumps in the same way.
+
+## Development
+
+To work on `pulp`, after cloning the repository, run:
+
+```
+$ npm install
+$ bower install
+```
+
+to install dependencies. Then, you can run
+
+```
+$ npm run -s build
+```
+
+to compile `pulp`, and
+
+```
+$ npm test
+```
+
+to run the tests.
 
 ## Licence
 

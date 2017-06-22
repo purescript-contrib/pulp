@@ -11,6 +11,10 @@ exports["openTemp'"] = function openTemp$prime(opts, callback) {
   temp.open(opts, callback);
 };
 
+exports["tempDir'"] = function tempDir$prime(opts, callback) {
+  temp.mkdir(opts, callback);
+};
+
 exports.createWriteStream = function createWriteStream(path) {
   return function() {
     return require('fs').createWriteStream(path);

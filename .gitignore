@@ -9,3 +9,4 @@
 .pulp-cache/
 .browserify-cache.json
 /.psvm/
+/unit-tests.js

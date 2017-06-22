@@ -2,6 +2,7 @@
 module Pulp.System.Files
   ( mkdirIfNotExist
   , openTemp
+  , tempDir
   , createWriteStream
   , isENOENT
   , touch
@@ -31,9 +32,14 @@ type TempOptions = { prefix :: String, suffix :: String }
 type TempFileInfo = { path :: String, fd :: FileDescriptor }
 
 foreign import openTemp' :: Fn2 TempOptions (Callback TempFileInfo) Unit
+foreign import tempDir' :: Fn2 TempOptions (Callback String) Unit
 
 openTemp :: TempOptions -> AffN TempFileInfo
 openTemp opts = runNode $ runFn2 openTemp' opts
+
+-- | Create a temporary directory and return its path.
+tempDir :: TempOptions -> AffN String
+tempDir opts = runNode $ runFn2 tempDir' opts
 
 foreign import createWriteStream :: String -> EffN WritableStream
 

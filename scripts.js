@@ -14,9 +14,10 @@ const path = require("path");
 
 const scripts = {
   "lint": "jshint src",
-  "compile": "psa -c \"src/**/*.purs\" \"bower_components/purescript-*/src/**/*.purs\" --censor-lib --censor-codes=ImplicitImport,HidingImport",
+  "compile": "psa -c \"src/**/*.purs\" \"test/**/*.purs\" \"bower_components/purescript-*/src/**/*.purs\" --censor-lib --censor-codes=ImplicitImport,HidingImport",
   "bundle": "purs bundle \"output/*/*.js\" --output pulp.js --module Main --main Main",
-  "test": "mocha test-js --require babel/register",
+  "test:unit": "purs bundle \"output/*/*.js\" --output unit-tests.js --module Test.Main --main Test.Main && node unit-tests.js",
+  "test:integration": "mocha test-js --require babel/register"
 };
 
 const subcommand = process.argv[2];
@@ -51,7 +52,8 @@ function build() {
 
 function test() {
   spawnSync("psvm use " + getConfig("psc_test_version"));
-  execScript("test");
+  execScript("test:unit");
+  execScript("test:integration");
 }
 
 function prepublish() {

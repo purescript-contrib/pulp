@@ -11,6 +11,7 @@ import Control.Monad.Eff.Now (NOW)
 import Control.Monad.Eff.Ref (REF)
 import Data.Function.Uncurried
 import Unsafe.Coerce (unsafeCoerce)
+import Test.Assert (ASSERT)
 
 import Node.FS (FS)
 import Node.ChildProcess (CHILD_PROCESS)
@@ -22,7 +23,21 @@ import Node.HTTP (HTTP)
 foreign import data NODE :: Effect
 foreign import data NodeError :: Type
 
-type PulpEffects = (node :: NODE, console :: CONSOLE, buffer :: BUFFER, fs :: FS, avar :: AVAR, exception :: EXCEPTION, process :: PROCESS, cp :: CHILD_PROCESS, http :: HTTP, readline :: READLINE, now :: NOW, ref :: REF)
+type PulpEffects =
+  ( node :: NODE
+  , console :: CONSOLE
+  , buffer :: BUFFER
+  , fs :: FS
+  , avar :: AVAR
+  , exception :: EXCEPTION
+  , process :: PROCESS
+  , cp :: CHILD_PROCESS
+  , http :: HTTP
+  , readline :: READLINE
+  , now :: NOW
+  , ref :: REF
+  , assert :: ASSERT
+  )
 
 type EffN a = Eff PulpEffects a
 type AffN a = Aff PulpEffects a

@@ -248,6 +248,7 @@ main = void $ runAff failed succeeded do
   handleParseError _ err = do
     out.err $ "Error: " <> err
     printHelp out globals commands
+    liftEff $ Process.exit 1
 
   out = makeOutputter false
 

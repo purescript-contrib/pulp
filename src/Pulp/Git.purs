@@ -1,4 +1,9 @@
-module Pulp.Git where
+module Pulp.Git
+  ( requireCleanGitWorkingTree
+  , getVersionFromGitTag
+  , getLatestTaggedVersion
+  , dropPrefix
+  ) where
 
 import Prelude
 import Control.Monad.Eff.Exception
@@ -28,15 +33,30 @@ requireCleanGitWorkingTree = do
       "Your git working tree is dirty. Please commit or stash your changes " <>
       "first."
 
--- | Get the most recently tagged version from the git tag.
+-- | Get the version tag pointing to the currently checked out commit, if any.
+-- | The tag must start with a "v" and be followed by a valid semver version,
+-- | for example "v1.2.3".
+-- |
+-- | If multiple tags point to the checked out commit, return the latest
+-- | version according to semver version comparison.
 getVersionFromGitTag :: AffN (Maybe (Tuple String Version))
-getVersionFromGitTag =
-  attempt (run "git" ["describe", "--tags", "--abbrev=0", "HEAD"] Nothing)
-  # map (either (const Nothing) maxVersion)
+getVersionFromGitTag = do
+  output <- run "git" ["tag", "--points-at", "HEAD"]
+  pure (maxVersion output)
 
- where
- -- Run a command, piping stderr to /dev/null
- run = execQuietWithStderr CP.Ignore
+-- | Get the latest semver version tag in the repository. The tag must start
+-- | with a "v" and be followed by a valid semver version, for example
+-- | "v1.2.3".
+-- |
+-- | Returns Nothing if there are no such tags in the repository.
+getLatestTaggedVersion :: AffN (Maybe (Tuple String Version))
+getLatestTaggedVersion = do
+  output <- run "git" ["describe", "--tags", "--abbrev=0", "HEAD"]
+  pure (maxVersion output)
+
+-- | Run a command, piping stderr to /dev/null
+run :: String -> Array String -> AffN String
+run cmd args = execQuietWithStderr CP.Ignore cmd args Nothing
 
 -- | Given a number of lines of text, attempt to parse each line as a version,
 -- | and return the maximum.

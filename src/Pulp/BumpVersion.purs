@@ -44,7 +44,7 @@ checkPursPublish out = do
 bumpVersion :: Args -> AffN Version
 bumpVersion args = do
   mbumpStr <- getOption "bump" args.commandArgs
-  mcurrent <- map (map snd) getVersionFromGitTag
+  mcurrent <- map (map snd) getLatestTaggedVersion
   out <- getOutputter args
 
   case mbumpStr of

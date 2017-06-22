@@ -552,4 +552,12 @@ describe("integration tests", function() {
 
     assert.exists(path.join("output", "Main", "index.js"));
   }));
+
+  it("exits 1 on invalid commands", run(function*(sh, pulp) {
+    yield pulp("blah", null, { expectedExitCode: 1 });
+  }));
+
+  it("exits 1 on invalid options", run(function*(sh, pulp) {
+    yield pulp("build --blah", null, { expectedExitCode: 1 });
+  }));
 });

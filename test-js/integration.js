@@ -520,7 +520,7 @@ describe("integration tests", function() {
     yield assertThrows(pulp("version"));
   }));
 
-  it("pulp version checks using psc-publish", run(function*(sh, pulp, assert, temp) {
+  it("pulp version checks using purs publish", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield setupPackage(temp, sh);
 
@@ -539,6 +539,7 @@ describe("integration tests", function() {
       yield fs.writeFile(path.join(temp, "bower.json"), testBowerJson);
       yield sh("git commit -am \"updating bower.json\"");
       yield sh("git tag v2.0.0");
+      yield sh("git commit --allow-empty -m \"an empty commit for the new tag\"");
 
       const [out, err] = yield pulp("version " + bumpType);
       assert.match(err, pattern);

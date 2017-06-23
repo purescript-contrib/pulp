@@ -75,7 +75,7 @@ pscPackageGlobs =
     -- append them later so it plays well with the other globs
     processGlobs =
       (split (Pattern "\r\n") >=> split (Pattern "\n")) >>>
-      mapMaybe (stripSuffix (Pattern "/**/*.purs")) >>>
+      mapMaybe (stripSuffix (Pattern (Path.sep <> "**" <> Path.sep <> "*.purs"))) >>>
       Set.fromFoldable
 
 includeGlobs :: Options -> AffN (Set String)

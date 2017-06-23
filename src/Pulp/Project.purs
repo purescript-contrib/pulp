@@ -1,6 +1,7 @@
 module Pulp.Project
   ( Project(..)
   , getProject
+  , usingPscPackage
   ) where
 
 import Prelude
@@ -61,6 +62,13 @@ readConfig configFilePath = do
       liftEff $ unsafeCoerceEff $ Process.chdir path
       mkdirIfNotExist cachePath
       pure $ Project { projectFile: pro, cache: cachePath, path: path }
+
+-- | If project file has a `set` property we assume it's a psc-package project file
+usingPscPackage :: Project -> Boolean
+usingPscPackage (Project p) =
+  case runExcept (readProp "set" p.projectFile >>= readString) of
+    Right _ -> true
+    _       -> false
 
 -- | Use the provided project file, or if it is Nothing, try to find a project file
 -- | path in this or any parent directory.

@@ -31,7 +31,7 @@ import Pulp.System.FFI
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec (execQuiet)
-import Pulp.Project (Project(..))
+import Pulp.Project (Project(..), usingPscPackage)
 
 recursiveGlobWithExtension :: String -> Set String -> Array String
 recursiveGlobWithExtension ext =
@@ -61,11 +61,11 @@ testGlobs = globsFromOption "testPath"
 
 dependencyGlobs :: Options -> AffN (Set String)
 dependencyGlobs opts = do
-  Project pro <- getOption' "_project" opts
-  -- If project file has a `set` property we assume it's a psc-package project file
-  case runExcept (readProp "set" pro.projectFile >>= readString) of
-    Right _ -> pscPackageGlobs
-    _ -> globsFromOption' (\path -> Path.concat [path, "purescript-*", "src"]) "dependencyPath" opts
+  p <- getOption' "_project" opts
+  if usingPscPackage p
+    then pscPackageGlobs
+    else globsFromOption' (\path -> Path.concat [path, "purescript-*", "src"])
+         "dependencyPath" opts
 
 pscPackageGlobs :: AffN (Set String)
 pscPackageGlobs =

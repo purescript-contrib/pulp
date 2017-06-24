@@ -3,7 +3,11 @@
 exports["new"] = function(path) {
   return function() {
     var s = require('node-static');
-    return new s.Server(path);
+    return new s.Server(path, {
+      headers: {
+        'cache-control': 'no-cache'
+      }
+    });
   };
 };
 

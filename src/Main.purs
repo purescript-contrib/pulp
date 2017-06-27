@@ -157,7 +157,9 @@ commands :: Array Args.Command
 commands = [
   Args.command "init" "Generate an example PureScript project." Nothing Init.action [
      Args.option "force" ["--force"] Type.flag
-       "Overwrite any project found in the current directory."
+       "Overwrite any project found in the current directory.",
+     Args.option "psc-package" ["--psc-package"] Type.flag
+       "Use psc-package for package management."
      ],
   Args.command "build" "Build the project." remainderToPurs Build.action $
     buildArgs <> moduleArgs,

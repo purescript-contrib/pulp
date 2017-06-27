@@ -9,7 +9,7 @@ import which from "which";
 const hello = "Hello sailor!";
 const test = "You should add some tests.";
 const docLine1 = "## Module Main";
-const bowerMissing = "* ERROR: No bower.json found in current or parent directories. Are you in a PureScript project?";
+const bowerMissing = "* ERROR: No psc-package.json or bower.json found in current or parent directories. Are you in a PureScript project?";
 const initWithoutForce = f => new RegExp('\\* ERROR: Found .*'+f+': There\'s already a project here. Run `pulp init --force` if you\'re sure you want to overwrite it.');
 const filesToOverwrite = ['./bower.json', './.gitignore', 'src/Main.purs', 'test/Main.purs'];
 const testDocLine1 = "## Module Test.Main";
@@ -187,6 +187,13 @@ describe("integration tests", function() {
 
   it("pulp build", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
+    yield pulp("build");
+
+    assert.exists(path.join("output", "Main", "index.js"));
+  }));
+
+  it("pulp build with psc-package", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init --psc-package");
     yield pulp("build");
 
     assert.exists(path.join("output", "Main", "index.js"));
@@ -378,8 +385,23 @@ describe("integration tests", function() {
       assert.equal(c.split(newlines)[0], consoleDocLine1));
   }));
 
+  it("pulp docs --with-dependencies with psc-package", run(function*(sh, pulp, assert) {
+    yield pulp("init --psc-package");
+    yield pulp("docs --with-dependencies");
+    assert.file("generated-docs/Control/Monad/Eff/Console.md", (c) =>
+      assert.equal(c.split(newlines)[0], consoleDocLine1));
+  }));
+
   it("pulp psci includes dependencies", run(function*(sh, pulp, assert) {
     yield pulp("init");
+    yield pulp("psci");
+
+    const [out] = yield pulp("psci", "import Prelude\n\"hello, \" <> \"world\"");
+    assert.match(out, /hello, world/);
+  }));
+
+  it("pulp psci includes dependencies with psc-package", run(function*(sh, pulp, assert) {
+    yield pulp("init --psc-package");
     yield pulp("psci");
 
     const [out] = yield pulp("psci", "import Prelude\n\"hello, \" <> \"world\"");

@@ -2,7 +2,6 @@ module Pulp.Publish ( action, resolutionsFile ) where
 
 import Prelude
 import Control.Monad.Eff.Class
-import Control.Monad.Eff.Exception
 import Control.Monad.Error.Class
 import Control.Monad.Aff
 import Control.Monad.Except (runExcept)
@@ -37,6 +36,7 @@ import Pulp.System.Files
 import Pulp.System.Read as Read
 import Pulp.Git
 import Pulp.Login (tokenFilePath)
+import Pulp.Utils (throw)
 
 -- TODO:
 -- * Check that the 'origin' remote matches with bower.json
@@ -78,10 +78,10 @@ action = Action \args -> do
   where
   getVersion =
     getVersionFromGitTag
-    >>= maybe (throwError (error (
+    >>= maybe (throw (
               "Internal error: No version could be extracted from the git tags"
               <> " in this repository. This should not have happened. Please"
-              <> " report this: https://github.com/bodil/pulp/issues/new")))
+              <> " report this: https://github.com/bodil/pulp/issues/new"))
           pure
 
 gzip :: String -> AffN Buffer
@@ -118,7 +118,7 @@ confirm q = do
     "y" ->
       pure unit
     _ ->
-      throwError (error "Aborted")
+      throw "Aborted"
 
 newtype BowerJson = BowerJson Foreign
 
@@ -129,8 +129,7 @@ readBowerJson = do
     Right parsedJson ->
       pure (BowerJson parsedJson)
     Left err ->
-      throwError (error (
-        "Unable to parse bower.json:" <> show err))
+      throw ("Unable to parse bower.json:" <> show err)
 
 getBowerName :: BowerJson -> AffN String
 getBowerName (BowerJson json) =
@@ -138,8 +137,7 @@ getBowerName (BowerJson json) =
     Right name ->
       pure name
     Left err ->
-      throwError (error (
-        "Unable to read property 'name' from bower.json:" <> show err))
+      throw ("Unable to read property 'name' from bower.json:" <> show err)
 
 getBowerRepositoryUrl :: BowerJson -> AffN String
 getBowerRepositoryUrl (BowerJson json) =
@@ -147,8 +145,7 @@ getBowerRepositoryUrl (BowerJson json) =
     Right url ->
       pure url
     Left err ->
-      throwError (error (
-        "Unable to read property 'repository.url' from bower.json:" <> show err))
+      throw ("Unable to read property 'repository.url' from bower.json:" <> show err)
 
 readTokenFile :: AffN String
 readTokenFile = do
@@ -158,9 +155,7 @@ readTokenFile = do
     Right token ->
       pure token
     Left err | isENOENT err ->
-      throwError (error
-        ("Pursuit authentication token not found. Try running `pulp login` " <>
-         "first."))
+      throw "Pursuit authentication token not found. Try running `pulp login` first."
     Left err ->
       throwError err
 
@@ -190,8 +185,7 @@ uploadPursuitDocs out authToken gzippedJson = do
       pure unit
     other -> do
       out.err =<< concatStream (HTTP.responseAsStream res)
-      throwError (error (
-        "Expected an HTTP 201 response from Pursuit, got: " <> show other))
+      throw ("Expected an HTTP 201 response from Pursuit, got: " <> show other)
 
   where
   headers =

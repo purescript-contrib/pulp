@@ -6,9 +6,6 @@ module Pulp.Git
   ) where
 
 import Prelude
-import Control.Monad.Eff.Exception
-import Control.Monad.Error.Class
-import Control.Monad.Aff
 import Data.Function
 import Data.Maybe
 import Data.Tuple
@@ -22,6 +19,7 @@ import Node.ChildProcess as CP
 
 import Pulp.System.FFI
 import Pulp.Exec
+import Pulp.Utils (throw)
 
 -- | Throw an error if the git working tree is dirty.
 requireCleanGitWorkingTree :: AffN Unit
@@ -29,9 +27,8 @@ requireCleanGitWorkingTree = do
   out <- execQuiet "git" ["status", "--porcelain"] Nothing
   if Foldable.all String.null (String.split (String.Pattern "\n") out)
     then pure unit
-    else throwError <<< error $
-      "Your git working tree is dirty. Please commit or stash your changes " <>
-      "first."
+    else throw ("Your git working tree is dirty. Please commit or stash " <>
+                "your changes first.")
 
 -- | Get the version tag pointing to the currently checked out commit, if any.
 -- | The tag must start with a "v" and be followed by a valid semver version,

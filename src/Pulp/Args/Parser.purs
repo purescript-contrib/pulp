@@ -2,9 +2,7 @@ module Pulp.Args.Parser where
 
 import Prelude hiding (when)
 
-import Control.Monad.Eff.Exception (error)
 import Control.Monad.Trans.Class (lift)
-import Control.Monad.Error.Class
 import Control.Monad.State.Class (get)
 import Control.Alt
 import Data.Array (many)
@@ -25,12 +23,11 @@ import Text.Parsing.Parser.Token as Token
 import Text.Parsing.Parser.Pos as Pos
 
 import Pulp.Args
+import Pulp.Utils (throw)
 import Pulp.System.FFI (AffN())
 
 halt :: forall a. String -> OptParser a
-halt err = lift $ throwError $ error err
--- halt err = ParserT $ \s ->
---   pure { consumed: true, input: s, result: Left (strMsg err) }
+halt err = lift $ throw err
 
 matchNamed :: forall a r. Eq a => { name :: a, alias :: Array a | r } -> a -> Boolean
 matchNamed o key = o.name == key || elem key o.alias

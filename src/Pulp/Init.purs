@@ -12,7 +12,6 @@ import Node.Path as Path
 import Node.FS.Aff (writeTextFile, exists)
 import Node.Encoding (Encoding(UTF8))
 import Node.Process as Process
-import Data.Traversable (for)
 import Data.Foldable (for_)
 
 import Pulp.Outputter

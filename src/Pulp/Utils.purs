@@ -2,7 +2,6 @@ module Pulp.Utils where
 
 import Prelude
 import Data.Maybe
-import Control.Monad.Eff
 import Control.Monad.Eff.Exception (EXCEPTION, Error, error)
 import Control.Monad.Error.Class (class MonadError, throwError)
 import Unsafe.Coerce

@@ -66,7 +66,7 @@ tagNewVersion version = do
   exec "git"
     [ "tag"
     , "--annotate"
-    , "--message=" <> versionStr 
+    , "--message=" <> versionStr
     , versionStr
     ] Nothing
 

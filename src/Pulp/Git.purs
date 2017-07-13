@@ -6,6 +6,7 @@ module Pulp.Git
   ) where
 
 import Prelude
+import Control.Monad.Aff (attempt)
 import Data.Function
 import Data.Maybe
 import Data.Tuple
@@ -48,8 +49,8 @@ getVersionFromGitTag = do
 -- | Returns Nothing if there are no such tags in the repository.
 getLatestTaggedVersion :: AffN (Maybe (Tuple String Version))
 getLatestTaggedVersion = do
-  output <- run "git" ["describe", "--tags", "--abbrev=0", "HEAD"]
-  pure (maxVersion output)
+  output <- attempt $ run "git" ["describe", "--tags", "--abbrev=0", "HEAD"]
+  pure $ either (const Nothing) maxVersion output
 
 -- | Run a command, piping stderr to /dev/null
 run :: String -> Array String -> AffN String

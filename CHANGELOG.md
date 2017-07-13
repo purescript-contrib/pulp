@@ -1,5 +1,13 @@
 # Pulp Release History
 
+## 11.0.1
+
+* Allow empty paths for the `--include` option (@anilanar, #263)
+* Various fixes to pulp's docs and `--help` output (@anttih)
+* If psa is being used, check that it is not too old (#272)
+* Use an exitcode of 1 on invalid options/commands (#285)
+* Set Cache-Control: no-cache in `pulp server` (@geigerzaehler, #288)
+
 ## 11.0.0
 
 * Compatibility with PureScript 0.11.x. Compatibility with 0.10.x and previous versions of the PureScript compiler has been dropped (@natefaubion).

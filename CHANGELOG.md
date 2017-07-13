@@ -1,5 +1,9 @@
 # Pulp Release History
 
+## 11.0.2
+
+* Fix a bug where running `pulp version` in a repo which didn't yet have any git tags would cause pulp to crash
+
 ## 11.0.1
 
 * Allow empty paths for the `--include` option (@anilanar, #263)

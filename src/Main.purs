@@ -64,7 +64,7 @@ globals = [
   Args.option "then" ["--then"] Type.string
     "Run a shell command after the operation finishes successfully. Useful with `--watch`, eg. `--watch --then 'say Done'`",
   Args.option "else" ["--else"] Type.string
-    "Run a shell command if an operation finishes. Useful with `--watch`, eg. `--watch --then 'say Done' --else 'say Failed'`",
+    "Run a shell command if an operation failed. Useful with `--watch`, eg. `--watch --then 'say Done' --else 'say Failed'`",
   Args.option "version" ["--version", "-v"] Type.flag
     "Show current pulp version."
   ]

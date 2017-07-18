@@ -2,6 +2,13 @@
 environment:
   nodejs_version: "6.9"
 
+# Only build master and tagged versions, i.e. not feature branches; feature
+# branches already get built after opening a pull request.
+branches:
+  only:
+    - master
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+
 # Only test on x64 machines (as we only provide x64 binaries).
 platform:
   - x64

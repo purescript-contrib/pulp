@@ -3,6 +3,12 @@ dist: trusty
 language: node_js
 node_js:
   - "stable"
+branches:
+  # Only build master and tagged versions, i.e. not feature branches; feature
+  # branches already get built after opening a pull request.
+  only:
+    - master
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 before_install:
   - travis_retry npm install -g bower
 script:

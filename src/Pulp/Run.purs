@@ -17,7 +17,6 @@ import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Build as Build
 import Pulp.Exec
-import Pulp.Files
 import Pulp.Outputter
 import Pulp.System.Files (openTemp)
 import Pulp.System.FFI
@@ -31,6 +30,11 @@ action = Action \args -> do
 
   buildPath <- getOption' "buildPath" opts
   main <- getOption' "main" opts
+
+  noCheckMain <- getFlag "noCheckMain" opts
+  when (not (noCheckMain))
+    (Build.checkEntryPoint out buildPath main)
+
   src <- liftEff $ Buffer.fromString (makeEntry main) UTF8
 
   info <- openTemp { prefix: "pulp-run", suffix: ".js" }

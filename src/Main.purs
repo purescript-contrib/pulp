@@ -99,13 +99,15 @@ buildishArgs = [
   Args.optionDefault "buildPath" ["--build-path", "-o"] Type.string
     "Path for compiler output." "./output",
   Args.option "noPsa" ["--no-psa"] Type.flag
-    "Do not attempt to use the psa frontend instead of purs compile"
+    "Do not attempt to use the psa frontend instead of purs compile",
+  Args.option "noCheckMain" ["--no-check-main"] Type.flag
+    "Skip checking that the application has a suitable entry point."
   ] <> pathArgs
 
 runArgs :: Array Args.Option
 runArgs = [
   Args.optionDefault "main" ["--main", "-m"] Type.string
-    "Application's entry point." "Main",
+    "Module to be used as the application's entry point." "Main",
   Args.option "jobs" ["--jobs", "-j"] Type.int
     "Tell purs to use the specified number of cores."
   ] <> buildishArgs

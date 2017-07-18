@@ -70,6 +70,10 @@ optimising = Action \args -> do
   skipEntryPoint' <- getFlag "skipEntryPoint" opts
   let skipEntryPoint = skipEntryPoint' || isJust standalone
 
+  skipMainCheck <- getFlag "noCheckMain" opts
+  when (not (skipEntryPoint || skipMainCheck))
+    (Build.checkEntryPoint out buildPath main)
+
   let bundleArgs = fold
         [ ["--module=" <> main]
         , if skipEntryPoint then [] else ["--main=" <> main]
@@ -113,6 +117,11 @@ incremental = Action \args -> do
   skipEntryPoint' <- getFlag "skipEntryPoint" opts
   let skipEntryPoint = skipEntryPoint' && isNothing standalone
   main <- getOption' "main" opts
+
+  noCheckMain <- getFlag "noCheckMain" opts
+  when (not (skipEntryPoint || noCheckMain))
+    (Build.checkEntryPoint out buildPath main)
+
   path <- if skipEntryPoint
             then
               pure $ Path.concat [buildPath, main]

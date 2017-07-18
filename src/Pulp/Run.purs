@@ -15,6 +15,7 @@ import Node.Process as Process
 
 import Pulp.Args
 import Pulp.Args.Get
+import Pulp.Build as Build
 import Pulp.Exec
 import Pulp.Files
 import Pulp.Outputter
@@ -26,16 +27,9 @@ action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
   out <- getOutputter args
 
-  cwd <- liftEff Process.cwd
-  out.log $ "Building project in " <> cwd
-
-  globs <- defaultGlobs opts
+  Build.build args
 
   buildPath <- getOption' "buildPath" opts
-
-  pursBuild (sources globs) ["-o", buildPath] Nothing
-  out.log "Build successful."
-
   main <- getOption' "main" opts
   src <- liftEff $ Buffer.fromString (makeEntry main) UTF8
 

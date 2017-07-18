@@ -3,23 +3,32 @@ module Pulp.Build
   , build
   , testBuild
   , withOutputStream
+  , checkEntryPoint
   ) where
 
 import Prelude
-import Data.Either (Either(..))
+import Data.Either (Either(..), either)
+import Data.Array as Array
 import Data.Maybe
 import Data.Map (union)
-import Data.String (split, Pattern(..))
+import Data.String (split, Pattern(..), joinWith)
 import Data.Set as Set
-import Data.Foldable (fold)
+import Data.Foldable (fold, elem, for_)
+import Data.Newtype (unwrap)
 import Data.List (fromFoldable, List(..))
 import Data.Version.Haskell (Version(..))
+import Data.Validation.Semigroup (unV)
+import Data.Argonaut (jsonParser)
 import Control.Monad.Eff.Class (liftEff)
+import Control.Monad.Eff.Exception as Exception
+import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Aff (attempt, apathize)
 import Node.Process as Process
 import Node.Path as Path
+import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff as FS
+import ExternsCheck as ExternsCheck
 
 import Pulp.System.FFI
 import Pulp.System.Stream (write, end, WritableStream, stdout)
@@ -30,6 +39,7 @@ import Pulp.Args.Get
 import Pulp.Exec (psa, pursBuild, pursBundle)
 import Pulp.Files
 import Pulp.Validate (getPsaVersion)
+import Pulp.Utils (throw)
 
 data BuildType = NormalBuild | TestBuild
 
@@ -118,6 +128,10 @@ bundle args = do
   buildPath <- getOption' "buildPath" opts
   skipEntry <- getFlag "skipEntryPoint" opts
 
+  noCheckMain <- getFlag "noCheckMain" opts
+  when (not (skipEntry || noCheckMain))
+    (checkEntryPoint out buildPath main)
+
   let bundleArgs = fold
         [ ["--module=" <> main]
         , if skipEntry then [] else ["--main=" <> main]
@@ -157,3 +171,68 @@ withOutputStream opts aff = do
           throwError err
     Nothing ->
       aff stdout
+
+checkEntryPoint :: Outputter -> String -> String -> AffN Unit
+checkEntryPoint out buildPath main =
+  let
+    externsFile =
+      joinWith Path.sep [buildPath, main, "externs.json"]
+    unableToParse msg =
+      throw $ "Invalid JSON in externs file " <> externsFile <> ": " <> msg
+  in do
+    res <- attempt $ FS.readTextFile UTF8 externsFile
+    externsStr <- either handleReadErr pure res
+    externs <- either unableToParse pure $ jsonParser externsStr
+    let v = ExternsCheck.checkEntryPoint "main" externs
+    unV onError pure v
+
+  where
+  handleReadErr err =
+    if Files.isENOENT err
+      then throw $ "Entry point module (" <> main <> ") not found."
+      else throwError err
+
+  onError errs = do
+    let hasMain = not (ExternsCheck.NoExport `elem` errs)
+    if hasMain
+      then do
+        out.err $ main <> ".main is not suitable as an entry point because it:"
+        out.err $ ""
+        for_ errs (out.err <<< (" - " <> _) <<< explainErr)
+      else do
+        out.err $ main <> " cannot be used as an entry point module because it"
+        out.err $ "does not export a `main` value."
+
+    out.err $ ""
+    out.err $ "If you need to create a JavaScript bundle without an entry point, use"
+    out.err $ "the --skip-entry-point flag."
+    out.err $ ""
+    when hasMain do
+      out.err $ "If you are certain that " <> main <> ".main has the correct runtime"
+      out.err $ "representation, use the --no-check-main flag to skip this check."
+      out.err $ ""
+    throw $ "Failed entry point check for module " <> main
+
+  explainErr = case _ of
+    ExternsCheck.NoExport ->
+      internalError "NoExport should have been handled"
+    ExternsCheck.NotEff minstead ->
+      "is not of type Control.Monad.Eff.Eff"
+      <> maybe "" (\instead -> " (is instead " <> unwrap instead <> ")") minstead
+    ExternsCheck.Constraints cs ->
+      case cs of
+        [] -> internalError "empty constraints array"
+        [c] -> "has a " <> unwrap c <> " constraint"
+        _ -> "has " <> commaList (map unwrap cs) <> " constraints"
+
+  commaList arr =
+    case Array.unsnoc arr of
+      Just { init: [init'], last } ->
+        init' <> " and " <> last
+      Just { init, last } ->
+        joinWith ", " init <> ", and " <> last
+      Nothing ->
+        internalError "empty array"
+
+internalError :: forall a. String -> a
+internalError = unsafePerformEff <<< Exception.throw <<< ("internal error: " <> _)

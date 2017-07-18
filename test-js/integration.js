@@ -274,6 +274,38 @@ describe("integration tests", function() {
     assert.equal(out.trim(), hello);
   }));
 
+  it("pulp build --to checks entry point module exists", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+    const [_, err] = yield pulp("build --to out.js --main DoesntExist", null, { expectedExitCode: 1 });
+    assert.match(err, /Entry point module \(DoesntExist\) not found/);
+  }));
+
+  it("pulp build --to checks entry point module exports `main`", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+
+    const mainPath = path.join(temp, 'src', 'Main.purs');
+    yield fs.writeFile(
+      mainPath,
+      "module Main where\nmain2 = 0\n"
+    );
+
+    const [_, err] = yield pulp("build --to out.js", null, { expectedExitCode: 1 });
+    assert.match(err, /does not export a `main` value/);
+  }));
+
+  it("pulp build --to checks `main` has appropriate type", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+
+    const mainPath = path.join(temp, 'src', 'Main.purs');
+    yield fs.writeFile(
+      mainPath,
+      "module Main where\nmain = 0\n"
+    );
+
+    const [_, err] = yield pulp("build --to out.js", null, { expectedExitCode: 1 });
+    assert.match(err, /is not of type Control.Monad.Eff.Eff/);
+  }));
+
   it("pulp build -O", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const [src] = yield pulp("build -O");

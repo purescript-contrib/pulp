@@ -147,7 +147,7 @@ handleErrors :: forall a. String -> (String -> AffN a) -> CP.Error -> AffN a
 handleErrors cmd retry err
   | err.code == "ENOENT" = do
      -- On windows, if the executable wasn't found, try adding .cmd
-     if Process.platform == Win32
+     if Process.platform == Just Win32
        then case stripSuffix (Pattern ".cmd") cmd of
               Nothing      -> retry (cmd <> ".cmd")
               Just bareCmd -> throwError $ error $

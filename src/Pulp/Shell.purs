@@ -17,7 +17,7 @@ import Pulp.Outputter
 
 shell :: Outputter -> String -> AffN Unit
 shell out cmd = do
-  if Process.platform == Win32
+  if Process.platform == Just Win32
     then shell' out cmd
             { extension: ".cmd"
             , executable: "cmd"

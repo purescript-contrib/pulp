@@ -111,7 +111,7 @@ tokenFilePath =
 
 getHome :: AffN String
 getHome = do
-  let homeVar = if Process.platform == Win32 then "USERPROFILE" else "HOME"
+  let homeVar = if Process.platform == Just Win32 then "USERPROFILE" else "HOME"
   home <- liftEff (Process.lookupEnv homeVar)
   case home of
     Just h ->

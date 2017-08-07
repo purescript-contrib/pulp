@@ -90,10 +90,9 @@ checkBowerProject :: AffN Unit
 checkBowerProject = do
   bower <- FS.exists "bower.json"
   if bower then pure unit
-    else throwError (error (
-             "For the time being, libraries should be published on Bower"
+    else throw ("For the time being, libraries should be published on Bower"
              <> " before being submitted to Pursuit. Please create a "
-             <> " bower.json file first."))
+             <> " bower.json file first.")
 
 gzip :: String -> AffN Buffer
 gzip str = do

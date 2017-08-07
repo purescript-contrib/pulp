@@ -28,19 +28,18 @@ action = Action \args -> do
 
   Build.build args
 
-  buildPath <- getOption' "buildPath" opts
-  main <- getOption' "main" opts
-
   noCheckMain <- getFlag "noCheckMain" opts
-  when (not (noCheckMain))
-    (Build.checkEntryPoint out buildPath main)
+  when (not noCheckMain)
+    (Build.checkEntryPoint out opts)
 
+  main <- getOption' "main" opts
   src <- liftEff $ Buffer.fromString (makeEntry main) UTF8
 
   info <- openTemp { prefix: "pulp-run", suffix: ".js" }
   _ <- FS.fdAppend info.fd src
   _ <- FS.fdClose info.fd
 
+  buildPath <- getOption' "buildPath" opts
   runtime <- getOption' "runtime" opts
   env <- setupEnv buildPath
   exec runtime ([info.path] <> args.remainder) (Just env)

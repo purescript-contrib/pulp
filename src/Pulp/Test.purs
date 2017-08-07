@@ -39,13 +39,12 @@ action = Action \args -> do
   out.log "Running tests..."
   if isNode
     then do
+      noCheckMain <- getFlag "noCheckMain" opts
+      when (not noCheckMain)
+        (Build.checkEntryPoint out opts)
+
       main <- getOption' "main" opts
       buildPath <- getOption' "buildPath" opts
-
-      noCheckMain <- getFlag "noCheckMain" opts
-      when (not (noCheckMain))
-        (Build.checkEntryPoint out buildPath main)
-
       env <- setupEnv buildPath
       info <- openTemp { prefix: "pulp-test", suffix: ".js" }
       src <- liftEff $ Buffer.fromString (makeEntry main) UTF8

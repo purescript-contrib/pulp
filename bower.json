@@ -41,7 +41,7 @@
     "purescript-versions": "^4.0.0",
     "purescript-now": "^3.0.0",
     "purescript-foreign-generic": "^4.1.0",
-    "purescript-externs-check": "^0.1.1"
+    "purescript-externs-check": "^0.2.0"
   },
   "devDependencies": {
     "purescript-debug": "^3.0.0",

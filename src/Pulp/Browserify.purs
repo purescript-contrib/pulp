@@ -72,7 +72,7 @@ optimising = Action \args -> do
 
   skipMainCheck <- getFlag "noCheckMain" opts
   when (not (skipEntryPoint || skipMainCheck))
-    (Build.checkEntryPoint out buildPath main)
+    (Build.checkEntryPoint out opts)
 
   let bundleArgs = fold
         [ ["--module=" <> main]
@@ -120,7 +120,7 @@ incremental = Action \args -> do
 
   noCheckMain <- getFlag "noCheckMain" opts
   when (not (skipEntryPoint || noCheckMain))
-    (Build.checkEntryPoint out buildPath main)
+    (Build.checkEntryPoint out opts)
 
   path <- if skipEntryPoint
             then

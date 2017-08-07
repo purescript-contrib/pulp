@@ -328,6 +328,19 @@ describe("integration tests", function() {
     assert.match(err, /is not of type Control.Monad.Eff.Eff/);
   }));
 
+  it("pulp build --check-main-type Prim.Int", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+
+    const mainPath = path.join(temp, 'src', 'Main.purs');
+    yield fs.writeFile(
+      mainPath,
+      "module Main where\nmain = 0\n"
+    );
+
+    yield pulp("build --to out.js --check-main-type Prim.Int");
+    assert.exists("output/Main/index.js");
+  }));
+
   it("pulp build -O", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const [src] = yield pulp("build -O");

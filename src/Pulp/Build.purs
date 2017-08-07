@@ -17,7 +17,6 @@ import Data.Foldable (fold, elem, for_)
 import Data.Newtype (unwrap)
 import Data.List (fromFoldable, List(..))
 import Data.Version.Haskell (Version(..))
-import Data.Validation.Semigroup (unV)
 import Data.Argonaut (jsonParser)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception as Exception
@@ -123,14 +122,14 @@ bundle args = do
 
   out.log "Bundling JavaScript..."
 
-  main      <- getOption' "main" opts
-  modules   <- parseModulesOption <$> getOption "modules" opts
-  buildPath <- getOption' "buildPath" opts
   skipEntry <- getFlag "skipEntryPoint" opts
-
   noCheckMain <- getFlag "noCheckMain" opts
   when (not (skipEntry || noCheckMain))
-    (checkEntryPoint out buildPath main)
+    (checkEntryPoint out opts)
+
+  modules <- parseModulesOption <$> getOption "modules" opts
+  buildPath <- getOption' "buildPath" opts
+  main <- getOption' "main" opts
 
   let bundleArgs = fold
         [ ["--module=" <> main]
@@ -172,67 +171,77 @@ withOutputStream opts aff = do
     Nothing ->
       aff stdout
 
-checkEntryPoint :: Outputter -> String -> String -> AffN Unit
-checkEntryPoint out buildPath main =
+checkEntryPoint :: Outputter -> Options -> AffN Unit
+checkEntryPoint out opts = do
+  buildPath <- getOption' "buildPath" opts
+  main      <- getOption' "main" opts
+  tyConstr  <- getOption' "checkMainType" opts
+
   let
     externsFile =
       joinWith Path.sep [buildPath, main, "externs.json"]
+
     unableToParse msg =
       throw $ "Invalid JSON in externs file " <> externsFile <> ": " <> msg
-  in do
-    res <- attempt $ FS.readTextFile UTF8 externsFile
-    externsStr <- either handleReadErr pure res
-    externs <- either unableToParse pure $ jsonParser externsStr
-    let v = ExternsCheck.checkEntryPoint "main" externs
-    unV onError pure v
 
-  where
-  handleReadErr err =
-    if Files.isENOENT err
-      then throw $ "Entry point module (" <> main <> ") not found."
-      else throwError err
+    externsCheckOpts =
+      ExternsCheck.defaultOptions
+        { typeConstructor = ExternsCheck.FQName tyConstr }
 
-  onError errs = do
-    let hasMain = not (ExternsCheck.NoExport `elem` errs)
-    if hasMain
-      then do
-        out.err $ main <> ".main is not suitable as an entry point because it:"
-        out.err $ ""
-        for_ errs (out.err <<< (" - " <> _) <<< explainErr)
-      else do
-        out.err $ main <> " cannot be used as an entry point module because it"
-        out.err $ "does not export a `main` value."
+    handleReadErr err =
+      if Files.isENOENT err
+        then throw $ "Entry point module (" <> main <> ") not found."
+        else throwError err
 
-    out.err $ ""
-    out.err $ "If you need to create a JavaScript bundle without an entry point, use"
-    out.err $ "the --skip-entry-point flag."
-    out.err $ ""
-    when hasMain do
-      out.err $ "If you are certain that " <> main <> ".main has the correct runtime"
-      out.err $ "representation, use the --no-check-main flag to skip this check."
+    onError errs = do
+      let hasMain = not (ExternsCheck.NoExport `elem` errs)
+      if hasMain
+        then do
+          out.err $ main <> ".main is not suitable as an entry point because it:"
+          out.err $ ""
+          for_ errs (out.err <<< (" - " <> _) <<< explainErr)
+        else do
+          out.err $ main <> " cannot be used as an entry point module because it"
+          out.err $ "does not export a `main` value."
+
       out.err $ ""
-    throw $ "Failed entry point check for module " <> main
+      out.err $ "If you need to create a JavaScript bundle without an entry point, use"
+      out.err $ "the --skip-entry-point flag."
+      out.err $ ""
+      when hasMain do
+        out.err $ "If you are certain that " <> main <> ".main has the correct runtime"
+        out.err $ "representation, use the --check-main-type or --no-check-main flags"
+        out.err $ "to amend or skip this check."
+        out.err $ ""
+      throw $ "Failed entry point check for module " <> main
 
-  explainErr = case _ of
-    ExternsCheck.NoExport ->
-      internalError "NoExport should have been handled"
-    ExternsCheck.NotEff minstead ->
-      "is not of type Control.Monad.Eff.Eff"
-      <> maybe "" (\instead -> " (is instead " <> unwrap instead <> ")") minstead
-    ExternsCheck.Constraints cs ->
-      case cs of
-        [] -> internalError "empty constraints array"
-        [c] -> "has a " <> unwrap c <> " constraint"
-        _ -> "has " <> commaList (map unwrap cs) <> " constraints"
+    explainErr = case _ of
+      ExternsCheck.NoExport ->
+        internalError "NoExport should have been handled"
+      ExternsCheck.TypeMismatch minstead ->
+        "is not of type " <> tyConstr
+        <> maybe "" (\instead -> " (is instead " <> unwrap instead <> ")") minstead
+      ExternsCheck.Constraints cs ->
+        case cs of
+          [] -> internalError "empty constraints array"
+          [c] -> "has a " <> unwrap c <> " constraint"
+          _ -> "has " <> commaList (map unwrap cs) <> " constraints"
 
-  commaList arr =
-    case Array.unsnoc arr of
-      Just { init: [init'], last } ->
-        init' <> " and " <> last
-      Just { init, last } ->
-        joinWith ", " init <> ", and " <> last
-      Nothing ->
-        internalError "empty array"
+  res <- attempt $ FS.readTextFile UTF8 externsFile
+  externsStr <- either handleReadErr pure res
+  externs <- either unableToParse pure $ jsonParser externsStr
+  either onError pure $ ExternsCheck.checkEntryPoint externsCheckOpts externs
+
+-- | Render a list of strings using commas.
+commaList :: Array String -> String
+commaList arr =
+  case Array.unsnoc arr of
+    Just { init: [init'], last } ->
+      init' <> " and " <> last
+    Just { init, last } ->
+      joinWith ", " init <> ", and " <> last
+    Nothing ->
+      ""
 
 internalError :: forall a. String -> a
 internalError = unsafePerformEff <<< Exception.throw <<< ("internal error: " <> _)

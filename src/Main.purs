@@ -103,7 +103,10 @@ buildishArgs = [
   Args.option "noPsa" ["--no-psa"] Type.flag
     "Do not attempt to use the psa frontend instead of purs compile",
   Args.option "noCheckMain" ["--no-check-main"] Type.flag
-    "Skip checking that the application has a suitable entry point."
+    "Skip checking that the application has a suitable entry point.",
+  Args.optionDefault "checkMainType" ["--check-main-type"] Type.string
+    "Override the type used for checking the application's entry point."
+    "Control.Monad.Eff.Eff"
   ] <> pathArgs
 
 runArgs :: Array Args.Option

@@ -142,6 +142,21 @@ describe("integration tests", function() {
     assert.equal(err.trim(), bowerMissing);
   }));
 
+  it("Bower has precedence over psc-package", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+
+    // Create psc-package.json without installing any dependencies
+    yield sh("psc-package init");
+
+    // In the presence of both bower.json and psc-package.json, pulp should default to Bower
+    yield pulp("build");
+    assert.exists(path.join("output", "Main", "index.js"));
+
+    // The --psc-package flag can override that, in this case the build should fail because
+    // we haven't installed any dependencies with psc-package
+    assertThrows(pulp("--psc-package build"));
+  }));
+  
   ["build --help", "build -h"].forEach((cmdline) => {
     it("pulp " + cmdline, run(function*(sh, pulp, assert) {
       const [_, err] = yield pulp(cmdline);

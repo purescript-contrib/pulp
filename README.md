@@ -79,36 +79,21 @@ look like this:
   - test/
 ```
 
-`pulp` works by convention. Your project source files go in the `src`
-folder. Your test files go in the `test` folder. By default
-[Bower](http://bower.io/) is used for package management, but you can
-also use [`psc-package`](#psc-package). Project dependencies will be
-installed under the `bower_components` or `.psc-package` folder,
-depending on which package manager you use, and are expected to have
-the same basic `src`/`test` structure. That's all there is to a `pulp`
-project.
+`pulp` works by convention. It expects all projects to contain a
+`bower.json` file, which is needed for package management (which, in
+PureScript, is handled by [Bower](http://bower.io/)). `pulp` itself
+currently doesn't use this file for anything other than figuring out
+where the project root is.
+
+Your project source files go in the `src` folder. Your test files go
+in the `test` folder. Project dependencies will be installed under the
+Bower standard `bower_components` folder, and are expected to have the
+same basic `src`/`test` structure. That's all there is to a `pulp` project.
 
 We employ the `purescript-` prefix as a convention to identify PureScript
 projects when they're used as dependencies. You're welcome to call your
 project anything you like, but without the `purescript-` prefix it won't
 be picked up by `pulp` as a dependency when installed through Bower.
-
-### `psc-package`
-
-`pulp` has support for using
-[`psc-package`](https://github.com/purescript/psc-package), a package 
-manager for PureScript based on package sets, instead of Bower. To start 
-a project using `psc-package` use the global `--psc-package` flag when 
-initializing a project: `pulp --psc-package init`. Refer to
-[the `psc-package` readme](https://github.com/purescript/psc-package#psc-package)
-for details on how to manage packages with `psc-package`. In projects 
-that contain both Bower and `psc-package` files, for example when trying
-out `psc-package` in an existing Bower project, `pulp` will default to 
-using Bower. To override that you can use the aforementioned 
-`--psc-package` flag to make pulp use `psc-package` for any command 
-involving dependencies, e.g. `pulp --psc-package build`. If you use this 
-flag a lot consider using `npm` scripts as mentioned in the section here 
-below.
 
 ### What if I need something a bit more complicated?
 

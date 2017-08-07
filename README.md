@@ -79,21 +79,19 @@ look like this:
   - test/
 ```
 
-`pulp` works by convention. It expects all projects to contain a
-`bower.json` file, which is needed for package management (which, in
-PureScript, is handled by [Bower](http://bower.io/)). `pulp` itself
-currently doesn't use this file for anything other than figuring out
-where the project root is.
+`pulp` works by convention. It expects all projects to contain a manifest file
+for package management (usually `bower.json`, since package management in
+PureScript is usually handled by [Bower](http://bower.io/)).
 
-Your project source files go in the `src` folder. Your test files go
-in the `test` folder. Project dependencies will be installed under the
-Bower standard `bower_components` folder, and are expected to have the
-same basic `src`/`test` structure. That's all there is to a `pulp` project.
+Your project source files go in the `src` folder. Your test files go in the
+`test` folder. Project dependencies will be installed under the Bower standard
+`bower_components` folder, and are expected to have the same basic `src`/`test`
+structure. That's all there is to a `pulp` project.
 
 We employ the `purescript-` prefix as a convention to identify PureScript
-projects when they're used as dependencies. You're welcome to call your
-project anything you like, but without the `purescript-` prefix it won't
-be picked up by `pulp` as a dependency when installed through Bower.
+projects when they're used as dependencies. You're welcome to call your project
+anything you like, but without the `purescript-` prefix it won't be picked up
+by `pulp` as a dependency.
 
 ### What if I need something a bit more complicated?
 
@@ -231,11 +229,6 @@ lets you do that too:
 ```sh
 $ pulp run -- file1.txt file2.txt file3.txt
 ```
-
-Beware, though, that these are processed as pass-through options by
-`pulp`, so it will first consume any options it recognises as `pulp
-run`'s command specific options; these will not be passed through to
-your application.
 
 If you want to run your application using something other than `node`,
 `pulp` lets you do that too, with the `--runtime` option. For instance,
@@ -478,18 +471,38 @@ further configuration options. It's intended as a starting point only.
 
 ## Dependency Management
 
-`pulp` is not a package manager, only a build tool. The PureScript
-community has standardised on [Bower](http://bower.io/) as its package
-manager.
+`pulp` is not a package manager, only a build tool. The PureScript community
+has standardised on [Bower](http://bower.io/) as the default package manager,
+but there are alternatives such as
+[psc-package](https://github.com/purescript/psc-package). Currently, `pulp`
+supports both Bower and psc-package.
 
-Bower expects the presence of a `bower.json` file in your project
-root, in which it records your project’s dependencies and other
-metadata. `pulp init` will have installed a basic `bower.json` file
-for you along with the project skeleton, but you should read the
-[Bower documentation on the file format](https://github.com/bower/spec/blob/master/json.md)
-and make sure you’ve configured it to your satisfaction before you
-publish your package. In particular, mind that you’ve added a
-`license` field.
+Pulp expects the presence of a project manifest file in your project root, in
+which your project’s dependencies and other metadata are recorded. If you're
+using Bower, that file will be `bower.json`; if you're using psc-package, it
+will be `psc-package.json`.
+
+When you run commands like `pulp build`, Pulp will locate PureScript source
+files from installed dependencies based on which of these two files it finds in
+your project, and pass these files on to the relevant program (e.g. `purs
+compile`). If your project has both `bower.json` and `psc-package.json` files,
+Pulp uses the dependencies installed via Bower by default; if you want to use
+dependencies installed via psc-package, you can use the `--psc-package` flag,
+e.g.
+
+```sh
+$ pulp --psc-package build
+```
+
+You can also run `pulp --psc-package init` to initialize a project with a
+`psc-package.json` file instead of a `bower.json` file.
+
+If you're publishing a library, `pulp init` will have installed a basic
+`bower.json` file for you along with the project skeleton, but you should read
+the [Bower documentation on the file
+format](https://github.com/bower/spec/blob/master/json.md) and make sure you’ve
+configured it to your satisfaction before you publish your package. In
+particular, mind that you’ve added a `license` field.
 
 ### Dependency Management Cheat Sheet
 
@@ -549,16 +562,14 @@ $ bower update
 
 ### Releasing Packages
 
-Bower packages are installed directly from Git repositories, and
-versioning follows Git tags. Imagine you've created a new PureScript
-library for working with zygohistomorphic prepromorphisms (because who
-doesn't need zygohistomorphic prepromorphisms), called
-`purescript-zygo`.
+Imagine you've created a new PureScript library for working with
+zygohistomorphic prepromorphisms (because who doesn't need zygohistomorphic
+prepromorphisms), called `purescript-zygo`.
 
-Note that there is a convention of prefixing PureScript package names
-with `purescript-`. Please stick with that unless you have an
-especially good reason not to, as `pulp` and many other tools expect
-installed dependencies to follow this convention.
+Note that there is a convention of prefixing PureScript package names with
+`purescript-`. Please stick with that unless you have an especially good reason
+not to, as `pulp` and many other tools expect installed dependencies to follow
+this convention.
 
 You would start by tagging an initial version:
 
@@ -567,27 +578,32 @@ $ cd /path/to/purescript-zygo
 $ pulp version 0.1.0
 ```
 
-This runs a few checks to ensure that your package is properly set up
-for publishing, and if they pass, creates a Git tag `v0.1.0`.
+This runs a few checks to ensure that your package is properly set up for
+publishing, and if they pass, creates a Git tag `v0.1.0`.
 
-Once you've tagged a version, all you need to do to make a new release
-is push that tag to GitHub, register your package in the Bower
-registry, and upload your package's documentation to Pursuit. Pulp is
+Bower packages are installed directly from Git repositories, and versioning
+follows Git tags. This means that once you've tagged a version, all you need to
+do to make a new release is push that tag to GitHub, register your package in
+the Bower registry, and upload your package's documentation to Pursuit. Pulp is
 able to do all of this for you:
 
 ```sh
 $ pulp publish
 ```
 
-For subsequent releases, the process is the same: `pulp version
-<newversion>` followed by `pulp publish`. When tagging a new version,
-`pulp version` also allows you to supply an argument of the form
-`patch`, `minor`, or `major`, in addition to specific versions. If you
-run `pulp version patch`, for example, Pulp will look through your Git
-tags to find the version number for the latest release, and then
-generate the new verision number by bumping the patch component.
-The `minor` and `major` arguments respectively perform minor and major
-version bumps in the same way.
+For subsequent releases, the process is the same: `pulp version <newversion>`
+followed by `pulp publish`. When tagging a new version, `pulp version` also
+allows you to supply an argument of the form `patch`, `minor`, or `major`, in
+addition to specific versions. If you run `pulp version patch`, for example,
+Pulp will look through your Git tags to find the version number for the latest
+release, and then generate the new verision number by bumping the patch
+component.  The `minor` and `major` arguments respectively perform minor and
+major version bumps in the same way.
+
+Pulp does not currently support publishing packages which use `psc-package`
+exclusively, because without having submitted your package to a registry such
+as the Bower registry, there is no way of making sure that people agree which
+package a given package name refers to. This may change in the future.
 
 ## Development
 

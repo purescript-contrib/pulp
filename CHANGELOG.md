@@ -1,5 +1,12 @@
 # Pulp Release History
 
+## 12.0.0
+
+* Add support for psc-package (@thoradam, #243). See the README for details.
+* Check that a program's entry point is of a suitable type when bundling (see https://github.com/purescript/purescript/issues/2086). By default `main` is required to be of type `Eff`, but this can be controlled using the `--check-main-type` flag. Alternatively this check can be turned off entirely using the `--no-check-main` flag.
+* Fix a bug where pulp would crash on uncommon operating systems (#299)
+* Fix an error in the help message for the `--else` option (@tkawachi, #294)
+
 ## 11.0.2
 
 * Fix a bug where running `pulp version` in a repo which didn't yet have any git tags would cause pulp to crash

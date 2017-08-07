@@ -1,4 +1,4 @@
-# <img align="right" src="https://travis-ci.org/bodil/pulp.svg?branch=master"> Pulp
+# <a href="https://travis-ci.org/purescript-contrib/pulp"><img alt="Travis CI status" align="right" src="https://travis-ci.org/bodil/pulp.svg?branch=master"></a> <a href="https://ci.appveyor.org/project/hdgarrood/pulp"><img alt="AppVeyor CI status" align="right" src="https://ci.appveyor.com/api/projects/status/c1naeh5i9991na5k?svg=true"></a> Pulp
 
 [![Join the chat at https://gitter.im/bodil/pulp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/bodil/pulp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 

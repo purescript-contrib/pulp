@@ -95,12 +95,20 @@ be picked up by `pulp` as a dependency when installed through Bower.
 
 ### `psc-package`
 
-`pulp` has support for using `psc-package`, an experimental package
-manager for PureScript based on the concept of package sets, instead of
-Bower. To start a project using `psc-package` use the global `--psc-package`
-flag when initializing a project: `pulp --psc-package init`. Refer to
+`pulp` has support for using
+[`psc-package`](https://github.com/purescript/psc-package), a package 
+manager for PureScript based on package sets, instead of Bower. To start 
+a project using `psc-package` use the global `--psc-package` flag when 
+initializing a project: `pulp --psc-package init`. Refer to
 [the `psc-package` readme](https://github.com/purescript/psc-package#psc-package)
-for details on how to manage packages with `psc-package`.
+for details on how to manage packages with `psc-package`. In projects 
+that contain both Bower and `psc-package` files, for example when trying
+out `psc-package` in an existing Bower project, `pulp` will default to 
+using Bower. To override that you can use the aforementioned 
+`--psc-package` flag to make pulp use `psc-package` for any command 
+involving dependencies, e.g. `pulp --psc-package build`. If you use this 
+flag a lot consider using `npm` scripts as mentioned in the section here 
+below.
 
 ### What if I need something a bit more complicated?
 

@@ -9,7 +9,7 @@ import which from "which";
 const hello = "Hello sailor!";
 const test = "You should add some tests.";
 const docLine1 = "## Module Main";
-const bowerMissing = "* ERROR: No psc-package.json or bower.json found in current or parent directories. Are you in a PureScript project?";
+const bowerMissing = "* ERROR: No bower.json or psc-package.json found in current or parent directories. Are you in a PureScript project?";
 const initWithoutForce = f => new RegExp('\\* ERROR: Found .*'+f+': There\'s already a project here. Run `pulp init --force` if you\'re sure you want to overwrite it.');
 const filesToOverwrite = ['./bower.json', './.gitignore', 'src/Main.purs', 'test/Main.purs'];
 const testDocLine1 = "## Module Test.Main";

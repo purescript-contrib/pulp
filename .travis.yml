@@ -11,5 +11,6 @@ branches:
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 before_install:
   - travis_retry npm install -g bower
+  - wget -q -O - https://github.com/purescript/psc-package/releases/download/v0.2.2/linux64.tar.gz | sudo tar xzf - -C /usr/local/bin --strip-components 1 psc-package/psc-package
 script:
   - npm test

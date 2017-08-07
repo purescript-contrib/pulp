@@ -1,4 +1,3 @@
-
 module Pulp.Files
   ( sources
   , ffis
@@ -13,11 +12,12 @@ module Pulp.Files
   ) where
 
 import Prelude
-import Data.Array (concat)
+import Data.Array (concat, mapMaybe)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Function.Uncurried
 import Data.Foreign.Class (class Decode)
 import Data.List as List
+import Data.String (stripSuffix, Pattern(..), split)
 import Data.Set (Set())
 import Data.Set as Set
 import Data.Traversable (sequence, traverse)
@@ -26,6 +26,8 @@ import Node.Path as Path
 import Pulp.System.FFI
 import Pulp.Args
 import Pulp.Args.Get
+import Pulp.Exec (execQuiet)
+import Pulp.Project (usingPscPackage)
 
 recursiveGlobWithExtension :: String -> Set String -> Array String
 recursiveGlobWithExtension ext =
@@ -54,9 +56,23 @@ testGlobs :: Options -> AffN (Set String)
 testGlobs = globsFromOption "testPath"
 
 dependencyGlobs :: Options -> AffN (Set String)
-dependencyGlobs =
-  globsFromOption' (\path -> Path.concat [path, "purescript-*", "src"])
-                   "dependencyPath"
+dependencyGlobs opts = do
+  p <- getOption' "_project" opts
+  if usingPscPackage p
+    then pscPackageGlobs
+    else globsFromOption' (\path -> Path.concat [path, "purescript-*", "src"])
+         "dependencyPath" opts
+
+pscPackageGlobs :: AffN (Set String)
+pscPackageGlobs =
+  execQuiet "psc-package" ["sources"] Nothing <#> processGlobs
+  where
+    -- Split on newlines and strip the /**/*/.purs suffixes just to
+    -- append them later so it plays well with the other globs
+    processGlobs =
+      (split (Pattern "\r\n") >=> split (Pattern "\n")) >>>
+      mapMaybe (stripSuffix (Pattern (Path.sep <> "**" <> Path.sep <> "*.purs"))) >>>
+      Set.fromFoldable
 
 includeGlobs :: Options -> AffN (Set String)
 includeGlobs opts = mkSet <$> getOption "includePaths" opts

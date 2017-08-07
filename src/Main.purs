@@ -55,6 +55,8 @@ globals :: Array Args.Option
 globals = [
   Args.option "bowerFile" ["--bower-file", "-b"] Type.file
     "Read this bower.json file instead of autodetecting it.",
+  Args.option "pscPackage" ["--psc-package"] Type.flag
+    "Use psc-package for package management.",
   Args.option "watch" ["--watch", "-w"] Type.flag
     "Watch source directories and re-run command if something changes.",
   Args.option "monochrome" ["--monochrome"] Type.flag

@@ -1,12 +1,13 @@
-
 module Pulp.Project
   ( Project(..)
   , getProject
+  , usingPscPackage
   ) where
 
 import Prelude
 import Data.Maybe (Maybe(..), maybe)
 import Data.Either (Either(..))
+import Control.Alt ((<|>))
 import Control.Monad.Except (runExcept)
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Eff.Exception (error)
@@ -22,13 +23,13 @@ import Node.Encoding (Encoding(UTF8))
 import Node.Path as P
 import Node.Process as Process
 
-import Pulp.System.FFI
+import Pulp.System.FFI (AffN)
 import Pulp.System.Files (mkdirIfNotExist)
 import Pulp.Args (Options)
-import Pulp.Args.Get (getOption)
+import Pulp.Args.Get (getOption, getFlag)
 
 newtype Project = Project
-  { bowerFile :: Foreign
+  { projectFile :: Foreign
   , path :: String
   , cache :: String
   }
@@ -54,35 +55,46 @@ readConfig configFilePath = do
   json <- readTextFile UTF8 configFilePath
   case runExcept (parseJSON json) of
     Left err ->
-      throwError (error ("Unable to parse bower.json: " <> show err))
+      throwError (error ("Unable to parse " <> (P.basename configFilePath) <> ": " <> show err))
     Right pro -> do
       let path = P.dirname configFilePath
       let cachePath = P.resolve [path] ".pulp-cache"
       liftEff $ unsafeCoerceEff $ Process.chdir path
       mkdirIfNotExist cachePath
-      pure $ Project { bowerFile: pro, cache: cachePath, path: path }
+      pure $ Project { projectFile: pro, cache: cachePath, path: path }
 
--- | Use the provided bower file, or if it is Nothing, try to find a bower file
--- | path in this or any parent directory.
-getBowerFile :: Maybe String -> AffN String
-getBowerFile = maybe search pure
+-- | If project file has a `set` property we assume it's a psc-package project file
+usingPscPackage :: Project -> Boolean
+usingPscPackage (Project p) =
+  case runExcept (readProp "set" p.projectFile >>= readString) of
+    Right _ -> true
+    _       -> false
+
+-- | Use the provided project file, or if it is Nothing, try to find a project file
+-- | path in this or any parent directory, with Bower taking precedence over psc-package.
+getProjectFile :: Maybe String -> AffN String
+getProjectFile = maybe search pure
   where
   search = do
     cwd <- liftEff Process.cwd
     mbowerFile <- findIn cwd "bower.json"
-    case mbowerFile of
-      Just bowerFile -> pure bowerFile
+    mpscPackageFile <- findIn cwd "psc-package.json"
+    case mbowerFile <|> mpscPackageFile of
+      Just file -> pure file
       Nothing -> throwError <<< error $
-        "No bower.json found in current or parent directories. Are you in a PureScript project?"
+        "No bower.json or psc-package.json found in current or parent directories. Are you in a PureScript project?"
 
 getProject :: Options -> AffN Project
-getProject args =
-  getOption "bowerFile" args >>= getBowerFile >>= readConfig
+getProject args = do
+  bower <- getOption "bowerFile" args
+  pscPackageFlag <- getFlag "pscPackage" args
+  let pscPackage = if pscPackageFlag then Just "psc-package.json" else Nothing
+  getProjectFile (bower <|> pscPackage) >>= readConfig
 
 instance decodeProject :: Decode Project where
   decode o =
     map Project $ do
-      bowerFile <- readProp "bowerFile" o
-      path      <- readProp "path" o >>= readString
-      cache     <- readProp "cache" o >>= readString
-      pure $ { bowerFile, path, cache }
+      projectFile <- readProp "projectFile" o
+      path        <- readProp "path" o >>= readString
+      cache       <- readProp "cache" o >>= readString
+      pure $ { projectFile, path, cache }

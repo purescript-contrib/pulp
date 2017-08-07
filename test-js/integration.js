@@ -9,7 +9,7 @@ import which from "which";
 const hello = "Hello sailor!";
 const test = "You should add some tests.";
 const docLine1 = "## Module Main";
-const bowerMissing = "* ERROR: No bower.json found in current or parent directories. Are you in a PureScript project?";
+const bowerMissing = "* ERROR: No bower.json or psc-package.json found in current or parent directories. Are you in a PureScript project?";
 const initWithoutForce = f => new RegExp('\\* ERROR: Found .*'+f+': There\'s already a project here. Run `pulp init --force` if you\'re sure you want to overwrite it.');
 const filesToOverwrite = ['./bower.json', './.gitignore', 'src/Main.purs', 'test/Main.purs'];
 const testDocLine1 = "## Module Test.Main";
@@ -142,6 +142,21 @@ describe("integration tests", function() {
     assert.equal(err.trim(), bowerMissing);
   }));
 
+  it("Bower has precedence over psc-package", run(function*(sh, pulp, assert) {
+    yield pulp("init");
+
+    // Create psc-package.json without installing any dependencies
+    yield sh("psc-package init");
+
+    // In the presence of both bower.json and psc-package.json, pulp should default to Bower
+    yield pulp("build");
+    assert.exists(path.join("output", "Main", "index.js"));
+
+    // The --psc-package flag can override that, in this case the build should fail because
+    // we haven't installed any dependencies with psc-package
+    assertThrows(pulp("--psc-package build"));
+  }));
+  
   ["build --help", "build -h"].forEach((cmdline) => {
     it("pulp " + cmdline, run(function*(sh, pulp, assert) {
       const [_, err] = yield pulp(cmdline);
@@ -187,6 +202,13 @@ describe("integration tests", function() {
 
   it("pulp build", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
+    yield pulp("build");
+
+    assert.exists(path.join("output", "Main", "index.js"));
+  }));
+
+  it("pulp build with psc-package", run(function*(sh, pulp, assert, temp) {
+    yield pulp("--psc-package init");
     yield pulp("build");
 
     assert.exists(path.join("output", "Main", "index.js"));
@@ -410,8 +432,23 @@ describe("integration tests", function() {
       assert.equal(c.split(newlines)[0], consoleDocLine1));
   }));
 
+  it("pulp docs --with-dependencies with psc-package", run(function*(sh, pulp, assert) {
+    yield pulp("--psc-package init");
+    yield pulp("docs --with-dependencies");
+    assert.file("generated-docs/Control/Monad/Eff/Console.md", (c) =>
+      assert.equal(c.split(newlines)[0], consoleDocLine1));
+  }));
+
   it("pulp psci includes dependencies", run(function*(sh, pulp, assert) {
     yield pulp("init");
+    yield pulp("psci");
+
+    const [out] = yield pulp("psci", "import Prelude\n\"hello, \" <> \"world\"");
+    assert.match(out, /hello, world/);
+  }));
+
+  it("pulp psci includes dependencies with psc-package", run(function*(sh, pulp, assert) {
+    yield pulp("--psc-package init");
     yield pulp("psci");
 
     const [out] = yield pulp("psci", "import Prelude\n\"hello, \" <> \"world\"");

@@ -1,9 +1,9 @@
-
 module Pulp.Init
   ( action
   ) where
 
 import Prelude
+import Data.Array (cons)
 import Data.String (joinWith)
 import Control.Monad.Eff.Exception (error)
 import Control.Monad.Error.Class (throwError)
@@ -19,9 +19,11 @@ import Pulp.System.FFI
 import Pulp.Args
 import Pulp.Args.Get (getFlag)
 import Pulp.System.Files (mkdirIfNotExist)
-import Pulp.Bower (launchBower)
+import Pulp.PackageManager (launchBower, launchPscPackage)
 
 foreign import bowerFile :: String -> String
+
+data InitStyle = Bower | PscPackage
 
 unlines :: Array String -> String
 unlines arr = joinWith "\n" arr <> "\n"
@@ -33,6 +35,7 @@ gitignore = unlines [
   "/.pulp-cache/",
   "/output/",
   "/generated-docs/",
+  "/.psc-package/",
   "/.psc*",
   "/.purs*",
   "/.psa*"
@@ -69,24 +72,27 @@ testFile = unlines [
   "  log \"You should add some tests.\""
   ]
 
-projectFiles :: String -> String -> Array { path :: String, content :: String }
-projectFiles pathRoot projectName =
-  [ { path: fullPath ["bower.json"],        content: bowerFile projectName }
-  , { path: fullPath [".gitignore"],        content: gitignore }
-  , { path: fullPath [".purs-repl"],        content: pursReplFile }
-  , { path: fullPath ["src", "Main.purs"],  content: mainFile }
-  , { path: fullPath ["test", "Main.purs"], content: testFile }
-  ]
+projectFiles :: InitStyle -> String -> String -> Array { path :: String, content :: String }
+projectFiles initStyle pathRoot projectName =
+  case initStyle of
+    Bower      -> cons bowerJson common
+    PscPackage -> common
   where
   fullPath pathParts = Path.concat ([pathRoot] <> pathParts)
+  bowerJson = { path: fullPath ["bower.json"],        content: bowerFile projectName }
+  common  = [ { path: fullPath [".gitignore"],        content: gitignore }
+            , { path: fullPath [".purs-repl"],        content: pursReplFile }
+            , { path: fullPath ["src", "Main.purs"],  content: mainFile }
+            , { path: fullPath ["test", "Main.purs"], content: testFile }
+            ]
 
-init :: Boolean -> Outputter -> AffN Unit
-init force out = do
+init :: InitStyle -> Boolean -> Outputter -> AffN Unit
+init initStyle force out = do
   cwd <- liftEff Process.cwd
   let projectName = Path.basename cwd
   out.log $ "Generating project skeleton in " <> cwd
 
-  let files = projectFiles cwd projectName
+  let files = projectFiles initStyle cwd projectName
 
   when (not force) do
     for_ files \f -> do
@@ -101,11 +107,22 @@ init force out = do
     when (dir /= cwd) (mkdirIfNotExist dir)
     writeTextFile UTF8 f.path f.content
 
-  launchBower ["install", "--save", "purescript-prelude", "purescript-console"]
-  launchBower ["install", "--save-dev", "purescript-psci-support"]
+  install initStyle
+
+  where
+    install Bower = do
+      launchBower ["install", "--save", "purescript-prelude", "purescript-console"]
+      launchBower ["install", "--save-dev", "purescript-psci-support"]
+
+    install PscPackage = do
+      launchPscPackage ["init"]
+      launchPscPackage ["install", "eff"]
+      launchPscPackage ["install", "console"]
+      launchPscPackage ["install", "psci-support"]
 
 action :: Action
 action = Action \args -> do
-  force <- getFlag "force" args.commandOpts
-  out   <- getOutputter args
-  init force out
+  force      <- getFlag "force" args.commandOpts
+  pscPackage <- getFlag "pscPackage" args.globalOpts
+  out        <- getOutputter args
+  init (if pscPackage then PscPackage else Bower) force out

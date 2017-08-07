@@ -497,13 +497,6 @@ $ pulp --psc-package build
 You can also run `pulp --psc-package init` to initialize a project with a
 `psc-package.json` file instead of a `bower.json` file.
 
-If you're publishing a library, `pulp init` will have installed a basic
-`bower.json` file for you along with the project skeleton, but you should read
-the [Bower documentation on the file
-format](https://github.com/bower/spec/blob/master/json.md) and make sure you’ve
-configured it to your satisfaction before you publish your package. In
-particular, mind that you’ve added a `license` field.
-
 ### Dependency Management Cheat Sheet
 
 This document isn't going to explain how Bower works, or go into
@@ -566,6 +559,13 @@ Imagine you've created a new PureScript library for working with
 zygohistomorphic prepromorphisms (because who doesn't need zygohistomorphic
 prepromorphisms), called `purescript-zygo`.
 
+`pulp init` will have installed a basic `bower.json` file for you along with
+the project skeleton, but before you continue, you should read the [Bower
+documentation on the file
+format](https://github.com/bower/spec/blob/master/json.md) and make sure you’ve
+configured it to your satisfaction before you publish your package. In
+particular, mind that you’ve added a `license` field.
+
 Note that there is a convention of prefixing PureScript package names with
 `purescript-`. Please stick with that unless you have an especially good reason
 not to, as `pulp` and many other tools expect installed dependencies to follow
@@ -600,7 +600,7 @@ release, and then generate the new verision number by bumping the patch
 component.  The `minor` and `major` arguments respectively perform minor and
 major version bumps in the same way.
 
-Pulp does not currently support publishing packages which use `psc-package`
+Pulp does not currently support publishing packages which use psc-package
 exclusively, because without having submitted your package to a registry such
 as the Bower registry, there is no way of making sure that people agree which
 package a given package name refers to. This may change in the future.

@@ -55,6 +55,8 @@ globals :: Array Args.Option
 globals = [
   Args.option "bowerFile" ["--bower-file", "-b"] Type.file
     "Read this bower.json file instead of autodetecting it.",
+  Args.option "pscPackage" ["--psc-package"] Type.flag
+    "Use psc-package for package management.",
   Args.option "watch" ["--watch", "-w"] Type.flag
     "Watch source directories and re-run command if something changes.",
   Args.option "monochrome" ["--monochrome"] Type.flag
@@ -159,9 +161,7 @@ commands :: Array Args.Command
 commands = [
   Args.command "init" "Generate an example PureScript project." Nothing Init.action [
      Args.option "force" ["--force"] Type.flag
-       "Overwrite any project found in the current directory.",
-     Args.option "psc-package" ["--psc-package"] Type.flag
-       "Use psc-package for package management."
+       "Overwrite any project found in the current directory."
      ],
   Args.command "build" "Build the project." remainderToPurs Build.action $
     buildArgs <> moduleArgs,

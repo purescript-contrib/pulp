@@ -123,6 +123,6 @@ init initStyle force out = do
 action :: Action
 action = Action \args -> do
   force      <- getFlag "force" args.commandOpts
-  pscPackage <- getFlag "psc-package" args.commandOpts
+  pscPackage <- getFlag "pscPackage" args.globalOpts
   out        <- getOutputter args
   init (if pscPackage then PscPackage else Bower) force out

@@ -12,13 +12,9 @@ module Pulp.Files
   ) where
 
 import Prelude
-import Control.Monad.Except (runExcept)
 import Data.Array (concat, mapMaybe)
-import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Function.Uncurried
-import Data.Foreign (readString)
-import Data.Foreign.Index (readProp)
 import Data.Foreign.Class (class Decode)
 import Data.List as List
 import Data.String (stripSuffix, Pattern(..), split)
@@ -31,7 +27,7 @@ import Pulp.System.FFI
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec (execQuiet)
-import Pulp.Project (Project(..), usingPscPackage)
+import Pulp.Project (usingPscPackage)
 
 recursiveGlobWithExtension :: String -> Set String -> Array String
 recursiveGlobWithExtension ext =

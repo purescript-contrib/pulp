@@ -193,7 +193,7 @@ describe("integration tests", function() {
   }));
 
   it("pulp build with psc-package", run(function*(sh, pulp, assert, temp) {
-    yield pulp("init --psc-package");
+    yield pulp("--psc-package init");
     yield pulp("build");
 
     assert.exists(path.join("output", "Main", "index.js"));
@@ -418,7 +418,7 @@ describe("integration tests", function() {
   }));
 
   it("pulp docs --with-dependencies with psc-package", run(function*(sh, pulp, assert) {
-    yield pulp("init --psc-package");
+    yield pulp("--psc-package init");
     yield pulp("docs --with-dependencies");
     assert.file("generated-docs/Control/Monad/Eff/Console.md", (c) =>
       assert.equal(c.split(newlines)[0], consoleDocLine1));
@@ -433,7 +433,7 @@ describe("integration tests", function() {
   }));
 
   it("pulp psci includes dependencies with psc-package", run(function*(sh, pulp, assert) {
-    yield pulp("init --psc-package");
+    yield pulp("--psc-package init");
     yield pulp("psci");
 
     const [out] = yield pulp("psci", "import Prelude\n\"hello, \" <> \"world\"");

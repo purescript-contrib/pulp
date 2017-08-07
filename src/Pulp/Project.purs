@@ -26,7 +26,7 @@ import Node.Process as Process
 import Pulp.System.FFI (AffN)
 import Pulp.System.Files (mkdirIfNotExist)
 import Pulp.Args (Options)
-import Pulp.Args.Get (getOption)
+import Pulp.Args.Get (getOption, getFlag)
 
 newtype Project = Project
   { projectFile :: Foreign
@@ -71,22 +71,25 @@ usingPscPackage (Project p) =
     _       -> false
 
 -- | Use the provided project file, or if it is Nothing, try to find a project file
--- | path in this or any parent directory.
+-- | path in this or any parent directory, with Bower taking precedence over psc-package.
 getProjectFile :: Maybe String -> AffN String
 getProjectFile = maybe search pure
   where
   search = do
     cwd <- liftEff Process.cwd
-    mpscPackageFile <- findIn cwd "psc-package.json"
     mbowerFile <- findIn cwd "bower.json"
-    case mpscPackageFile <|> mbowerFile of
+    mpscPackageFile <- findIn cwd "psc-package.json"
+    case mbowerFile <|> mpscPackageFile of
       Just file -> pure file
       Nothing -> throwError <<< error $
-        "No psc-package.json or bower.json found in current or parent directories. Are you in a PureScript project?"
+        "No bower.json or psc-package.json found in current or parent directories. Are you in a PureScript project?"
 
 getProject :: Options -> AffN Project
-getProject args =
-  getOption "bowerFile" args >>= getProjectFile >>= readConfig
+getProject args = do
+  bower <- getOption "bowerFile" args
+  pscPackageFlag <- getFlag "pscPackage" args
+  let pscPackage = if pscPackageFlag then Just "psc-package.json" else Nothing
+  getProjectFile (bower <|> pscPackage) >>= readConfig
 
 instance decodeProject :: Decode Project where
   decode o =

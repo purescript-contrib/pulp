@@ -97,8 +97,8 @@ be picked up by `pulp` as a dependency when installed through Bower.
 
 `pulp` has support for using `psc-package`, an experimental package
 manager for PureScript based on the concept of package sets, instead of
-Bower. To start a project using `psc-package` use the `--psc-package`
-flag when initializing a project: `pulp init --psc-package`. Refer to
+Bower. To start a project using `psc-package` use the global `--psc-package`
+flag when initializing a project: `pulp --psc-package init`. Refer to
 [the `psc-package` readme](https://github.com/purescript/psc-package#psc-package)
 for details on how to manage packages with `psc-package`.
 

@@ -264,11 +264,11 @@ runWithArgs args = do
   out <- getOutputter args
   _ <- validate out
   watch <- getFlag "watch" args.globalOpts
+  args' <- addProject args
   if watch && args.command.name /= "server"
     then
-      Args.runAction Watch.action args
+      Args.runAction Watch.action args'
     else do
-      args' <- addProject args
       runShellForOption "before" args'.globalOpts out
       result <- attempt $ Args.runAction args.command.action args'
       case result of

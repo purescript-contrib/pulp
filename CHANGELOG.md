@@ -1,5 +1,10 @@
 # Pulp Release History
 
+## 12.0.1
+
+* Fix a bug where running commands with `--watch` would sometimes produce
+  an internal error (@thoradam, #300).
+
 ## 12.0.0
 
 * Add support for psc-package (@thoradam, #243). See the README for details.

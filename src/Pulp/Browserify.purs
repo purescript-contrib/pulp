@@ -1,29 +1,36 @@
 
 module Pulp.Browserify where
 
-import Prelude
-import Control.Monad.Aff (apathize)
-import Control.Monad.Eff.Class (liftEff)
+import Data.Foldable
 import Data.Function.Uncurried
 import Data.Maybe
-import Data.Foldable
-import Data.Map as Map
-import Data.Nullable (Nullable(), toNullable)
-import Node.Path as Path
-import Node.Encoding (Encoding(UTF8))
-import Node.FS.Aff (unlink, writeTextFile)
-import Node.Process as Process
-
-import Pulp.System.FFI
-import Pulp.System.Stream (WritableStream())
-import Pulp.Outputter
+import Prelude
 import Pulp.Args
 import Pulp.Args.Get
-import Pulp.Exec (pursBundle)
 import Pulp.Files
-import Pulp.Build as Build
-import Pulp.Run (makeEntry, jsEscape)
+import Pulp.Outputter
 import Pulp.Project
+import Pulp.Sorcery
+import Pulp.System.FFI
+import Pulp.System.Files
+
+import Control.Monad.Aff (apathize)
+import Control.Monad.Eff.Class (liftEff)
+import Data.Argonaut (Json, foldJsonArray, foldJsonObject, foldJsonString, fromArray, fromObject, fromString, jsonEmptyObject, jsonNull, jsonParser)
+import Data.Argonaut.Core (stringify)
+import Data.Either (either)
+import Data.Map as Map
+import Data.Nullable (Nullable, toNullable)
+import Data.StrMap (update)
+import Node.Encoding (Encoding(UTF8))
+import Node.FS.Aff (unlink, writeTextFile, readTextFile)
+import Node.Path (dirname, resolve)
+import Node.Path as Path
+import Node.Process as Process
+import Pulp.Build as Build
+import Pulp.Exec (pursBundle)
+import Pulp.Run (makeEntry, jsEscape)
+import Pulp.System.Stream (WritableStream)
 
 action :: Action
 action = Action \args -> do
@@ -68,19 +75,31 @@ optimising = Action \args -> do
   transform <- getOption "transform" opts
   standalone <- getOption "standalone" opts
   skipEntryPoint' <- getFlag "skipEntryPoint" opts
+  sourceMaps <- getFlag "sourceMaps" opts
+  toOpt <- getOption "to" opts
   let skipEntryPoint = skipEntryPoint' || isJust standalone
 
   skipMainCheck <- getFlag "noCheckMain" opts
   when (not (skipEntryPoint || skipMainCheck))
     (Build.checkEntryPoint out opts)
 
+  { path: tmpFilePath } <- openTemp { prefix: "pulp-browserify-bundle-", suffix: ".js" }
+
   let bundleArgs = fold
         [ ["--module=" <> main]
         , if skipEntryPoint then [] else ["--main=" <> main]
+        , if sourceMaps then ["--source-maps"] else []
+        , ["-o", tmpFilePath]
         , args.remainder
         ]
 
-  bundledJs <- pursBundle (outputModules buildPath) bundleArgs Nothing
+  _ <- pursBundle (outputModules buildPath) bundleArgs Nothing
+  bundledJs <- readTextFile UTF8 tmpFilePath
+
+  let mapFile = tmpFilePath <> ".map"
+  when sourceMaps do
+    smText <- readTextFile UTF8 mapFile
+    writeTextFile UTF8 mapFile (updateSourceMapPaths (dirname mapFile) smText)
 
   out.log "Browserifying..."
 
@@ -93,7 +112,15 @@ optimising = Action \args -> do
       , transform: toNullable transform
       , standalone: toNullable standalone
       , out: out'
+      , debug: sourceMaps
+      , outDir: maybe buildPath (resolve [ buildPath ] <<< dirname) toOpt
+      , tmpFilePath: tmpFilePath
       }
+  case toOpt of
+    Just to | sourceMaps -> do
+      sorcery to
+      unlink mapFile
+    _ -> pure unit
 
 incremental :: Action
 incremental = Action \args -> do
@@ -117,6 +144,7 @@ incremental = Action \args -> do
   skipEntryPoint' <- getFlag "skipEntryPoint" opts
   let skipEntryPoint = skipEntryPoint' && isNothing standalone
   main <- getOption' "main" opts
+  sourceMaps <- getFlag "sourceMaps" opts
 
   noCheckMain <- getFlag "noCheckMain" opts
   when (not (skipEntryPoint || noCheckMain))
@@ -131,6 +159,7 @@ incremental = Action \args -> do
               writeTextFile UTF8 entryPath entryJs
               pure entryPath
 
+  toOpt <- getOption "to" opts
   Build.withOutputStream opts $ \out' -> do
     browserifyIncBundle
       { basedir: buildPath
@@ -139,7 +168,12 @@ incremental = Action \args -> do
       , transform: toNullable transform
       , standalone: toNullable standalone
       , out: out'
+      , debug: sourceMaps
+      , outDir: maybe buildPath (resolve [ buildPath ] <<< dirname) toOpt
       }
+  case toOpt of
+    Just to | sourceMaps -> sorcery to
+    _ -> pure unit
 
 -- | Given the build path, modify this process' NODE_PATH environment variable
 -- | for browserify.
@@ -158,6 +192,9 @@ type BrowserifyOptions =
   , transform  :: Nullable String
   , standalone :: Nullable String
   , out        :: WritableStream
+  , debug      :: Boolean
+  , outDir     :: String
+  , tmpFilePath:: String
   }
 
 foreign import browserifyBundle' :: Fn2 BrowserifyOptions
@@ -174,6 +211,8 @@ type BrowserifyIncOptions =
   , transform  :: Nullable String
   , standalone :: Nullable String
   , out        :: WritableStream
+  , debug      :: Boolean
+  , outDir     :: String
   }
 
 foreign import browserifyIncBundle' :: Fn2 BrowserifyIncOptions
@@ -182,3 +221,15 @@ foreign import browserifyIncBundle' :: Fn2 BrowserifyIncOptions
 
 browserifyIncBundle :: BrowserifyIncOptions -> AffN Unit
 browserifyIncBundle opts = runNode $ runFn2 browserifyIncBundle' opts
+
+updateSourceMapPaths :: String -> String -> String
+updateSourceMapPaths basePath text =
+  either (const text) 
+    (stringify <<< foldJsonObject jsonEmptyObject (fromObject <<< update resolveFiles "sources"))
+    (jsonParser text)
+  where
+    resolveFiles :: Json -> Maybe Json
+    resolveFiles = foldJsonArray Nothing (Just <<< fromArray <<< map resolveFile)
+
+    resolveFile :: Json -> Json
+    resolveFile = foldJsonString jsonNull (fromString <<< resolve [ basePath ])

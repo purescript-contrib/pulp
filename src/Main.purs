@@ -124,7 +124,9 @@ buildArgs = [
   Args.option "optimise" ["--optimise", "-O"] Type.flag
     "Perform dead code elimination.",
   Args.option "skipEntryPoint" ["--skip-entry-point"] Type.flag
-    "Don't add code to automatically invoke Main."
+    "Don't add code to automatically invoke Main.",
+  Args.option "sourceMaps" ["--source-maps"] Type.flag
+    "Generate source maps"
   ] <> runArgs
 
 -- TODO: This is possibly just a temporary separation from buildArgs; at the
@@ -178,8 +180,6 @@ commands = [
     "Produce a deployable bundle using Browserify." remainderToBundle Browserify.action $ [
       Args.option "transform" ["--transform"] Type.string
         "Apply a Browserify transform.",
-      Args.option "sourceMap" ["--source-map"] Type.string
-        "Generate source maps.",
       Args.option "force" ["--force"] Type.flag
         "Force a non-incremental build by deleting the build cache.",
       Args.option "standalone" ["--standalone"] Type.string

@@ -6,6 +6,7 @@ module Pulp.Build
   , checkEntryPoint
   ) where
 
+
 import Prelude
 import Data.Either (Either(..), either)
 import Data.Array as Array
@@ -39,6 +40,7 @@ import Pulp.Exec (psa, pursBuild, pursBundle)
 import Pulp.Files
 import Pulp.Validate (getPsaVersion)
 import Pulp.Utils (throw)
+import Pulp.Sorcery (sorcery)
 
 data BuildType = NormalBuild | TestBuild
 
@@ -71,11 +73,12 @@ go buildType = Action \args -> do
 
   buildPath <- getOption' "buildPath" args.commandOpts
   noPsa <- getFlag "noPsa" args.commandOpts
+  sourceMaps <- getFlag "sourceMaps" args.commandOpts
   jobs :: Maybe Int <- getOption "jobs" args.commandOpts
   let jobsArgs = maybe [] (\j -> ["+RTS", "-N" <> show j, "-RTS"]) jobs
-
+      sourceMapArg = if sourceMaps then ["--source-maps"] else []
   let sourceGlobs = sources globs
-      binArgs = ["-o", buildPath] <> jobsArgs <> args.remainder
+      binArgs = ["-o", buildPath] <> sourceMapArg <> jobsArgs <> args.remainder
 
   usePsa <- shouldUsePsa args
   if usePsa
@@ -130,18 +133,24 @@ bundle args = do
   modules <- parseModulesOption <$> getOption "modules" opts
   buildPath <- getOption' "buildPath" opts
   main <- getOption' "main" opts
+  sourceMaps <- getFlag "sourceMaps" args.commandOpts
+  to :: Maybe String <- getOption "to" opts
 
   let bundleArgs = fold
         [ ["--module=" <> main]
         , if skipEntry then [] else ["--main=" <> main]
         , map (\m -> "--module=" <> m) modules
+        , if sourceMaps then ["--source-maps"] else []
+        , maybe [] (\f -> ["-o", f]) to
         , args.remainder
         ]
 
   bundledJs <- pursBundle (outputModules buildPath) bundleArgs Nothing
 
-  withOutputStream opts $ \out' -> do
-    write out' bundledJs
+  case to of
+    Just to' | sourceMaps -> sorcery to'
+    Just _ -> pure unit
+    _ -> withOutputStream opts $ \out' -> write out' bundledJs
 
   out.log "Bundled."
 
@@ -152,22 +161,23 @@ bundle args = do
 -- | value of the 'to' option.
 withOutputStream :: Options -> (WritableStream -> AffN Unit) -> AffN Unit
 withOutputStream opts aff = do
-  to <- getOption "to" opts
+  to :: Maybe String <- getOption "to" opts
   case to of
-    Just destFile -> do
-      let dir = Path.dirname destFile
-      let tmpFile = dir <> Path.sep <> "." <> Path.basename destFile
-      Files.mkdirIfNotExist dir
-      res <- attempt do
-               stream <- liftEff $ Files.createWriteStream tmpFile
-               void $ aff stream
-               void $ end stream
-      case res of
-        Right _ ->
-          FS.rename tmpFile destFile
-        Left err -> do
-          void $ apathize $ FS.unlink tmpFile
-          throwError err
+    Just destFile -> 
+      do
+        let dir = Path.dirname destFile
+        let tmpFile = dir <> Path.sep <> "." <> Path.basename destFile
+        Files.mkdirIfNotExist dir
+        res <- attempt do
+                stream <- liftEff $ Files.createWriteStream tmpFile
+                void $ aff stream
+                void $ end stream
+        case res of
+          Right _ ->
+            FS.rename tmpFile destFile
+          Left err -> do
+            void $ apathize $ FS.unlink tmpFile
+            throwError err
     Nothing ->
       aff stdout
 

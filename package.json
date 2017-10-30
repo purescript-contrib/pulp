@@ -50,6 +50,7 @@
     "minimatch": "^3.0.3",
     "node-static": "^0.7.9",
     "read": "^1.0.7",
+    "rimraf": "^2.6.2",
     "string-stream": "0.0.7",
     "temp": "^0.8.1",
     "through": "^2.3.8",

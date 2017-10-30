@@ -39,6 +39,7 @@ import Pulp.Project (getProject)
 
 import Pulp.Init as Init
 import Pulp.Build as Build
+import Pulp.Clean as Clean
 import Pulp.Run as Run
 import Pulp.Test as Test
 import Pulp.Browserify as Browserify
@@ -168,6 +169,7 @@ commands = [
      ],
   Args.command "build" "Build the project." remainderToPurs Build.action $
     buildArgs <> moduleArgs,
+  Args.command "clean" "Clean the project." remainderToPurs Clean.action [],
   Args.command "test" "Run project tests." remainderToTest Test.action $ [
     Args.optionDefault "main" ["--main", "-m"] Type.string
       "Test entry point." "Test.Main",

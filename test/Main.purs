@@ -15,10 +15,13 @@ import Node.FS.Aff as FS
 import Node.Encoding (Encoding(UTF8))
 import Test.Assert (assert')
 
+import Pulp.BumpVersion (newVersion)
 import Pulp.Exec (execQuietWithStderr)
 import Pulp.System.FFI (AffN, EffN)
 import Pulp.System.Files (tempDir)
 import Pulp.Git (getVersionFromGitTag)
+import Pulp.Outputter (makeOutputter)
+import Pulp.VersionBump
 
 -- | Run a shell command, swallowing stderr.
 run :: String -> Array String -> AffN String
@@ -81,3 +84,19 @@ main = launchAff do
 
   result <- getVersionFromGitTag
   assertEq (Just (Tuple "v3.0.0" (version 3 0 0 Nil Nil))) result
+
+  -----------------------------------------------------------------------------
+  log "newVersion gives the exact version"
+
+  let out = makeOutputter true
+  result <- newVersion (Just (ToExact (version 4 0 0 Nil Nil))) Nothing out
+  assertEq (version 4 0 0 Nil Nil) result
+  result <- newVersion (Just (ToExact (version 4 0 0 Nil Nil))) (Just (version 4 0 1 Nil Nil)) out
+  assertEq (version 4 0 0 Nil Nil) result
+
+  -----------------------------------------------------------------------------
+  log "newVersion bumps current"
+
+  let out = makeOutputter true
+  result <- newVersion (Just Patch) (Just (version 5 0 0 Nil Nil)) out
+  assertEq (version 5 0 1 Nil Nil) result

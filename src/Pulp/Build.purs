@@ -2,6 +2,7 @@ module Pulp.Build
   ( action
   , build
   , testBuild
+  , runBuild
   , withOutputStream
   , checkEntryPoint
   ) where
@@ -43,11 +44,12 @@ import Pulp.Validate (getPsaVersion)
 import Pulp.Utils (throw)
 import Pulp.Sorcery (sorcery)
 
-data BuildType = NormalBuild | TestBuild
+data BuildType = NormalBuild | TestBuild | RunBuild
 
 instance eqBuildType :: Eq BuildType where
   eq NormalBuild NormalBuild = true
   eq TestBuild TestBuild     = true
+  eq RunBuild RunBuild       = true
   eq _ _                     = false
 
 action :: Action
@@ -58,6 +60,9 @@ build = runAction action
 
 testBuild :: Args -> AffN Unit
 testBuild = runAction (go TestBuild)
+
+runBuild :: Args -> AffN Unit
+runBuild = runAction (go RunBuild)
 
 go :: BuildType -> Action
 go buildType = Action \args -> do
@@ -79,7 +84,8 @@ go buildType = Action \args -> do
   let jobsArgs = maybe [] (\j -> ["+RTS", "-N" <> show j, "-RTS"]) jobs
       sourceMapArg = if sourceMaps then ["--source-maps"] else []
   let sourceGlobs = sources globs
-      binArgs = ["-o", buildPath] <> sourceMapArg <> jobsArgs <> args.remainder
+      extraArgs = if buildType /= RunBuild then args.remainder else []
+      binArgs = ["-o", buildPath] <> sourceMapArg <> jobsArgs <> extraArgs
 
   usePsa <- shouldUsePsa args
   if usePsa

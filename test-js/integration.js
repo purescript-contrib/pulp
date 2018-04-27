@@ -275,6 +275,16 @@ describe("integration tests", function() {
     assert.equal(out.trim(), hello);
   }));
 
+  it("pulp run -- program args", run(function*(sh, pulp, assert, temp) {
+    const srcDir = path.join(temp, "run_with_args");
+    yield pulp("init");
+    yield fs.mkdir(srcDir);
+    yield fs.copy(path.resolve(__dirname, "resources/Main.purs"), path.join(srcDir, "Main.purs"));
+    yield fs.copy(path.resolve(__dirname, "resources/Main.js"), path.join(srcDir, "Main.js"));
+    const [out] = yield pulp("run --src-path run_with_args -m Test.Main -- program args");
+    assert.equal(out.trim(), "program\nargs");
+  }));
+
   it("pulp build --to", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("build --to out.js");

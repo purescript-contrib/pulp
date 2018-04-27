@@ -26,7 +26,7 @@ action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
   out <- getOutputter args
 
-  Build.build args
+  Build.runBuild args
 
   noCheckMain <- getFlag "noCheckMain" opts
   when (not noCheckMain)

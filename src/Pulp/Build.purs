@@ -46,11 +46,7 @@ import Pulp.Sorcery (sorcery)
 
 data BuildType = NormalBuild | TestBuild | RunBuild
 
-instance eqBuildType :: Eq BuildType where
-  eq NormalBuild NormalBuild = true
-  eq TestBuild TestBuild     = true
-  eq RunBuild RunBuild       = true
-  eq _ _                     = false
+derive instance eqBuildType :: Eq BuildType
 
 action :: Action
 action = go NormalBuild

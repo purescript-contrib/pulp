@@ -325,9 +325,10 @@ describe("integration tests", function() {
     );
 
     const [_, err] = yield pulp("build --to out.js", null, { expectedExitCode: 1 });
-    assert.match(err, /is not of type Control.Monad.Eff.Eff/);
+    assert.match(err, /is not in the allowed list of types/);
   }));
 
+  // Check with a single permissible `main` type
   it("pulp build --check-main-type Prim.Int", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
 
@@ -338,6 +339,34 @@ describe("integration tests", function() {
     );
 
     yield pulp("build --to out.js --check-main-type Prim.Int");
+    assert.exists("output/Main/index.js");
+  }));
+
+  // Check with a list of permissible `main` types
+  it("pulp build --check-main-type Prim.Boolean,Prim.Int", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+
+    const mainPath = path.join(temp, 'src', 'Main.purs');
+    yield fs.writeFile(
+      mainPath,
+      "module Main where\nmain = 0\n"
+    );
+
+    yield pulp("build --to out.js --check-main-type Prim.Boolean,Prim.Int");
+    assert.exists("output/Main/index.js");
+  }));
+
+  // Skip `main` type check
+  it("pulp build --no-check-main", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+
+    const mainPath = path.join(temp, 'src', 'Main.purs');
+    yield fs.writeFile(
+      mainPath,
+      "module Main where\nmain = 0\n"
+    );
+
+    yield pulp("build --to out.js --no-check-main");
     assert.exists("output/Main/index.js");
   }));
 

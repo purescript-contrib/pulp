@@ -105,8 +105,8 @@ buildishArgs = [
   Args.option "noCheckMain" ["--no-check-main"] Type.flag
     "Skip checking that the application has a suitable entry point.",
   Args.optionDefault "checkMainType" ["--check-main-type"] Type.string
-    "Override the type used for checking the application's entry point."
-    "Control.Monad.Eff.Eff"
+    "Specify an allowed list of types for the application's entry point (comma-separated list)."
+    "Effect.Effect,Control.Monad.Eff.Eff"
   ] <> pathArgs
 
 runArgs :: Array Args.Option

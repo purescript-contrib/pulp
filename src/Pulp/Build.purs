@@ -10,9 +10,10 @@ module Pulp.Build
 import Prelude
 import Data.Either (Either(..), either)
 import Data.Array as Array
+import Data.Array.NonEmpty as NonEmptyArray
 import Data.Maybe
 import Data.Map (union)
-import Data.String (split, Pattern(..), joinWith)
+import Data.String (split, Pattern(..), joinWith, trim)
 import Data.Set as Set
 import Data.Foldable (fold, elem, for_)
 import Data.Newtype (unwrap)
@@ -163,7 +164,7 @@ withOutputStream :: Options -> (WritableStream -> AffN Unit) -> AffN Unit
 withOutputStream opts aff = do
   to :: Maybe String <- getOption "to" opts
   case to of
-    Just destFile -> 
+    Just destFile ->
       do
         let dir = Path.dirname destFile
         let tmpFile = dir <> Path.sep <> "." <> Path.basename destFile
@@ -183,9 +184,9 @@ withOutputStream opts aff = do
 
 checkEntryPoint :: Outputter -> Options -> AffN Unit
 checkEntryPoint out opts = do
-  buildPath <- getOption' "buildPath" opts
-  main      <- getOption' "main" opts
-  tyConstr  <- getOption' "checkMainType" opts
+  buildPath     <- getOption' "buildPath" opts
+  main          <- getOption' "main" opts
+  checkMainType <- getOption' "checkMainType" opts
 
   let
     externsFile =
@@ -194,9 +195,18 @@ checkEntryPoint out opts = do
     unableToParse msg =
       throw $ "Invalid JSON in externs file " <> externsFile <> ": " <> msg
 
+    mainTypes =
+      checkMainType
+        # split (Pattern ",")
+        # map trim
+        # Array.filter (_ /= "")
+        # map ExternsCheck.FQName
+        # NonEmptyArray.fromArray
+        # fromMaybe ExternsCheck.defaultOptions.typeConstructors
+
     externsCheckOpts =
       ExternsCheck.defaultOptions
-        { typeConstructor = ExternsCheck.FQName tyConstr }
+        { typeConstructors = mainTypes }
 
     handleReadErr err =
       if Files.isENOENT err
@@ -229,8 +239,9 @@ checkEntryPoint out opts = do
       ExternsCheck.NoExport ->
         internalError "NoExport should have been handled"
       ExternsCheck.TypeMismatch minstead ->
-        "is not of type " <> tyConstr
-        <> maybe "" (\instead -> " (is instead " <> unwrap instead <> ")") minstead
+        "is not in the allowed list of types. Expected one of: "
+        <> show (NonEmptyArray.toArray mainTypes)
+        <> maybe "" (\instead -> " but found: " <> unwrap instead) minstead
       ExternsCheck.Constraints cs ->
         case cs of
           [] -> internalError "empty constraints array"

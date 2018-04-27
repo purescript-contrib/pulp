@@ -1,5 +1,9 @@
 # Pulp Release History
 
+## 12.1.0
+
+* Add source map support (@nwolverson, #305).
+
 ## 12.0.1
 
 * Fix a bug where running commands with `--watch` would sometimes produce

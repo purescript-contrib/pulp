@@ -24,7 +24,6 @@ import Data.Nullable (Nullable, toNullable)
 import Data.StrMap (update)
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff (unlink, writeTextFile, readTextFile)
-import Node.Path (dirname, resolve)
 import Node.Path as Path
 import Node.Process as Process
 import Pulp.Build as Build
@@ -99,7 +98,7 @@ optimising = Action \args -> do
   let mapFile = tmpFilePath <> ".map"
   when sourceMaps do
     smText <- readTextFile UTF8 mapFile
-    writeTextFile UTF8 mapFile (updateSourceMapPaths (dirname mapFile) smText)
+    writeTextFile UTF8 mapFile (updateSourceMapPaths (Path.dirname mapFile) smText)
 
   out.log "Browserifying..."
 
@@ -113,7 +112,7 @@ optimising = Action \args -> do
       , standalone: toNullable standalone
       , out: out'
       , debug: sourceMaps
-      , outDir: maybe buildPath (resolve [ buildPath ] <<< dirname) toOpt
+      , outDir: maybe buildPath (Path.resolve [ buildPath ] <<< Path.dirname) toOpt
       , tmpFilePath: tmpFilePath
       }
   case toOpt of
@@ -169,7 +168,7 @@ incremental = Action \args -> do
       , standalone: toNullable standalone
       , out: out'
       , debug: sourceMaps
-      , outDir: maybe buildPath (resolve [ buildPath ] <<< dirname) toOpt
+      , outDir: maybe buildPath (Path.resolve [ buildPath ] <<< Path.dirname) toOpt
       }
   case toOpt of
     Just to | sourceMaps -> sorcery to
@@ -232,4 +231,4 @@ updateSourceMapPaths basePath text =
     resolveFiles = foldJsonArray Nothing (Just <<< fromArray <<< map resolveFile)
 
     resolveFile :: Json -> Json
-    resolveFile = foldJsonString jsonNull (fromString <<< resolve [ basePath ])
+    resolveFile = foldJsonString jsonNull (fromString <<< Path.resolve [ basePath ])

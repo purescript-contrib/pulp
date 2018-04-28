@@ -380,6 +380,21 @@ describe("integration tests", function() {
     assert.exists("output/Main/index.js");
   }));
 
+  ["build", "browserify"].forEach(function(subcommand) {
+    it("--skip-entry-point implies --no-check-main (" + subcommand + ")", run(function*(sh, pulp, assert, temp) {
+      yield pulp("init");
+
+      const mainPath = path.join(temp, 'src', 'Main.purs');
+      yield fs.writeFile(
+        mainPath,
+        "module Main where\nmain = 0\n"
+      );
+
+      yield pulp(subcommand + " --to out.js --skip-entry-point");
+      assert.exists("output/Main/index.js");
+    }));
+  });
+
   it("pulp build -O", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const [src] = yield pulp("build -O");

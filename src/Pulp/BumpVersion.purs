@@ -1,4 +1,4 @@
-module Pulp.BumpVersion ( action, newVersion ) where
+module Pulp.BumpVersion ( action ) where
 
 import Prelude
 import Control.Monad.Eff.Exception
@@ -47,17 +47,18 @@ bumpVersion args = do
   mcurrent <- map (map snd) getLatestTaggedVersion
   mbumpStr <- getOption "bump" args.commandArgs
   mbump <- case mbumpStr of
+    -- TODO: this is gross. See also Pulp.Args.Types.versionBump
     Just bumpStr -> maybe (internalError "invalid bump") (pure <<< Just) (parseBump bumpStr)
     Nothing -> pure Nothing
 
   newVersion mbump mcurrent out
 
 newVersion :: Maybe VersionBump -> Maybe Version -> Outputter -> AffN Version
-newVersion mbump mcurrent out = case Tuple mcurrent mbump of
-  Tuple _              (Just (ToExact version)) -> pure version
-  Tuple (Just current) (Just bump)              -> pure $ applyBump bump current
-  Tuple (Just current) Nothing                  -> promptCurrent out current
-  Tuple Nothing        _                        -> promptInitial out
+newVersion mbump mcurrent out = case mcurrent, mbump of
+  _,            Just (ToExact version) -> pure version
+  Just current, Just bump              -> pure $ applyBump bump current
+  Just current, Nothing                -> promptCurrent out current
+  Nothing     , _                      -> promptInitial out
 
 tagNewVersion :: Version -> AffN Unit
 tagNewVersion version = do

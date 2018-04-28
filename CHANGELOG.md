@@ -1,5 +1,20 @@
 # Pulp Release History
 
+## 12.2.0
+
+* The type `Effect.Effect` is now considered by Pulp to be acceptable for the
+  type of your program's entry point (usually `Main.main`).
+  `Control.Monad.Eff.Eff` also continues to be acceptable. (#338)
+* Allow specifying a list of allowable types for your program's entry point, by
+  separating them with commas. (#338)
+* Bug fix: allow specifying a specific version when running `pulp version` for
+  the first time. (@plippe, #328)
+* Bug fix: Passthrough arguments with `pulp run` now go to your program, as the
+  documentation claims, rather than to `purs`. (@kika, #309)
+* Bug fix: Pulp will no longer check that your program has an acceptable entry
+  point when using `pulp browserify --standalone`, since there is no reason to
+  do so. (#339)
+
 ## 12.1.0
 
 * Add source map support (@nwolverson, #305).

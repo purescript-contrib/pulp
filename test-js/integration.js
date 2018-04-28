@@ -156,7 +156,7 @@ describe("integration tests", function() {
     // we haven't installed any dependencies with psc-package
     assertThrows(pulp("--psc-package build"));
   }));
-  
+
   ["build --help", "build -h"].forEach((cmdline) => {
     it("pulp " + cmdline, run(function*(sh, pulp, assert) {
       const [_, err] = yield pulp(cmdline);
@@ -458,7 +458,7 @@ describe("integration tests", function() {
 
   it("pulp browserify --source-maps --to subdir", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
-    yield fs.mkdir(path.join(temp, "subdir"));    
+    yield fs.mkdir(path.join(temp, "subdir"));
     yield pulp("browserify --source-maps --to subdir/out.js");
     assert.exists("subdir/out.js.map");
   }));

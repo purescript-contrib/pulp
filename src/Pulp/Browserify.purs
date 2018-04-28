@@ -62,6 +62,18 @@ buildForBrowserify args = do
     let munge = Map.delete "to" >>> Map.delete "optimise"
     Build.build $ args { commandOpts = munge args.commandOpts, remainder = [] }
 
+shouldSkipEntryPoint :: Options -> AffN Boolean
+shouldSkipEntryPoint opts = do
+  skipEntryPoint <- getFlag "skipEntryPoint" opts
+  standalone :: Maybe String <- getOption "standalone" opts
+  pure (skipEntryPoint || isJust standalone)
+
+shouldSkipMainCheck :: Options -> AffN Boolean
+shouldSkipMainCheck opts = do
+  noCheckMain <- getFlag "noCheckMain" opts
+  skipEntryPoint <- shouldSkipEntryPoint opts
+  pure (noCheckMain || skipEntryPoint)
+
 optimising :: Action
 optimising = Action \args -> do
   out <- getOutputter args
@@ -73,17 +85,15 @@ optimising = Action \args -> do
   main      <- getOption' "main" opts
   transform <- getOption "transform" opts
   standalone <- getOption "standalone" opts
-  skipEntryPoint' <- getFlag "skipEntryPoint" opts
   sourceMaps <- getFlag "sourceMaps" opts
   toOpt <- getOption "to" opts
-  let skipEntryPoint = skipEntryPoint' || isJust standalone
 
-  skipMainCheck <- getFlag "noCheckMain" opts
-  when (not (skipEntryPoint || skipMainCheck))
+  unlessM (shouldSkipMainCheck opts)
     (Build.checkEntryPoint out opts)
 
   { path: tmpFilePath } <- openTemp { prefix: "pulp-browserify-bundle-", suffix: ".js" }
 
+  skipEntryPoint <- shouldSkipEntryPoint opts
   let bundleArgs = fold
         [ ["--module=" <> main]
         , if skipEntryPoint then [] else ["--main=" <> main]
@@ -140,15 +150,13 @@ incremental = Action \args -> do
 
   transform <- getOption "transform" opts
   standalone <- getOption "standalone" opts
-  skipEntryPoint' <- getFlag "skipEntryPoint" opts
-  let skipEntryPoint = skipEntryPoint' && isNothing standalone
   main <- getOption' "main" opts
   sourceMaps <- getFlag "sourceMaps" opts
 
-  noCheckMain <- getFlag "noCheckMain" opts
-  when (not (skipEntryPoint || noCheckMain))
+  unlessM (shouldSkipMainCheck opts)
     (Build.checkEntryPoint out opts)
 
+  skipEntryPoint <- shouldSkipEntryPoint opts
   path <- if skipEntryPoint
             then
               pure $ Path.concat [buildPath, main]

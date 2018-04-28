@@ -492,6 +492,33 @@ describe("integration tests", function() {
     assert.equal(out.trim(), hello);
   }));
 
+  it("output of pulp browserify --standalone may be `require()`d", run(function*(sh, pulp, assert, temp) {
+    yield pulp("init");
+    yield pulp("browserify --main Data.Function --standalone data-function --to data-function.js");
+    const dataFunction = require(path.join(temp, "data-function.js"));
+    const sub = (x) => (y) => x - y;
+    assert.equal(dataFunction.flip(sub)(1)(5), 4);
+  }));
+
+  [ false, true ].forEach(function(optimising) {
+    const msg = "browserifying with --standalone skips entry point check" +
+                (optimising ? " (optimising)" : "");
+    it(msg, run(function*(sh, pulp, assert, temp) {
+      yield pulp("init");
+
+      const mainPath = path.join(temp, 'src', 'Main.purs');
+      yield fs.writeFile(
+        mainPath,
+        "module Main where\ntest = 42\n"
+      );
+
+      const extraArg = optimising ? " --optimise" : "";
+      yield pulp("browserify --standalone main --to main.js" + extraArg);
+      const main = require(path.join(temp, "main.js"));
+      assert.equal(main.test, 42);
+    }));
+  });
+
   it("pulp browserify --source-maps -O --to", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("browserify --source-maps -O --to out.js");

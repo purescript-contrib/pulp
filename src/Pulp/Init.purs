@@ -12,7 +12,9 @@ import Node.Path as Path
 import Node.FS.Aff (writeTextFile, exists)
 import Node.Encoding (Encoding(UTF8))
 import Node.Process as Process
+import Data.List (List(Nil), fromFoldable)
 import Data.Foldable (for_)
+import Data.Version.Haskell as HVer
 
 import Pulp.Outputter
 import Pulp.System.FFI
@@ -20,6 +22,8 @@ import Pulp.Args
 import Pulp.Args.Get (getFlag)
 import Pulp.System.Files (mkdirIfNotExist)
 import Pulp.PackageManager (launchBower, launchPscPackage)
+import Pulp.Validate (getPursVersion)
+import Pulp.Utils (throw)
 
 foreign import bowerFile :: String -> String
 
@@ -160,7 +164,24 @@ action :: Action
 action = Action \args -> do
   force       <- getFlag "force" args.commandOpts
   pscPackage  <- getFlag "pscPackage" args.globalOpts
-  forceEff    <- getFlag "forceEff" args.commandOpts
-  forceEffect <- getFlag "forceEffect" args.commandOpts
+  withEff     <- getFlag "withEff" args.commandOpts
+  withEffect  <- getFlag "withEffect" args.commandOpts
   out         <- getOutputter args
-  init (if pscPackage then PscPackage else Bower) (if forceEff then UseEff else UseEffect) force out
+  effOrEffect <- getEffOrEffect out withEff withEffect
+
+  if withEff && withEffect
+    then throw $ "Cannot specify both --with-eff and --with-effect. Please choose one and try again."
+    else init (if pscPackage then PscPackage else Bower) effOrEffect force out
+
+  where
+
+  minEffectVersion = HVer.Version (fromFoldable [0, 12, 0]) Nil
+
+  getEffOrEffect out withEff withEffect = do
+    if withEff
+      then pure UseEff
+      else if withEffect
+        then pure UseEffect
+         else do
+           ver <- getPursVersion out
+           if ver < minEffectVersion then pure UseEff else pure UseEffect

@@ -25,6 +25,8 @@ foreign import bowerFile :: String -> String
 
 data InitStyle = Bower | PscPackage
 
+data EffOrEffect = UseEff | UseEffect
+
 unlines :: Array String -> String
 unlines arr = joinWith "\n" arr <> "\n"
 
@@ -46,34 +48,58 @@ pursReplFile = unlines [
   "import Prelude"
   ]
 
-mainFile :: String
-mainFile = unlines [
-  "module Main where",
-  "",
-  "import Prelude",
-  "import Effect (Effect)",
-  "import Effect.Console (log)",
-  "",
-  "main :: Effect Unit",
-  "main = do",
-  "  log \"Hello sailor!\""
+mainFile :: EffOrEffect -> String
+mainFile = case _ of
+  UseEffect -> unlines [
+    "module Main where",
+    "",
+    "import Prelude",
+    "import Effect (Effect)",
+    "import Effect.Console (log)",
+    "",
+    "main :: Effect Unit",
+    "main = do",
+    "  log \"Hello sailor!\""
+    ]
+  UseEff -> unlines [
+    "module Main where",
+    "",
+    "import Prelude",
+    "import Control.Monad.Eff (Eff)",
+    "import Control.Monad.Eff.Console (CONSOLE, log)",
+    "",
+    "main :: forall e. Eff (console :: CONSOLE | e) Unit",
+    "main = do",
+    "  log \"Hello sailor!\""
   ]
 
-testFile :: String
-testFile = unlines [
-  "module Test.Main where",
-  "",
-  "import Prelude",
-  "import Effect (Effect)",
-  "import Effect.Console (log)",
-  "",
-  "main :: Effect Unit",
-  "main = do",
-  "  log \"You should add some tests.\""
+testFile :: EffOrEffect -> String
+testFile = case _ of
+  UseEffect -> unlines [
+    "module Test.Main where",
+    "",
+    "import Prelude",
+    "import Effect (Effect)",
+    "import Effect.Console (log)",
+    "",
+    "main :: Effect Unit",
+    "main = do",
+    "  log \"You should add some tests.\""
+    ]
+  UseEff -> unlines [
+    "module Test.Main where",
+    "",
+    "import Prelude",
+    "import Control.Monad.Eff (Eff)",
+    "import Control.Monad.Eff.Console (CONSOLE, log)",
+    "",
+    "main :: forall e. Eff (console :: CONSOLE | e) Unit",
+    "main = do",
+    "  log \"You should add some tests.\""
   ]
 
-projectFiles :: InitStyle -> String -> String -> Array { path :: String, content :: String }
-projectFiles initStyle pathRoot projectName =
+projectFiles :: InitStyle -> EffOrEffect -> String -> String -> Array { path :: String, content :: String }
+projectFiles initStyle effOrEffect pathRoot projectName =
   case initStyle of
     Bower      -> cons bowerJson common
     PscPackage -> common
@@ -82,17 +108,17 @@ projectFiles initStyle pathRoot projectName =
   bowerJson = { path: fullPath ["bower.json"],        content: bowerFile projectName }
   common  = [ { path: fullPath [".gitignore"],        content: gitignore }
             , { path: fullPath [".purs-repl"],        content: pursReplFile }
-            , { path: fullPath ["src", "Main.purs"],  content: mainFile }
-            , { path: fullPath ["test", "Main.purs"], content: testFile }
+            , { path: fullPath ["src", "Main.purs"],  content: mainFile effOrEffect }
+            , { path: fullPath ["test", "Main.purs"], content: testFile effOrEffect }
             ]
 
-init :: InitStyle -> Boolean -> Outputter -> AffN Unit
-init initStyle force out = do
+init :: InitStyle -> EffOrEffect -> Boolean -> Outputter -> AffN Unit
+init initStyle effOrEffect force out = do
   cwd <- liftEff Process.cwd
   let projectName = Path.basename cwd
   out.log $ "Generating project skeleton in " <> cwd
 
-  let files = projectFiles initStyle cwd projectName
+  let files = projectFiles initStyle effOrEffect cwd projectName
 
   when (not force) do
     for_ files \f -> do
@@ -122,7 +148,9 @@ init initStyle force out = do
 
 action :: Action
 action = Action \args -> do
-  force      <- getFlag "force" args.commandOpts
-  pscPackage <- getFlag "pscPackage" args.globalOpts
-  out        <- getOutputter args
-  init (if pscPackage then PscPackage else Bower) force out
+  force       <- getFlag "force" args.commandOpts
+  pscPackage  <- getFlag "pscPackage" args.globalOpts
+  forceEff    <- getFlag "forceEff" args.commandOpts
+  forceEffect <- getFlag "forceEffect" args.commandOpts
+  out         <- getOutputter args
+  init (if pscPackage then PscPackage else Bower) (if forceEff then UseEff else UseEffect) force out

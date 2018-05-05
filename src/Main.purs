@@ -1,55 +1,54 @@
 module Main where
 
-import Prelude
-
 import Control.Monad.Aff
 import Control.Monad.Eff.Class
+import Control.Monad.Eff.Exception
+import Prelude
+import Pulp.Args.Get
+import Pulp.Args.Help
+import Pulp.Outputter
+import Pulp.System.FFI
+
 import Control.Monad.Eff.Console as Console
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
-import Control.Monad.Eff.Exception
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Except (runExcept)
-import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Either (Either(..))
-import Data.Map (insert)
-import Data.Foreign (Foreign, toForeign, readString)
-import Data.Foreign.JSON (parseJSON)
-import Data.Foreign.Index (readProp)
 import Data.Array (head, drop)
+import Data.Either (Either(..))
 import Data.Foldable (elem)
-import Data.List (List(Nil))
-import Data.Version (Version(), version, showVersion, parseVersion)
+import Data.Foreign (Foreign, toForeign, readString)
+import Data.Foreign.Index (readProp)
+import Data.Foreign.JSON (parseJSON)
+import Data.List (List(Nil), fromFoldable)
+import Data.Map (insert)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.String (stripPrefix, Pattern(..))
-import Text.Parsing.Parser (parseErrorMessage)
+import Data.Version (Version, version, showVersion, parseVersion)
+import Data.Version.Haskell as HVer
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Sync (readTextFile)
 import Node.Path as Path
 import Node.Process as Process
-
 import Pulp.Args as Args
-import Pulp.Args.Get
-import Pulp.Args.Help
-import Pulp.Args.Types as Type
 import Pulp.Args.Parser (parse)
-import Pulp.System.FFI
-import Pulp.Outputter
+import Pulp.Args.Types as Type
+import Pulp.Browserify as Browserify
+import Pulp.Build as Build
+import Pulp.BumpVersion as BumpVersion
+import Pulp.Docs as Docs
+import Pulp.Init as Init
+import Pulp.Login as Login
+import Pulp.Project (getProject)
+import Pulp.Publish as Publish
+import Pulp.Repl as Repl
+import Pulp.Run as Run
+import Pulp.Server as Server
+import Pulp.Shell as Shell
+import Pulp.Test as Test
 import Pulp.Validate (validate)
 import Pulp.Version (printVersion)
-import Pulp.Project (getProject)
-
-import Pulp.Init as Init
-import Pulp.Build as Build
-import Pulp.Run as Run
-import Pulp.Test as Test
-import Pulp.Browserify as Browserify
-import Pulp.Docs as Docs
-import Pulp.Repl as Repl
-import Pulp.Server as Server
-import Pulp.Login as Login
-import Pulp.BumpVersion as BumpVersion
-import Pulp.Publish as Publish
 import Pulp.Watch as Watch
-import Pulp.Shell as Shell
+import Text.Parsing.Parser (parseErrorMessage)
 
 globals :: Array Args.Option
 globals = [
@@ -166,7 +165,11 @@ commands :: Array Args.Command
 commands = [
   Args.command "init" "Generate an example PureScript project." Nothing Init.action [
      Args.option "force" ["--force"] Type.flag
-       "Overwrite any project found in the current directory."
+       "Overwrite any project found in the current directory.",
+     Args.option "forceEff" ["--force-eff"] Type.flag
+       "Overwrite the detected compiler version and generate project using Eff.",
+     Args.option "forceEffect" ["--force-effect"] Type.flag
+       "Overwrite the detected compiler version and generate project using Effect."
      ],
   Args.command "build" "Build the project." remainderToPurs Build.action $
     buildArgs <> moduleArgs,
@@ -262,9 +265,9 @@ main = void $ runAff failed succeeded do
 runWithArgs :: Args.Args -> AffN Unit
 runWithArgs args = do
   out <- getOutputter args
-  _ <- validate out
+  ver <- validate out
   watch <- getFlag "watch" args.globalOpts
-  args' <- addProject args
+  args' <- addProject args >>= addInitFlags ver
   if watch && args.command.name /= "server"
     then
       Args.runAction Watch.action args'
@@ -289,6 +292,24 @@ runWithArgs args = do
         proj <- getProject as.globalOpts
         let globalOpts' = insert "_project" (Just (toForeign proj)) as.globalOpts
         pure $ as { globalOpts = globalOpts' }
+
+  version_0_12_0 = HVer.Version (fromFoldable [0, 12, 0]) Nil
+
+  addInitFlags ver as = do
+    if as.command.name == "init"
+      then do
+        hasForce <- disj <$> getFlag "forceEff" args.globalOpts <*> getFlag "forceEffect" args.globalOpts
+        if hasForce
+         then pure as
+         else do
+          let commandOpts' = insert (effectFlagForVersion ver) Nothing as.commandOpts
+          pure $ as { commandOpts = commandOpts' }
+      else pure as
+
+  effectFlagForVersion ver =
+    if ver < version_0_12_0
+      then "forceEff"
+      else "forceEffect"
 
   runShellForOption option opts out = do
     triggerCommand <- getOption option opts

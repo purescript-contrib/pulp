@@ -296,7 +296,7 @@ runWithArgs args = do
   version_0_12_0 = HVer.Version (fromFoldable [0, 12, 0]) Nil
 
   addInitFlags ver as = do
-    hasForce <- disj <$> getFlag "forceEff" args.globalOpts <*> getFlag "forceEffect" args.globalOpts
+    hasForce <- disj <$> getFlag "forceEff" args.commandOpts <*> getFlag "forceEffect" args.commandOpts
     if as.command.name == "init" && not hasForce
       then do
           let commandOpts' = insert (effectFlagForVersion ver) Nothing as.commandOpts

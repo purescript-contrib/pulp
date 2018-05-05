@@ -133,14 +133,24 @@ init initStyle effOrEffect force out = do
     when (dir /= cwd) (mkdirIfNotExist dir)
     writeTextFile UTF8 f.path f.content
 
-  install initStyle
+  install initStyle effOrEffect
 
   where
-    install Bower = do
+    install Bower UseEff = do
+      launchBower ["install", "--save", "purescript-prelude", "purescript-console"]
+      launchBower ["install", "--save-dev", "purescript-psci-support"]
+
+    install Bower UseEffect = do
       launchBower ["install", "--save", "purescript-prelude", "purescript-console", "purescript-effect"]
       launchBower ["install", "--save-dev", "purescript-psci-support"]
 
-    install PscPackage = do
+    install PscPackage UseEff = do
+      launchPscPackage ["init"]
+      launchPscPackage ["install", "eff"]
+      launchPscPackage ["install", "console"]
+      launchPscPackage ["install", "psci-support"]
+
+    install PscPackage UseEffect = do
       launchPscPackage ["init"]
       launchPscPackage ["install", "effect"]
       launchPscPackage ["install", "console"]

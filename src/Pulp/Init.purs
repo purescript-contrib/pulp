@@ -177,11 +177,11 @@ action = Action \args -> do
 
   minEffectVersion = HVer.Version (fromFoldable [0, 12, 0]) Nil
 
-  getEffOrEffect out withEff withEffect = do
-    if withEff
-      then pure UseEff
-      else if withEffect
-        then pure UseEffect
-         else do
-           ver <- getPursVersion out
-           if ver < minEffectVersion then pure UseEff else pure UseEffect
+  getEffOrEffect out withEff withEffect
+    | withEff    = pure UseEff
+    | withEffect = pure UseEffect
+    | otherwise  = do
+        ver <- getPursVersion out
+        if ver < minEffectVersion
+          then pure UseEff
+          else pure UseEffect

@@ -28,6 +28,7 @@ import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec (execQuiet)
 import Pulp.Project (usingPscPackage)
+import Pulp.Constants as Constants
 
 recursiveGlobWithExtension :: String -> Set String -> Array String
 recursiveGlobWithExtension ext =
@@ -65,7 +66,7 @@ dependencyGlobs opts = do
 
 pscPackageGlobs :: AffN (Set String)
 pscPackageGlobs =
-  execQuiet "psc-package" ["sources"] Nothing <#> processGlobs
+  execQuiet Constants.pscPackagePath ["sources"] Nothing <#> processGlobs
   where
     -- Split on newlines and strip the /**/*/.purs suffixes just to
     -- append them later so it plays well with the other globs

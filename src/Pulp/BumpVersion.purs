@@ -21,6 +21,7 @@ import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Git
 import Pulp.Publish (resolutionsFile)
+import Pulp.Constants as Constants
 
 action :: Action
 action = Action \args -> do
@@ -38,7 +39,7 @@ checkPursPublish :: Outputter -> AffN Unit
 checkPursPublish out = do
   out.log "Checking your package using purs publish..."
   resolutions <- resolutionsFile
-  exec "purs" ["publish", "--manifest", "bower.json", "--resolutions", resolutions, "--dry-run"] Nothing
+  exec Constants.pursPath ["publish", "--manifest", "bower.json", "--resolutions", resolutions, "--dry-run"] Nothing
 
 -- | Returns the new version that we should bump to.
 bumpVersion :: Args -> AffN Version
@@ -63,12 +64,12 @@ newVersion mbump mcurrent out = case mcurrent, mbump of
 tagNewVersion :: Version -> AffN Unit
 tagNewVersion version = do
   let versionStr = "v" <> Version.showVersion version
-  exec "git"
+  exec Constants.gitPath
     [ "commit"
     , "--allow-empty"
     , "--message=" <> versionStr
     ] Nothing
-  exec "git"
+  exec Constants.gitPath
     [ "tag"
     , "--annotate"
     , "--message=" <> versionStr

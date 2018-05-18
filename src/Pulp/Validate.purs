@@ -17,6 +17,7 @@ import Text.Parsing.Parser (parseErrorMessage)
 import Pulp.Exec (execQuiet)
 import Pulp.System.FFI
 import Pulp.Outputter (Outputter())
+import Pulp.Constants as Constants
 
 validate :: Outputter -> AffN Version
 validate out = do
@@ -31,13 +32,13 @@ validate out = do
   pure ver
 
 getPursVersion :: Outputter -> AffN Version
-getPursVersion = getVersionFrom "purs"
+getPursVersion = getVersionFrom Constants.pursPath
 
 minimumPursVersion :: Version
 minimumPursVersion = Version (fromFoldable [0, 11, 0]) Nil
 
 getPsaVersion :: Outputter -> AffN Version
-getPsaVersion = getVersionFrom "psa"
+getPsaVersion = getVersionFrom Constants.psaPath
 
 getVersionFrom :: String -> Outputter -> AffN Version
 getVersionFrom bin out = do

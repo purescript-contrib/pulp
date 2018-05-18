@@ -37,6 +37,7 @@ import Pulp.System.Read as Read
 import Pulp.Git
 import Pulp.Login (tokenFilePath)
 import Pulp.Utils (throw)
+import Pulp.Constants as Constants
 
 -- TODO:
 -- * Check that the 'origin' remote matches with bower.json
@@ -63,7 +64,8 @@ action = Action \args -> do
   noPush <- getFlag "noPush" args.commandOpts
   unless noPush do
     remote <- getOption' "pushTo" args.commandOpts
-    confirmRun out "git" ["push", remote, "HEAD", "refs/tags/" <> tagStr]
+    confirmRun out Constants.gitPath
+      ["push", remote, "HEAD", "refs/tags/" <> tagStr]
 
     -- Only attempt to register on Bower after a successful push, to avoid
     -- accidental squatting by non-package-owners.
@@ -103,7 +105,8 @@ gzip str = do
 
 resolutionsFile :: AffN String
 resolutionsFile = do
-  resolutions <- execQuiet "bower" ["list", "--json", "--offline"] Nothing
+  resolutions <- execQuiet Constants.bowerPath
+                   ["list", "--json", "--offline"] Nothing
   info <- openTemp { prefix: "pulp-publish", suffix: ".json" }
   _ <- FS.fdAppend info.fd =<< liftEff (Buffer.fromString resolutions UTF8)
   _ <- FS.fdClose info.fd
@@ -112,7 +115,7 @@ resolutionsFile = do
 pursPublish :: AffN String
 pursPublish = do
   resolutions <- resolutionsFile
-  execQuiet "purs" ["publish", "--manifest", "bower.json", "--resolutions", resolutions] Nothing
+  execQuiet Constants.pursPath ["publish", "--manifest", "bower.json", "--resolutions", resolutions] Nothing
 
 confirmRun :: Outputter -> String -> Array String -> AffN Unit
 confirmRun out cmd args = do
@@ -175,11 +178,11 @@ pursuitUrl name vers =
 
 registerOnBowerIfNecessary :: Outputter -> String -> String -> AffN Unit
 registerOnBowerIfNecessary out name repoUrl = do
-  result <- attempt (run "bower" ["info", name, "--json"] Nothing)
+  result <- attempt (run Constants.bowerPath ["info", name, "--json"] Nothing)
   case result of
     Left _ -> do
       out.log "Registering your package on Bower..."
-      confirmRun out "bower" ["register", name, repoUrl]
+      confirmRun out Constants.bowerPath ["register", name, repoUrl]
     Right _ ->
       -- already registered, don't need to do anything.
       pure unit

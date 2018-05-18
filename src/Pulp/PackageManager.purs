@@ -13,6 +13,7 @@ import Data.Maybe (Maybe(..))
 import Pulp.Exec (exec)
 import Pulp.System.FFI (AffN)
 import Pulp.System.Which (which)
+import Pulp.Constants as Constants
 
 run :: String -> String -> Array String -> AffN Unit
 run execName errorMsg args = do
@@ -24,11 +25,11 @@ run execName errorMsg args = do
   where errorMsg' = "No `" <> execName <> "` executable found.\n\n" <> errorMsg
 
 launchBower :: Array String -> AffN Unit
-launchBower = run "bower" """Pulp no longer bundles Bower. You'll need to install it manually:
+launchBower = run Constants.bowerPath """Pulp no longer bundles Bower. You'll need to install it manually:
 
    $ npm install -g bower
 """
 
 launchPscPackage :: Array String -> AffN Unit
 launchPscPackage = do
-  run "psc-package" "Install psc-package from: https://github.com/purescript/psc-package"
+  run Constants.pscPackagePath "Install psc-package from: https://github.com/purescript/psc-package"

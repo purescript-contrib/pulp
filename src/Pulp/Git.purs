@@ -21,11 +21,12 @@ import Node.ChildProcess as CP
 import Pulp.System.FFI
 import Pulp.Exec
 import Pulp.Utils (throw)
+import Pulp.Constants (gitPath)
 
 -- | Throw an error if the git working tree is dirty.
 requireCleanGitWorkingTree :: AffN Unit
 requireCleanGitWorkingTree = do
-  out <- execQuiet "git" ["status", "--porcelain"] Nothing
+  out <- execQuiet gitPath ["status", "--porcelain"] Nothing
   if Foldable.all String.null (String.split (String.Pattern "\n") out)
     then pure unit
     else throw ("Your git working tree is dirty. Please commit or stash " <>
@@ -39,7 +40,7 @@ requireCleanGitWorkingTree = do
 -- | version according to semver version comparison.
 getVersionFromGitTag :: AffN (Maybe (Tuple String Version))
 getVersionFromGitTag = do
-  output <- run "git" ["tag", "--points-at", "HEAD"]
+  output <- run gitPath ["tag", "--points-at", "HEAD"]
   pure (maxVersion output)
 
 -- | Get the latest semver version tag in the repository. The tag must start
@@ -49,7 +50,7 @@ getVersionFromGitTag = do
 -- | Returns Nothing if there are no such tags in the repository.
 getLatestTaggedVersion :: AffN (Maybe (Tuple String Version))
 getLatestTaggedVersion = do
-  output <- attempt $ run "git" ["describe", "--tags", "--abbrev=0", "HEAD"]
+  output <- attempt $ run gitPath ["describe", "--tags", "--abbrev=0", "HEAD"]
   pure $ either (const Nothing) maxVersion output
 
 -- | Run a command, piping stderr to /dev/null

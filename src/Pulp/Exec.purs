@@ -29,12 +29,13 @@ import Unsafe.Coerce
 
 import Pulp.System.Stream
 import Pulp.System.FFI
+import Pulp.Constants as Constants
 
 psa :: Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
-psa = compiler "psa"
+psa = compiler Constants.psaPath
 
 pursBuild :: Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
-pursBuild deps args = compiler "purs" deps (["compile"] <> args)
+pursBuild deps args = compiler Constants.pursPath deps (["compile"] <> args)
 
 compiler :: String -> Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
 compiler name deps args env =
@@ -50,7 +51,7 @@ compiler name deps args env =
 
 pursBundle :: Array String -> Array String -> Maybe (StrMap String) -> AffN String
 pursBundle files args env =
-  execQuiet "purs" (["bundle"] <> files <> args) env
+  execQuiet Constants.pursPath (["bundle"] <> files <> args) env
 
 -- | Start a child process asynchronously, with the given command line
 -- | arguments and environment, and wait for it to exit.

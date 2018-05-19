@@ -15,14 +15,14 @@ import Node.FS.Aff as FS
 import Node.Encoding (Encoding(UTF8))
 import Test.Assert (assert')
 
-import Pulp.Exec (execQuietWithStderr)
+import Pulp.Exec (execQuiet)
 import Pulp.System.FFI (AffN, EffN)
 import Pulp.System.Files (tempDir)
 import Pulp.Git (getVersionFromGitTag)
 
--- | Run a shell command, swallowing stderr.
+-- | Run a shell command
 run :: String -> Array String -> AffN String
-run cmd args = execQuietWithStderr CP.Ignore cmd args Nothing
+run cmd args = execQuiet cmd args Nothing
 
 run_ :: String -> Array String -> AffN Unit
 run_ cmd args = void $ run cmd args
@@ -43,6 +43,8 @@ main = launchAff do
   dir <- tempDir { prefix: "pulp-unit-test-", suffix: "" }
   liftEff $ unsafeCoerceEff $ Process.chdir dir
   run_ "git" ["init"]
+  run_ "git" ["config", "user.email", "pulp-test@example.com"]
+  run_ "git" ["config", "user.name", "Pulp Tester"]
 
   -----------------------------------------------------------------------------
   log "getVersionFromGitTag (basic)"

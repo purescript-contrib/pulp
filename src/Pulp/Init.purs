@@ -141,8 +141,8 @@ init initStyle effOrEffect force out = do
 
   where
     install Bower UseEff = do
-      launchBower ["install", "--save", "purescript-prelude", "purescript-console"]
-      launchBower ["install", "--save-dev", "purescript-psci-support"]
+      launchBower ["install", "--save", "purescript-prelude@3.3.0", "purescript-console@3.0.0"]
+      launchBower ["install", "--save-dev", "purescript-psci-support@3.0.0"]
 
     install Bower UseEffect = do
       launchBower ["install", "--save", "purescript-prelude", "purescript-console", "purescript-effect"]

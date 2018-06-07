@@ -166,7 +166,11 @@ commands :: Array Args.Command
 commands = [
   Args.command "init" "Generate an example PureScript project." Nothing Init.action [
      Args.option "force" ["--force"] Type.flag
-       "Overwrite any project found in the current directory."
+       "Overwrite any project found in the current directory.",
+     Args.option "withEff" ["--with-eff"] Type.flag
+       "Generate project using Eff, regardless of the detected compiler version.",
+     Args.option "withEffect" ["--with-effect"] Type.flag
+       "Generate project using Effect, regardless of the detected compiler version."
      ],
   Args.command "build" "Build the project." remainderToPurs Build.action $
     buildArgs <> moduleArgs,

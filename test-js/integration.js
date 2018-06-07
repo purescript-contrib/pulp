@@ -761,4 +761,9 @@ describe("integration tests", function() {
   it("exits 1 on invalid options", run(function*(sh, pulp) {
     yield pulp("build --blah", null, { expectedExitCode: 1 });
   }));
+
+  it("exits 1 on --with-eff and --with-effect", run(function*(sh, pulp, assert) {
+    yield pulp("init --with-eff --with-effect", null, { expectedExitCode: 1 });
+  }));
+
 });

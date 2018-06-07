@@ -1,12 +1,10 @@
 module Test.Main where
 
 import Prelude
-import Control.Monad.Eff (kind Effect, Eff, foreachE)
-import Control.Monad.Eff.Console (log)
+import Effect (Effect, foreachE)
+import Effect.Console (log)
 
-foreign import data PROCESS :: Effect
-
-foreign import argv :: forall eff. Eff (process :: PROCESS | eff) (Array String)
+foreign import argv :: Effect (Array String)
 foreign import slice :: forall a. Int -> Array a -> Array a
 foreign import length :: forall a. Array a -> Int
 
@@ -16,6 +14,7 @@ drop n arr
   | n >= length arr = []
   | otherwise = slice n arr
 
+main :: Effect Unit
 main = do
     args <- drop 2 <$> argv
     foreachE args log

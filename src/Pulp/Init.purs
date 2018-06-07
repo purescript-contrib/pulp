@@ -51,10 +51,10 @@ mainFile = unlines [
   "module Main where",
   "",
   "import Prelude",
-  "import Control.Monad.Eff (Eff)",
-  "import Control.Monad.Eff.Console (CONSOLE, log)",
+  "import Effect (Effect)",
+  "import Effect.Console (log)",
   "",
-  "main :: forall e. Eff (console :: CONSOLE | e) Unit",
+  "main :: Effect Unit",
   "main = do",
   "  log \"Hello sailor!\""
   ]
@@ -64,10 +64,10 @@ testFile = unlines [
   "module Test.Main where",
   "",
   "import Prelude",
-  "import Control.Monad.Eff (Eff)",
-  "import Control.Monad.Eff.Console (CONSOLE, log)",
+  "import Effect (Effect)",
+  "import Effect.Console (log)",
   "",
-  "main :: forall e. Eff (console :: CONSOLE | e) Unit",
+  "main :: Effect Unit",
   "main = do",
   "  log \"You should add some tests.\""
   ]
@@ -116,7 +116,7 @@ init initStyle force out = do
 
     install PscPackage = do
       launchPscPackage ["init"]
-      launchPscPackage ["install", "eff"]
+      launchPscPackage ["install", "effect"]
       launchPscPackage ["install", "console"]
       launchPscPackage ["install", "psci-support"]
 

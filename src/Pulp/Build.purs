@@ -40,7 +40,7 @@ import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec (psa, pursBuild, pursBundle)
 import Pulp.Files
-import Pulp.Validate (getPsaVersion)
+import Pulp.Validate (getPsaVersion, getPursVersion)
 import Pulp.Utils (throw)
 import Pulp.Sorcery (sorcery)
 
@@ -76,9 +76,10 @@ go buildType = Action \args -> do
   buildPath <- getOption' "buildPath" args.commandOpts
   noPsa <- getFlag "noPsa" args.commandOpts
   sourceMaps <- getFlag "sourceMaps" args.commandOpts
+  ver <- getPursVersion out
   jobs :: Maybe Int <- getOption "jobs" args.commandOpts
   let jobsArgs = maybe [] (\j -> ["+RTS", "-N" <> show j, "-RTS"]) jobs
-      sourceMapArg = if sourceMaps then ["--source-maps"] else []
+      sourceMapArg = if sourceMaps then sourceMapArgs ver else []
   let sourceGlobs = sources globs
       extraArgs = if buildType /= RunBuild then args.remainder else []
       binArgs = ["-o", buildPath] <> sourceMapArg <> jobsArgs <> extraArgs
@@ -268,3 +269,9 @@ commaList arr =
 
 internalError :: forall a. String -> a
 internalError = unsafePerformEff <<< Exception.throw <<< ("internal error: " <> _)
+
+sourceMapArgs :: Version -> Array String
+sourceMapArgs ver =
+  if ver >= Version (fromFoldable [0, 12, 0]) Nil
+  then [ "--codegen", "sourcemaps" ]
+  else ["--source-maps"]

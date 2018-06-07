@@ -2,8 +2,10 @@
 module Pulp.Browserify where
 
 import Data.Foldable
+import Data.List (fromFoldable, List(..))
 import Data.Function.Uncurried
 import Data.Maybe
+import Data.Version.Haskell (Version(..))
 import Prelude
 import Pulp.Args
 import Pulp.Args.Get
@@ -13,6 +15,8 @@ import Pulp.Project
 import Pulp.Sorcery
 import Pulp.System.FFI
 import Pulp.System.Files
+import Pulp.Validate (getPursVersion)
+
 
 import Control.Monad.Aff (apathize)
 import Control.Monad.Eff.Class (liftEff)
@@ -105,10 +109,17 @@ optimising = Action \args -> do
   _ <- pursBundle (outputModules buildPath) bundleArgs Nothing
   bundledJs <- readTextFile UTF8 tmpFilePath
 
+  ver <- getPursVersion out
+  cwd <- liftEff Process.cwd
+
   let mapFile = tmpFilePath <> ".map"
+  let mapBase =
+        if ver >= Version (fromFoldable [0, 12, 0]) Nil
+        then cwd
+        else Path.dirname mapFile
   when sourceMaps do
     smText <- readTextFile UTF8 mapFile
-    writeTextFile UTF8 mapFile (updateSourceMapPaths (Path.dirname mapFile) smText)
+    writeTextFile UTF8 mapFile (updateSourceMapPaths mapBase smText)
 
   out.log "Browserifying..."
 
@@ -122,7 +133,7 @@ optimising = Action \args -> do
       , standalone: toNullable standalone
       , out: out'
       , debug: sourceMaps
-      , outDir: maybe buildPath (Path.resolve [ buildPath ] <<< Path.dirname) toOpt
+      , outDir: maybe buildPath (Path.resolve [ ] <<< Path.dirname) toOpt
       , tmpFilePath: tmpFilePath
       }
   case toOpt of
@@ -231,7 +242,7 @@ browserifyIncBundle opts = runNode $ runFn2 browserifyIncBundle' opts
 
 updateSourceMapPaths :: String -> String -> String
 updateSourceMapPaths basePath text =
-  either (const text) 
+  either (const text)
     (stringify <<< foldJsonObject jsonEmptyObject (fromObject <<< update resolveFiles "sources"))
     (jsonParser text)
   where

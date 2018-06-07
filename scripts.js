@@ -17,7 +17,7 @@ const scripts = {
   "compile": "psa -c \"src/**/*.purs\" \"test/**/*.purs\" \"bower_components/purescript-*/src/**/*.purs\" --censor-lib --censor-codes=ImplicitImport,HidingImport",
   "bundle": "purs bundle \"output/*/*.js\" --output pulp.js --module Main --main Main",
   "test:unit": "purs bundle \"output/*/*.js\" --output unit-tests.js --module Test.Main --main Test.Main && node unit-tests.js",
-  "test:integration": "mocha test-js --require babel/register"
+  "test:integration": "mocha --require babel-polyfill --require babel-register test-js"
 };
 
 const subcommand = process.argv[2];
@@ -51,11 +51,12 @@ function build() {
 }
 
 function test() {
-  spawnSync("psvm use " + getConfig("psc_test_version"));
   // TODO: unit tests don't work on Windows yet
   if (process.platform !== "win32") {
+    spawnSync("psvm use " + getConfig("psc_build_version"));
     execScript("test:unit");
   }
+  spawnSync("psvm use " + getConfig("psc_test_version"));
   execScript("test:integration");
 }
 

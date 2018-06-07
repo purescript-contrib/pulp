@@ -73,7 +73,7 @@
     "mkdirp": "^0.5.1",
     "mocha": "^5.2.0",
     "psc-package": "^0.3.2",
-    "psvm": "^0.1.5",
+    "psvm": "jacereda/psvm-js#415bc8dc62c22f841466db0dc458d2976c15649d",
     "purescript-psa": "^0.6.0",
     "semver": "^5.5.0",
     "touch": "^3.1.0"

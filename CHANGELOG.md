@@ -1,5 +1,14 @@
 # Pulp Release History
 
+## 12.3.0
+
+* Have `pulp init` generate projects based on compiler version: the `pulp init`
+  command now has the ability to produce a project skeleton using either
+  `Effect` or `Eff`. By default, `Effect` is chosen if the compiler version is
+  at least 0.12.0, otherwise `Eff` is chosen.  However, this behaviour can be
+  overridden with the `--with-eff` or `--with-effect` flags to `pulp init`.
+  (#340, @vladciobanu)
+
 ## 12.2.0
 
 * The type `Effect.Effect` is now considered by Pulp to be acceptable for the

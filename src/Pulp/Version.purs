@@ -24,6 +24,7 @@ import Node.Globals (__dirname)
 import Pulp.System.FFI (AffN)
 import Pulp.System.Which (which)
 import Pulp.Exec (execQuiet)
+import Pulp.Constants as Constants
 
 version :: Version
 version =
@@ -44,9 +45,11 @@ versionString =
 
 printVersion :: AffN Unit
 printVersion = do
-  pursVersion <- execQuiet "purs" ["--version"] Nothing
-  pursPath <- attempt $ which "purs"
+  pursVersion <- execQuiet Constants.pursPath ["--version"] Nothing
+  pursPath' <- if Path.isAbsolute Constants.pursPath
+              then pure $ Right Constants.pursPath
+              else attempt $ which "purs"
   liftEff $ Console.log $
     "Pulp version " <> showVersion version <>
     "\npurs version " <> trim pursVersion <>
-    either (const "") (\p -> " using " <> trim p) pursPath
+    either (const "") (\p -> " using " <> trim p) pursPath'

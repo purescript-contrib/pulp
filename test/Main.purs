@@ -19,6 +19,7 @@ import Pulp.Exec (execQuietWithStderr)
 import Pulp.System.FFI (AffN, EffN)
 import Pulp.System.Files (tempDir)
 import Pulp.Git (getVersionFromGitTag)
+import Pulp.Constants (gitPath)
 
 -- | Run a shell command, swallowing stderr.
 run :: String -> Array String -> AffN String
@@ -30,8 +31,8 @@ run_ cmd args = void $ run cmd args
 commitFile :: String -> String -> AffN Unit
 commitFile name contents = do
   FS.writeTextFile UTF8 name contents
-  run_ "git" ["add", name]
-  run_ "git" ["commit", "--message", "add " <> name]
+  run_ gitPath ["add", name]
+  run_ gitPath ["commit", "--message", "add " <> name]
 
 assertEq :: forall a. Show a => Eq a => a -> a -> AffN Unit
 assertEq expected actual =
@@ -42,7 +43,7 @@ assertEq expected actual =
 main = launchAff do
   dir <- tempDir { prefix: "pulp-unit-test-", suffix: "" }
   liftEff $ unsafeCoerceEff $ Process.chdir dir
-  run_ "git" ["init"]
+  run_ gitPath ["init"]
 
   -----------------------------------------------------------------------------
   log "getVersionFromGitTag (basic)"
@@ -50,7 +51,7 @@ main = launchAff do
   commitFile "file1.txt" "abcde\n"
   commitFile "file2.txt" "fghij\n"
 
-  run_ "git" ["tag", "v1.0.0"]
+  run_ gitPath ["tag", "v1.0.0"]
 
   result <- getVersionFromGitTag
   assertEq (Just (Tuple "v1.0.0" (version 1 0 0 Nil Nil))) result
@@ -65,10 +66,10 @@ main = launchAff do
   -----------------------------------------------------------------------------
   log "getVersionFromGitTag gives the latest version tag pointing to HEAD"
 
-  run_ "git" ["commit", "--allow-empty", "--message", "an empty commit"]
-  run_ "git" ["tag", "blahblahblah"]
-  run_ "git" ["tag", "v2.0.0"]
-  run_ "git" ["tag", "v2.0.1"]
+  run_ gitPath ["commit", "--allow-empty", "--message", "an empty commit"]
+  run_ gitPath ["tag", "blahblahblah"]
+  run_ gitPath ["tag", "v2.0.0"]
+  run_ gitPath ["tag", "v2.0.1"]
 
   result <- getVersionFromGitTag
   assertEq (Just (Tuple "v2.0.1" (version 2 0 1 Nil Nil))) result
@@ -76,8 +77,8 @@ main = launchAff do
   -----------------------------------------------------------------------------
   log "getVersionFromGitTag works with annotated tags"
 
-  run_ "git" ["commit", "--allow-empty", "--message", "another empty commit"]
-  run_ "git" ["tag", "--annotate", "--message", "lmao", "v3.0.0"]
+  run_ gitPath ["commit", "--allow-empty", "--message", "another empty commit"]
+  run_ gitPath ["tag", "--annotate", "--message", "lmao", "v3.0.0"]
 
   result <- getVersionFromGitTag
   assertEq (Just (Tuple "v3.0.0" (version 3 0 0 Nil Nil))) result

@@ -21,6 +21,7 @@ import Pulp.Exec
 import Pulp.Files
 import Pulp.Outputter
 import Pulp.System.FFI
+import Pulp.Constants as Constants
 
 action :: Action
 action = Action \args -> do
@@ -50,7 +51,7 @@ action = Action \args -> do
     for_ fails (out.log <<< ("  " <> _))
     out.err $ "This may be a bug."
 
-  _ <- execQuiet "purs" (["docs"] <> args.remainder <> sources globSrc <> docgen) Nothing
+  _ <- execQuiet Constants.pursPath (["docs"] <> args.remainder <> sources globSrc <> docgen) Nothing
 
   out.log "Documentation generated."
 

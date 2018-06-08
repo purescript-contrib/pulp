@@ -19,6 +19,7 @@ import Pulp.Exec (exec)
 import Pulp.Build as Build
 import Pulp.Run (setupEnv, makeEntry)
 import Pulp.System.Files (openTemp)
+import Pulp.Constants as Constants
 
 action :: Action
 action = Action \args -> do
@@ -27,6 +28,8 @@ action = Action \args -> do
 
   runtime <- getOption' "runtime" opts
   let isNode = runtime == "node"
+  let runtimeExecutable =
+        if isNode then Constants.nodePath else runtime
   let changeOpts = if isNode
                      then id :: Options -> Options -- helps type inference
                      else Map.insert "to" (Just (toForeign "./output/test.js"))
@@ -50,7 +53,7 @@ action = Action \args -> do
       src <- liftEff $ Buffer.fromString (makeEntry main) UTF8
       _ <- FS.fdAppend info.fd src
       _ <- FS.fdClose info.fd
-      exec runtime
+      exec runtimeExecutable
            ([info.path] <> args.remainder)
            (Just env)
     else do

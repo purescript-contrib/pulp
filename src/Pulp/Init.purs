@@ -170,7 +170,7 @@ action = Action \args -> do
   effOrEffect <- getEffOrEffect out withEff withEffect
 
   if withEff && withEffect
-    then throw $ "Cannot specify both --with-eff and --with-effect. Please choose one and try again."
+    then throw "Cannot specify both --with-eff and --with-effect. Please choose one and try again."
     else init (if pscPackage then PscPackage else Bower) effOrEffect force out
 
   where

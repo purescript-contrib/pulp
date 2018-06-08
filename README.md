@@ -370,7 +370,7 @@ myBundle.main();
 ### Building Documentation
 
 PureScript has an inline syntax for documentation, which can be
-extracted into Markdown files using the `purs docs` command. `pulp`
+extracted into Markdown or HTML files using the `purs docs` command. `pulp`
 provides the `pulp docs` command to make this process easy:
 
 ```sh
@@ -387,6 +387,21 @@ You can also extract documentation from your tests, if you like:
 ```sh
 $ pulp docs --with-tests
 ```
+
+The `purs docs` command itself also accepts some options to modify its
+behaviour, which can be specified by using pass-through options. The `--format`
+option is particularly useful, as it allows you to specify the desired output
+format. In particular, you can generate nice hyperlinked Pursuit-style HTML
+docs with the following command:
+
+```sh
+$ pulp docs -- --format html
+```
+
+It is a good idea to run this command and browse the generated HTML
+documentation before publishing a library to Pursuit, as doing so will allow
+you to spot any formatting issues or any declarations which are missing
+documentation.
 
 ### Launching a REPL
 

@@ -404,22 +404,16 @@ $ pulp repl
 
 ### Launching a Development Server
 
-While technically out of scope for a build tool like `pulp`, a common
-need when developing client side web apps is a tightly integrated
-development web server, which takes care of compilation for you on the
-fly. This is what the
-[purs-loader](https://github.com/ethul/purs-loader) project is for: it
-provides a PureScript loader for [Webpack](http://webpack.github.io/),
-which works with Webpack's development server and makes recompilation
-seamless: whenever you make a change to your source files, you just
-switch to your browser and hit the refresh button, and the server will
-compile and deliver your assets on the fly. No need to wait for the
+A common need when developing client side web apps is a tightly integrated
+development web server, which takes care of compilation for you on the fly.
+This is what `pulp server` is for: whenever you make a change to your source
+files, you just switch to your browser and hit the refresh button, and the
+server will compile and deliver your assets on the fly. No need to wait for the
 PureScript compiler to finish before switching to the browser.
 
-`pulp` provides the `pulp server` command to quickly set up a Webpack
-development server for your project. It only provides the most basic
-functionality: it will serve static assets from your project root, and
-it will serve your compiled JS bundle from `/app.js`.
+`pulp server` only provides the most basic functionality: it will serve static
+assets from your project root, and it will serve your compiled JS bundle from
+`/app.js`.
 
 #### A Quick Example
 
@@ -452,22 +446,34 @@ $ pulp server
 ```
 
 It will tell you that it's launched a web server at
-[http://localhost:1337/](http://localhost:1337/), and after a little
-while it will tell you that it's finished compiling (`bundle is now
-VALID`). If you browse to
+[http://localhost:1337/](http://localhost:1337/), and after a little while it
+will tell you that it's finished compiling:
+
+```
+* Server listening on http://localhost:1337/
+* Building project in /home/harry/code/hello-serve
+Compiling Data.Symbol
+Compiling Type.Data.RowList
+Compiling Record.Unsafe
+<snip>
+* Build successful.
+* Bundling JavaScript...
+* Bundled.
+```
+
+If you browse to
 [http://localhost:1337/](http://localhost:1337/), you should, in
 addition to the "Hello sailor!" header on the webpage, see that your
 PureScript code has printed the text "Hello sailor!" to the console.
 
 #### I Need More
 
-As mentioned, this is a very bare bones development server. You're
-likely to quickly need more features if you plan on doing any kind of
-serious web development. At this point, you'll need to set up your own
-Webpack configuration using
-[purs-loader](https://github.com/ethul/purs-loader). Due to the way
-Webpack works, it's not really useful to extend `pulp server` with
-further configuration options. It's intended as a starting point only.
+As mentioned, this is a very bare bones development server, since `pulp server`
+is intended as a starting point only. You're likely to quickly need more
+features if you plan on doing any kind of serious web development. At this
+point, you'll need to look further afield; one option is to use
+[Webpack](https://webpack.github.io/) together with
+[purs-loader](https://github.com/ethul/purs-loader).
 
 ## Dependency Management
 

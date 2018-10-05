@@ -12,6 +12,8 @@ const docLine1 = "## Module Main";
 const bowerMissing = "* ERROR: No bower.json or psc-package.json found in current or parent directories. Are you in a PureScript project?";
 const initWithoutForce = f => new RegExp('\\* ERROR: Found .*'+f+': There\'s already a project here. Run `pulp init --force` if you\'re sure you want to overwrite it.');
 const filesToOverwrite = ['./bower.json', './.gitignore', 'src/Main.purs', 'test/Main.purs'];
+const existingFiles = ['./bower.json', 'src/Main.purs', 'test/Main.purs'];
+const gitIgnoreFile = './.gitignore';
 const testDocLine1 = "## Module Test.Main";
 const consoleDocLine1 = "## Module Control.Monad.Eff.Console";
 const buildHelp = ["Command: build", "Build the project."];
@@ -19,6 +21,18 @@ const docsHelp = ["Command: docs", "Generate project documentation."];
 const skipped = "* Project unchanged; skipping build step.";
 
 const newlines = /\r?\n/g;
+
+const gitIgnoreContent = [
+  "/bower_components/",
+  "/node_modules/",
+  "/.pulp-cache/",
+  "/output/",
+  "/generated-docs/",
+  "/.psc-package/",
+  "/.psc*",
+  "/.purs*",
+  "/.psa*"
+]
 
 const testBowerJson = JSON.stringify({
   "name": "test-package-for-pulp-tests",
@@ -176,8 +190,8 @@ describe("integration tests", function() {
   }));
 
   it("refuses to init without --force", run(function*(sh, pulp, assert, temp) {
-    for (var idx in filesToOverwrite) {
-      let file = path.join(temp, filesToOverwrite[idx])
+    for (var idx in existingFiles) {
+      let file = path.join(temp, existingFiles[idx])
         , dir  = path.dirname(file);
       if (!(yield fs.exists(dir))) {
         yield fs.mkdir(dir);
@@ -188,6 +202,14 @@ describe("integration tests", function() {
       const rm = process.platform === "win32" ? "del" : "rm"
       yield fs.unlink(file);
     }
+  }));
+
+  it("init appends to existing .gitignore file without --force", run(function*(sh, pulp, assert,temp) {
+    let file = path.join(temp, gitIgnoreFile);
+    yield fs.writeFile(file, "hello\n");
+    yield pulp("init");
+    const out = yield fs.readFile(file);
+    assert.equal(out, "hello\n" + gitIgnoreContent.join("\n") + "\n");
   }));
 
   it("init overwrites existing files with --force", run(function*(sh, pulp, assert, temp) {

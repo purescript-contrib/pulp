@@ -9,7 +9,7 @@ import Control.Monad.Eff.Exception (error)
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Eff.Class (liftEff)
 import Node.Path as Path
-import Node.FS.Aff (writeTextFile, exists)
+import Node.FS.Aff (writeTextFile, exists, appendTextFile)
 import Node.Encoding (Encoding(UTF8))
 import Node.Process as Process
 import Data.List (List(Nil), fromFoldable)
@@ -110,11 +110,25 @@ projectFiles initStyle effOrEffect pathRoot projectName =
   where
   fullPath pathParts = Path.concat ([pathRoot] <> pathParts)
   bowerJson = { path: fullPath ["bower.json"],        content: bowerFile projectName }
-  common  = [ { path: fullPath [".gitignore"],        content: gitignore }
-            , { path: fullPath [".purs-repl"],        content: pursReplFile }
+  common  = [ { path: fullPath [".purs-repl"],        content: pursReplFile }
             , { path: fullPath ["src", "Main.purs"],  content: mainFile effOrEffect }
             , { path: fullPath ["test", "Main.purs"], content: testFile effOrEffect }
             ]
+
+makeGitIgnore :: String -> Boolean -> Outputter -> AffN Unit
+makeGitIgnore cwd force out = do
+  let path = Path.concat $ [cwd] <> [".gitignore"]
+      content = gitignore
+  fileExists <- exists path
+  if force || (not fileExists)
+    then do
+      let dir = Path.dirname path
+      when (dir /= cwd) (mkdirIfNotExist path)
+      writeTextFile UTF8 path content
+    else do
+      out.log $ "Found an existing .gitignore file. "
+             <> "Pulp's default .gitignore was appended at the bottom of the file."
+      appendTextFile UTF8 path content
 
 init :: InitStyle -> EffOrEffect -> Boolean -> Outputter -> AffN Unit
 init initStyle effOrEffect force out = do
@@ -136,6 +150,8 @@ init initStyle effOrEffect force out = do
     let dir = Path.dirname f.path
     when (dir /= cwd) (mkdirIfNotExist dir)
     writeTextFile UTF8 f.path f.content
+
+  makeGitIgnore cwd force out
 
   install initStyle effOrEffect
 

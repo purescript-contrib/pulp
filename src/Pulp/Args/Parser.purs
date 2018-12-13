@@ -1,30 +1,28 @@
 module Pulp.Args.Parser where
 
-import Prelude hiding (when)
-
-import Control.Monad.Trans.Class (lift)
-import Control.Monad.State.Class (get)
 import Control.Alt
-import Data.Array (many)
 import Data.Either
+import Prelude hiding (when)
+import Pulp.Args
+import Text.Parsing.Parser
+
+import Control.Monad.State.Class (get)
+import Control.Monad.Trans.Class (lift)
+import Data.Array (many)
 import Data.Foldable (find, elem)
-import Data.Traversable (traverse)
 import Data.List (List)
 import Data.List as List
-import Data.String (joinWith)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
+import Data.String (joinWith)
+import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
-import Data.Foreign (toForeign)
-
-import Text.Parsing.Parser
-import Text.Parsing.Parser.Combinators ((<?>), try, optionMaybe)
-import Text.Parsing.Parser.Token as Token
-import Text.Parsing.Parser.Pos as Pos
-
-import Pulp.Args
+import Effect.Aff (Aff)
+import Foreign (unsafeToForeign)
 import Pulp.Utils (throw)
-import Pulp.System.FFI (AffN())
+import Text.Parsing.Parser.Combinators ((<?>), try, optionMaybe)
+import Text.Parsing.Parser.Pos as Pos
+import Text.Parsing.Parser.Token as Token
 
 halt :: forall a. String -> OptParser a
 halt err = lift $ throw err
@@ -90,7 +88,7 @@ extractDefault :: Option -> Options
 extractDefault o =
   case o.defaultValue of
     Just def ->
-      Map.singleton o.name (Just (toForeign def))
+      Map.singleton o.name (Just (unsafeToForeign def))
     Nothing ->
       Map.empty
 
@@ -137,6 +135,6 @@ parseArgv globals commands = do
   matchHelp =
     void (when (_ `elem` ["-h", "--help"]))
 
-parse :: Array Option -> Array Command -> Array String -> AffN (Either ParseError (Either Help Args))
+parse :: Array Option -> Array Command -> Array String -> Aff (Either ParseError (Either Help Args))
 parse globals commands s =
   runParserT (List.fromFoldable s) (parseArgv globals commands)

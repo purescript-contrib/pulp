@@ -1,8 +1,8 @@
 module Test.Main where
 
 import Prelude
-import Control.Monad.Eff (kind Effect, Eff, foreachE)
-import Control.Monad.Eff.Console (log)
+import Effect (Effect, foreachE)
+import Effect.Console (log)
 
 foreign import data PROCESS :: Effect
 

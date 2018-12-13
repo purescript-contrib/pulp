@@ -5,25 +5,25 @@ module Pulp.Git
   , dropPrefix
   ) where
 
-import Prelude
-import Control.Monad.Aff (attempt)
+import Data.Either
 import Data.Function
 import Data.Maybe
 import Data.Tuple
-import Data.Either
+import Prelude
+import Pulp.Exec
+import Pulp.System.FFI
+
 import Data.Array as Array
 import Data.Foldable as Foldable
+import Data.String as String
 import Data.Version (Version)
 import Data.Version as Version
-import Data.String as String
+import Effect.Aff (Aff, attempt)
 import Node.ChildProcess as CP
-
-import Pulp.System.FFI
-import Pulp.Exec
 import Pulp.Utils (throw)
 
 -- | Throw an error if the git working tree is dirty.
-requireCleanGitWorkingTree :: AffN Unit
+requireCleanGitWorkingTree :: Aff Unit
 requireCleanGitWorkingTree = do
   out <- execQuiet "git" ["status", "--porcelain"] Nothing
   if Foldable.all String.null (String.split (String.Pattern "\n") out)
@@ -37,7 +37,7 @@ requireCleanGitWorkingTree = do
 -- |
 -- | If multiple tags point to the checked out commit, return the latest
 -- | version according to semver version comparison.
-getVersionFromGitTag :: AffN (Maybe (Tuple String Version))
+getVersionFromGitTag :: Aff (Maybe (Tuple String Version))
 getVersionFromGitTag = do
   output <- run "git" ["tag", "--points-at", "HEAD"]
   pure (maxVersion output)
@@ -47,13 +47,13 @@ getVersionFromGitTag = do
 -- | "v1.2.3".
 -- |
 -- | Returns Nothing if there are no such tags in the repository.
-getLatestTaggedVersion :: AffN (Maybe (Tuple String Version))
+getLatestTaggedVersion :: Aff (Maybe (Tuple String Version))
 getLatestTaggedVersion = do
   output <- attempt $ run "git" ["describe", "--tags", "--abbrev=0", "HEAD"]
   pure $ either (const Nothing) maxVersion output
 
 -- | Run a command, piping stderr to /dev/null
-run :: String -> Array String -> AffN String
+run :: String -> Array String -> Aff String
 run cmd args = execQuietWithStderr CP.Ignore cmd args Nothing
 
 -- | Given a number of lines of text, attempt to parse each line as a version,

@@ -3,27 +3,28 @@ module Pulp.Init
   ) where
 
 import Prelude
-import Data.Array (cons)
-import Data.String (joinWith)
-import Control.Monad.Eff.Exception (error)
-import Control.Monad.Error.Class (throwError)
-import Control.Monad.Eff.Class (liftEff)
-import Node.Path as Path
-import Node.FS.Aff (writeTextFile, exists)
-import Node.Encoding (Encoding(UTF8))
-import Node.Process as Process
-import Data.List (List(Nil), fromFoldable)
-import Data.Foldable (for_)
-import Data.Version.Haskell as HVer
-
+import Pulp.Args
 import Pulp.Outputter
 import Pulp.System.FFI
-import Pulp.Args
+
+import Control.Monad.Error.Class (throwError)
+import Data.Array (cons)
+import Data.Foldable (for_)
+import Data.List (List(Nil), fromFoldable)
+import Data.String (joinWith)
+import Data.Version.Haskell as HVer
+import Effect.Aff (Aff)
+import Effect.Class (liftEffect)
+import Effect.Exception (error)
+import Node.Encoding (Encoding(UTF8))
+import Node.FS.Aff (writeTextFile, exists)
+import Node.Path as Path
+import Node.Process as Process
 import Pulp.Args.Get (getFlag)
-import Pulp.System.Files (mkdirIfNotExist)
 import Pulp.PackageManager (launchBower, launchPscPackage)
-import Pulp.Validate (getPursVersion)
+import Pulp.System.Files (mkdirIfNotExist)
 import Pulp.Utils (throw)
+import Pulp.Validate (getPursVersion)
 
 foreign import bowerFile :: String -> String
 
@@ -116,9 +117,9 @@ projectFiles initStyle effOrEffect pathRoot projectName =
             , { path: fullPath ["test", "Main.purs"], content: testFile effOrEffect }
             ]
 
-init :: InitStyle -> EffOrEffect -> Boolean -> Outputter -> AffN Unit
+init :: InitStyle -> EffOrEffect -> Boolean -> Outputter -> Aff Unit
 init initStyle effOrEffect force out = do
-  cwd <- liftEff Process.cwd
+  cwd <- liftEffect Process.cwd
   let projectName = Path.basename cwd
   out.log $ "Generating project skeleton in " <> cwd
 

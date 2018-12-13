@@ -1,22 +1,22 @@
 module Pulp.Publish ( action, resolutionsFile ) where
 
 import Prelude
-import Control.Monad.Eff.Class
+import Effect.Class
 import Control.Monad.Error.Class
-import Control.Monad.Aff
+import Effect.Aff
 import Control.Monad.Except (runExcept)
 import Data.Maybe
 import Data.Tuple
 import Data.Tuple.Nested ((/\))
 import Data.Either
 import Data.Foldable (fold)
-import Data.Foreign (Foreign, readString)
-import Data.Foreign.Index (readProp)
-import Data.Foreign.JSON (parseJSON)
+import Foreign (Foreign, readString)
+import Foreign.Index (readProp)
+import Foreign.JSON (parseJSON)
 import Data.Version (Version)
 import Data.Version as Version
 import Data.String as String
-import Data.StrMap as StrMap
+import Foreign.Object as Object
 import Data.Options ((:=))
 import Node.Encoding (Encoding(..))
 import Node.Buffer (Buffer)
@@ -86,7 +86,7 @@ action = Action \args -> do
               <> " report this: https://github.com/bodil/pulp/issues/new"))
           pure
 
-checkBowerProject :: AffN Unit
+checkBowerProject :: Aff Unit
 checkBowerProject = do
   bower <- FS.exists "bower.json"
   if bower then pure unit
@@ -94,34 +94,34 @@ checkBowerProject = do
              <> " before being submitted to Pursuit. Please create a "
              <> " bower.json file first.")
 
-gzip :: String -> AffN Buffer
+gzip :: String -> Aff Buffer
 gzip str = do
-  gzipStream <- liftEff createGzip
+  gzipStream <- liftEffect createGzip
   write gzipStream str
   end gzipStream
   concatStreamToBuffer gzipStream
 
-resolutionsFile :: AffN String
+resolutionsFile :: Aff String
 resolutionsFile = do
   resolutions <- execQuiet "bower" ["list", "--json", "--offline"] Nothing
   info <- openTemp { prefix: "pulp-publish", suffix: ".json" }
-  _ <- FS.fdAppend info.fd =<< liftEff (Buffer.fromString resolutions UTF8)
+  _ <- FS.fdAppend info.fd =<< liftEffect (Buffer.fromString resolutions UTF8)
   _ <- FS.fdClose info.fd
   pure info.path
 
-pursPublish :: AffN String
+pursPublish :: Aff String
 pursPublish = do
   resolutions <- resolutionsFile
   execQuiet "purs" ["publish", "--manifest", "bower.json", "--resolutions", resolutions] Nothing
 
-confirmRun :: Outputter -> String -> Array String -> AffN Unit
+confirmRun :: Outputter -> String -> Array String -> Aff Unit
 confirmRun out cmd args = do
   out.log "About to execute:"
   out.write ("> " <> cmd <> " " <> String.joinWith " " args <> "\n")
   confirm "Ok?"
   exec cmd args Nothing
 
-confirm :: String -> AffN Unit
+confirm :: String -> Aff Unit
 confirm q = do
   answer <- Read.read { prompt: q <> " [y/n] ", silent: false }
   case String.trim (String.toLower answer) of
@@ -132,7 +132,7 @@ confirm q = do
 
 newtype BowerJson = BowerJson Foreign
 
-readBowerJson :: AffN BowerJson
+readBowerJson :: Aff BowerJson
 readBowerJson = do
   json <- FS.readTextFile UTF8 "bower.json"
   case runExcept (parseJSON json) of
@@ -141,7 +141,7 @@ readBowerJson = do
     Left err ->
       throw ("Unable to parse bower.json:" <> show err)
 
-getBowerName :: BowerJson -> AffN String
+getBowerName :: BowerJson -> Aff String
 getBowerName (BowerJson json) =
   case runExcept (readProp "name" json >>= readString) of
     Right name ->
@@ -149,7 +149,7 @@ getBowerName (BowerJson json) =
     Left err ->
       throw ("Unable to read property 'name' from bower.json:" <> show err)
 
-getBowerRepositoryUrl :: BowerJson -> AffN String
+getBowerRepositoryUrl :: BowerJson -> Aff String
 getBowerRepositoryUrl (BowerJson json) =
   case runExcept (readProp "repository" json >>= readProp "url" >>= readString) of
     Right url ->
@@ -157,7 +157,7 @@ getBowerRepositoryUrl (BowerJson json) =
     Left err ->
       throw ("Unable to read property 'repository.url' from bower.json:" <> show err)
 
-readTokenFile :: AffN String
+readTokenFile :: Aff String
 readTokenFile = do
   path <- tokenFilePath
   r <- attempt (FS.readTextFile UTF8 path)
@@ -173,7 +173,7 @@ pursuitUrl :: String -> Version -> String
 pursuitUrl name vers =
   "https://pursuit.purescript.org/packages/" <> name <> "/" <> Version.showVersion vers
 
-registerOnBowerIfNecessary :: Outputter -> String -> String -> AffN Unit
+registerOnBowerIfNecessary :: Outputter -> String -> String -> Aff Unit
 registerOnBowerIfNecessary out name repoUrl = do
   result <- attempt (run "bower" ["info", name, "--json"] Nothing)
   case result of
@@ -187,7 +187,7 @@ registerOnBowerIfNecessary out name repoUrl = do
   -- Run a command, sending stderr to /dev/null
   run = execQuietWithStderr CP.Ignore
 
-uploadPursuitDocs :: Outputter -> String -> Buffer -> AffN Unit
+uploadPursuitDocs :: Outputter -> String -> Buffer -> Aff Unit
 uploadPursuitDocs out authToken gzippedJson = do
   res <- httpRequest reqOptions (Just gzippedJson)
   case HTTP.statusCode res of
@@ -199,7 +199,7 @@ uploadPursuitDocs out authToken gzippedJson = do
 
   where
   headers =
-    HTTP.RequestHeaders (StrMap.fromFoldable
+    HTTP.RequestHeaders (Object.fromFoldable
       [ "Accept" /\ "application/json"
       , "Authorization" /\ ("token " <> authToken)
       , "Content-Encoding" /\ "gzip"

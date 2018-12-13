@@ -1,26 +1,27 @@
 module Pulp.BumpVersion ( action ) where
 
-import Prelude
-import Control.Monad.Eff.Exception
 import Control.Monad.Error.Class
+import Data.Either
 import Data.Maybe
 import Data.Tuple
-import Data.Either
-import Data.List (List(..))
-import Data.Foldable as Foldable
-import Data.Version (Version)
-import Data.Version as Version
-import Data.String as String
-
-import Pulp.System.FFI
-import Pulp.Exec
-import Pulp.VersionBump
-import Pulp.System.Read as Read
-import Pulp.Outputter
+import Effect.Exception
+import Prelude
 import Pulp.Args
 import Pulp.Args.Get
+import Pulp.Exec
 import Pulp.Git
+import Pulp.Outputter
+import Pulp.System.FFI
+import Pulp.VersionBump
+
+import Data.Foldable as Foldable
+import Data.List (List(..))
+import Data.String as String
+import Data.Version (Version)
+import Data.Version as Version
+import Effect.Aff (Aff)
 import Pulp.Publish (resolutionsFile)
+import Pulp.System.Read as Read
 
 action :: Action
 action = Action \args -> do
@@ -34,14 +35,14 @@ action = Action \args -> do
 
 -- | Try running `purs publish --dry-run` to make sure the code is suitable for
 -- | release.
-checkPursPublish :: Outputter -> AffN Unit
+checkPursPublish :: Outputter -> Aff Unit
 checkPursPublish out = do
   out.log "Checking your package using purs publish..."
   resolutions <- resolutionsFile
   exec "purs" ["publish", "--manifest", "bower.json", "--resolutions", resolutions, "--dry-run"] Nothing
 
 -- | Returns the new version that we should bump to.
-bumpVersion :: Args -> AffN Version
+bumpVersion :: Args -> Aff Version
 bumpVersion args = do
   out <- getOutputter args
   mcurrent <- map (map snd) getLatestTaggedVersion
@@ -53,14 +54,14 @@ bumpVersion args = do
 
   newVersion mbump mcurrent out
 
-newVersion :: Maybe VersionBump -> Maybe Version -> Outputter -> AffN Version
+newVersion :: Maybe VersionBump -> Maybe Version -> Outputter -> Aff Version
 newVersion mbump mcurrent out = case mcurrent, mbump of
   _,            Just (ToExact version) -> pure version
   Just current, Just bump              -> pure $ applyBump bump current
   Just current, Nothing                -> promptCurrent out current
   Nothing     , _                      -> promptInitial out
 
-tagNewVersion :: Version -> AffN Unit
+tagNewVersion :: Version -> Aff Unit
 tagNewVersion version = do
   let versionStr = "v" <> Version.showVersion version
   exec "git"
@@ -76,7 +77,7 @@ tagNewVersion version = do
     ] Nothing
 
 -- | Prompt and ask the user what to use as the initial version.
-promptInitial :: Outputter -> AffN Version
+promptInitial :: Outputter -> Aff Version
 promptInitial out = do
   out.log "Initial version"
   out.write "You can release this code as:\n"
@@ -109,7 +110,7 @@ promptInitial out = do
 
   vers major minor patch = Version.version major minor patch Nil Nil
 
-promptCurrent :: Outputter -> Version -> AffN Version
+promptCurrent :: Outputter -> Version -> Aff Version
 promptCurrent out current = do
   out.log ("The current version is v" <> Version.showVersion current)
   out.write "You can bump the version to:\n"
@@ -149,7 +150,7 @@ untilJust act = do
     Nothing ->
       untilJust act
 
-internalError :: forall a. String -> AffN a
+internalError :: forall a. String -> Aff a
 internalError msg =
   throwError <<< error $
     "Internal error in Pulp.BumpVersion: " <> msg <> "\n" <>

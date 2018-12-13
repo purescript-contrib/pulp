@@ -3,34 +3,34 @@ module Pulp.Args.Help
        , printCommandHelp
        ) where
 
+import Partial.Unsafe
 import Prelude
-
-import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Except (runExcept)
-import Data.Either (Either(..))
-import Data.Array (sort, (!!), null)
-import Data.Foldable (foldr, maximum)
-import Data.Maybe (Maybe(..), fromMaybe, maybe, fromJust)
-import Data.StrMap (StrMap(), keys, lookup, insert, empty)
-import Data.String as Str
-import Data.Traversable (sequence)
-import Data.Foreign (F())
-import Data.Foreign.Class (decode)
-import Node.Process as Process
-import Node.Path as Path
-
 import Pulp.Args
-import Pulp.Args.Types as Type
 import Pulp.Outputter
 import Pulp.System.FFI
 
-import Partial.Unsafe
+import Control.Monad.Except (runExcept)
+import Data.Array (sort, (!!), null)
+import Data.Either (Either(..))
+import Data.Foldable (foldr, maximum)
+import Data.Maybe (Maybe(..), fromMaybe, maybe, fromJust)
+import Data.String as Str
+import Data.Traversable (sequence)
+import Effect (Effect)
+import Effect.Aff (Aff)
+import Effect.Class (liftEffect)
+import Foreign (F)
+import Foreign.Class (decode)
+import Foreign.Object (Object, keys, lookup, insert, empty)
+import Node.Path as Path
+import Node.Process as Process
+import Pulp.Args.Types as Type
 
 foreign import pad :: Int -> String
 
-foreign import wrap :: String -> Int -> EffN String
+foreign import wrap :: String -> Int -> Effect String
 
-formatTable :: StrMap String -> EffN String
+formatTable :: Object String -> Effect String
 formatTable table =
   let headers = sort $ keys table
       longest = fromMaybe 0 $ maximum $ headers <#> Str.length
@@ -59,35 +59,35 @@ describeOpt opt = opt.desc <> case opt.defaultValue of
           Left _ ->
             Nothing
 
-prepareOpts :: Array Option -> StrMap String
+prepareOpts :: Array Option -> Object String
 prepareOpts = foldr foldOpts empty
   where formatKey n = (Str.joinWith " " n.match) <> case n.parser.name of
           Nothing -> ""
           Just arg -> " " <> arg
         foldOpts n = insert (formatKey n) (describeOpt n)
 
-formatOpts :: Array Option -> AffN String
-formatOpts = liftEff <<< formatTable <<< prepareOpts
+formatOpts :: Array Option -> Aff String
+formatOpts = liftEffect <<< formatTable <<< prepareOpts
 
-prepareCmds :: Array Command -> StrMap String
+prepareCmds :: Array Command -> Object String
 prepareCmds = foldr foldCmds empty
   where foldCmds n = insert n.name n.desc
 
-formatCmds :: Array Command -> AffN String
-formatCmds = liftEff <<< formatTable <<< prepareCmds
+formatCmds :: Array Command -> Aff String
+formatCmds = liftEffect <<< formatTable <<< prepareCmds
 
-formatPassThrough :: Maybe String -> AffN String
+formatPassThrough :: Maybe String -> Aff String
 formatPassThrough mdesc =
   let desc = fromMaybe "Passthrough options are ignored." mdesc
-  in liftEff (wrap ("  " <> desc) 2)
+  in liftEffect (wrap ("  " <> desc) 2)
 
-prepareArguments :: Array Argument -> StrMap String
+prepareArguments :: Array Argument -> Object String
 prepareArguments = foldr foldOpts empty
   where formatKey arg = Str.toUpper arg.name
         foldOpts arg = insert (formatKey arg) arg.desc
 
-formatArguments :: Array Argument -> AffN String
-formatArguments = liftEff <<< formatTable <<< prepareArguments
+formatArguments :: Array Argument -> Aff String
+formatArguments = liftEffect <<< formatTable <<< prepareArguments
 
 argumentSynopsis :: Array Argument -> String
 argumentSynopsis = map format  >>> Str.joinWith " "
@@ -102,22 +102,22 @@ helpOpt :: Option
 helpOpt = option "help" ["--help", "-h"] Type.flag
             "Show this help message."
 
-printHelp :: Outputter -> Array Option -> Array Command -> AffN Unit
+printHelp :: Outputter -> Array Option -> Array Command -> Aff Unit
 printHelp out globals commands = do
-  commandName <- liftEff getCommandName
+  commandName <- liftEffect getCommandName
   out.write $ "Usage: " <> commandName <> " [global-options] <command> [command-options]\n"
   out.bolded "\nGlobal options:\n"
   formatOpts (globals <> [helpOpt]) >>= out.write
   out.bolded "\nCommands:\n"
   formatCmds commands >>= out.write
-  helpText <- liftEff $ wrap ("Use `" <> commandName <>
+  helpText <- liftEffect $ wrap ("Use `" <> commandName <>
                               " <command> --help` to " <>
                               "learn about command specific options.") 2
   out.write $ "\n" <> helpText <> "\n\n"
 
-printCommandHelp :: Outputter -> Array Option -> Command -> AffN Unit
+printCommandHelp :: Outputter -> Array Option -> Command -> Aff Unit
 printCommandHelp out globals command = do
-  commandName <- liftEff getCommandName
+  commandName <- liftEffect getCommandName
   out.write $ "Usage: " <> commandName <> " [global-options] " <>
                   command.name <> " " <>
                   (if hasArguments then argumentSynopsis command.arguments <> " " else "") <>
@@ -140,5 +140,5 @@ printCommandHelp out globals command = do
   hasCommandOpts = not (null command.options)
   hasArguments = not (null command.arguments)
 
-getCommandName :: EffN String
+getCommandName :: Effect String
 getCommandName = maybe "pulp" (_.name <<< Path.parse) <<< (_ !! 1) <$> Process.argv

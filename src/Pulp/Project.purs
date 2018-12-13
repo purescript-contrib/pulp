@@ -5,28 +5,26 @@ module Pulp.Project
   ) where
 
 import Prelude
-import Data.Maybe (Maybe(..), maybe)
-import Data.Either (Either(..))
-import Control.Alt ((<|>))
-import Control.Monad.Except (runExcept)
-import Control.Monad.Error.Class (throwError)
-import Control.Monad.Eff.Exception (error)
-import Control.Monad.Eff.Unsafe (unsafeCoerceEff)
-import Control.Monad.Eff.Class (liftEff)
-import Data.Foreign (Foreign, readString)
-import Data.Foreign.Index (readProp)
-import Data.Foreign.JSON (parseJSON)
-import Data.Foreign.Class (class Decode)
 
-import Node.FS.Aff (exists, readTextFile)
+import Control.Alt ((<|>))
+import Control.Monad.Error.Class (throwError)
+import Control.Monad.Except (runExcept)
+import Data.Either (Either(..))
+import Data.Maybe (Maybe(..), maybe)
+import Effect.Aff (Aff)
+import Effect.Class (liftEffect)
+import Effect.Exception (error)
+import Foreign (Foreign, readString)
+import Foreign.Class (class Decode)
+import Foreign.Index (readProp)
+import Foreign.JSON (parseJSON)
 import Node.Encoding (Encoding(UTF8))
+import Node.FS.Aff (exists, readTextFile)
 import Node.Path as P
 import Node.Process as Process
-
-import Pulp.System.FFI (AffN)
-import Pulp.System.Files (mkdirIfNotExist)
 import Pulp.Args (Options)
 import Pulp.Args.Get (getOption, getFlag)
+import Pulp.System.Files (mkdirIfNotExist)
 
 newtype Project = Project
   { projectFile :: Foreign
@@ -35,7 +33,7 @@ newtype Project = Project
   }
 
 -- | Attempt to find a file in the given directory or any parent of it.
-findIn :: String -> String -> AffN (Maybe String)
+findIn :: String -> String -> Aff (Maybe String)
 findIn path file = do
   let fullPath = P.concat [path, file]
   doesExist <- exists fullPath
@@ -50,7 +48,7 @@ findIn path file = do
 
 -- | Read a project's bower file at the given path and construct a Project
 -- | value.
-readConfig :: String -> AffN Project
+readConfig :: String -> Aff Project
 readConfig configFilePath = do
   json <- readTextFile UTF8 configFilePath
   case runExcept (parseJSON json) of
@@ -58,8 +56,8 @@ readConfig configFilePath = do
       throwError (error ("Unable to parse " <> (P.basename configFilePath) <> ": " <> show err))
     Right pro -> do
       let path = P.dirname configFilePath
-      let cachePath = P.resolve [path] ".pulp-cache"
-      liftEff $ unsafeCoerceEff $ Process.chdir path
+      cachePath <- liftEffect $ P.resolve [path] ".pulp-cache"
+      liftEffect $ Process.chdir path
       mkdirIfNotExist cachePath
       pure $ Project { projectFile: pro, cache: cachePath, path: path }
 
@@ -72,11 +70,11 @@ usingPscPackage (Project p) =
 
 -- | Use the provided project file, or if it is Nothing, try to find a project file
 -- | path in this or any parent directory, with Bower taking precedence over psc-package.
-getProjectFile :: Maybe String -> AffN String
+getProjectFile :: Maybe String -> Aff String
 getProjectFile = maybe search pure
   where
   search = do
-    cwd <- liftEff Process.cwd
+    cwd <- liftEffect Process.cwd
     mbowerFile <- findIn cwd "bower.json"
     mpscPackageFile <- findIn cwd "psc-package.json"
     case mbowerFile <|> mpscPackageFile of
@@ -84,7 +82,7 @@ getProjectFile = maybe search pure
       Nothing -> throwError <<< error $
         "No bower.json or psc-package.json found in current or parent directories. Are you in a PureScript project?"
 
-getProject :: Options -> AffN Project
+getProject :: Options -> Aff Project
 getProject args = do
   bower <- getOption "bowerFile" args
   pscPackageFlag <- getFlag "pscPackage" args

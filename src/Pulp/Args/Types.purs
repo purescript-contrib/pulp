@@ -17,7 +17,7 @@ import Data.String (null, split, Pattern(..))
 import Data.Maybe (Maybe(..))
 import Data.Int (fromString)
 import Data.Foldable (for_)
-import Data.Foreign (toForeign)
+import Foreign (unsafeToForeign)
 import Text.Parsing.Parser (fail)
 
 import Node.FS.Stats (Stats(), isFile, isDirectory)
@@ -42,7 +42,7 @@ string :: OptionParser
 string = {
   name: Just "<string>",
   parser: \arg ->
-    (Just <<< toForeign) <$> (token <|> argErr arg "Needs a string argument.")
+    (Just <<< unsafeToForeign) <$> (token <|> argErr arg "Needs a string argument.")
   }
 
 int :: OptionParser
@@ -52,7 +52,7 @@ int = {
     let err = argErr arg "Needs an int argument." :: forall a. OptParser a
     mint <- fromString <$> (token <|> err)
     case mint of
-      Just i -> pure (Just (toForeign i))
+      Just i -> pure (Just (unsafeToForeign i))
       Nothing -> err
   }
 
@@ -74,7 +74,7 @@ file = {
   parser: \arg -> do
     path <- token <|> argErr arg "Needs a file argument."
     requireFile path
-    pure $ Just (toForeign path)
+    pure $ Just (unsafeToForeign path)
   }
 
 directory :: OptionParser
@@ -83,7 +83,7 @@ directory = {
   parser: \arg -> do
     path <- token <|> argErr arg "Needs a directory argument."
     requireDirectory path
-    pure $ Just (toForeign path)
+    pure $ Just (unsafeToForeign path)
   }
 
 directories :: OptionParser
@@ -93,7 +93,7 @@ directories = {
     paths <- token <|> argErr arg "Needs a directory argument."
     let paths' = filter (not <<< null) $ split (Pattern Path.delimiter) paths
     for_ paths' requireDirectory
-    pure $ Just (toForeign paths')
+    pure $ Just (unsafeToForeign paths')
   }
 
 -- TODO: this is gross; we end up parsing the version twice. Probably should
@@ -103,7 +103,7 @@ versionBump :: ArgumentParser
 versionBump arg =
   case parseBump arg of
     Just _ ->
-      pure (toForeign arg)
+      pure (unsafeToForeign arg)
     Nothing ->
       fail ("Not a valid version bump. Must be: 'major', 'minor', 'patch', "
             <> "or a version.")

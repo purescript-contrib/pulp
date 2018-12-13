@@ -2,28 +2,27 @@
 module Pulp.Version ( version, versionString, printVersion ) where
 
 import Prelude
-import Data.Maybe (Maybe(..))
-import Data.Either (Either(..), either)
-import Data.String (trim)
-import Data.Version (Version(), parseVersion, showVersion)
-import Control.Monad.Aff (attempt)
-import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff.Console as Console
-import Control.Monad.Eff.Unsafe (unsafePerformEff)
-import Control.Monad.Eff.Exception (throwException, error)
-import Control.Monad.Eff.Exception.Unsafe (unsafeThrow)
-import Control.Monad.Except (runExcept)
-import Node.FS.Sync as FS
-import Node.Encoding (Encoding(..))
-import Node.Path as Path
-import Data.Foreign (readString)
-import Data.Foreign.Index (readProp)
-import Data.Foreign.JSON (parseJSON)
-import Node.Globals (__dirname)
 
-import Pulp.System.FFI (AffN)
-import Pulp.System.Which (which)
+import Control.Monad.Except (runExcept)
+import Data.Either (Either(..), either)
+import Data.Maybe (Maybe(..))
+import Data.String (trim)
+import Data.Version (Version, parseVersion, showVersion)
+import Effect.Aff (Aff, attempt)
+import Effect.Class (liftEffect)
+import Effect.Console as Console
+import Effect.Exception (throwException, error)
+import Effect.Exception.Unsafe (unsafeThrow)
+import Effect.Unsafe (unsafePerformEffect)
+import Foreign (readString)
+import Foreign.Index (readProp)
+import Foreign.JSON (parseJSON)
+import Node.Encoding (Encoding(..))
+import Node.FS.Sync as FS
+import Node.Globals (__dirname)
+import Node.Path as Path
 import Pulp.Exec (execQuiet)
+import Pulp.System.Which (which)
 
 version :: Version
 version =
@@ -34,7 +33,7 @@ version =
 
 versionString :: String
 versionString =
-  unsafePerformEff $ do
+  unsafePerformEffect $ do
     json <- FS.readTextFile UTF8 (Path.concat [__dirname, "package.json"])
     case runExcept (parseJSON json >>= readProp "version" >>= readString) of
       Left err ->
@@ -42,11 +41,11 @@ versionString =
       Right v ->
         pure v
 
-printVersion :: AffN Unit
+printVersion :: Aff Unit
 printVersion = do
   pursVersion <- execQuiet "purs" ["--version"] Nothing
   pursPath <- attempt $ which "purs"
-  liftEff $ Console.log $
+  liftEffect $ Console.log $
     "Pulp version " <> showVersion version <>
     "\npurs version " <> trim pursVersion <>
     either (const "") (\p -> " using " <> trim p) pursPath

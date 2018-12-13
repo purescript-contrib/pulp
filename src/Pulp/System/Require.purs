@@ -1,6 +1,6 @@
 module Pulp.System.Require where
 
-import Pulp.System.FFI
+import Effect (Effect)
 
-foreign import unsafeRequire :: forall a. String -> EffN a
-foreign import requireResolve :: String -> EffN String
+foreign import unsafeRequire :: forall a. String -> Effect a
+foreign import requireResolve :: String -> Effect String

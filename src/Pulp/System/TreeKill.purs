@@ -2,8 +2,8 @@ module Pulp.System.TreeKill
   ( treeKill ) where
 
 import Prelude
-import Data.Posix (Pid())
 
-import Pulp.System.FFI
+import Data.Posix (Pid)
+import Effect (Effect)
 
-foreign import treeKill :: Pid -> String -> EffN Unit
+foreign import treeKill :: Pid -> String -> Effect Unit

@@ -4,10 +4,10 @@ module Pulp.Test
   ) where
 
 import Prelude
-import Control.Monad.Eff.Class (liftEff)
+import Effect.Class (liftEffect)
 import Data.Maybe
 import Data.Map as Map
-import Data.Foreign (toForeign)
+import Foreign (unsafeToForeign)
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff as FS
@@ -28,8 +28,8 @@ action = Action \args -> do
   runtime <- getOption' "runtime" opts
   let isNode = runtime == "node"
   let changeOpts = if isNode
-                     then id :: Options -> Options -- helps type inference
-                     else Map.insert "to" (Just (toForeign "./output/test.js"))
+                     then identity :: Options -> Options -- helps type inference
+                     else Map.insert "to" (Just (unsafeToForeign "./output/test.js"))
 
   let buildArgs = args { remainder = []
                        , commandOpts = changeOpts args.commandOpts
@@ -47,7 +47,7 @@ action = Action \args -> do
       buildPath <- getOption' "buildPath" opts
       env <- setupEnv buildPath
       info <- openTemp { prefix: "pulp-test", suffix: ".js" }
-      src <- liftEff $ Buffer.fromString (makeEntry main) UTF8
+      src <- liftEffect $ Buffer.fromString (makeEntry main) UTF8
       _ <- FS.fdAppend info.fd src
       _ <- FS.fdClose info.fd
       exec runtime

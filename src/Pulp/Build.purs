@@ -7,41 +7,41 @@ module Pulp.Build
   , checkEntryPoint
   ) where
 
-import Prelude
-import Data.Either (Either(..), either)
-import Data.Array as Array
-import Data.Array.NonEmpty as NonEmptyArray
 import Data.Maybe
-import Data.Map (union)
-import Data.String (split, Pattern(..), joinWith, trim)
-import Data.Set as Set
-import Data.Foldable (fold, elem, for_)
-import Data.Newtype (unwrap)
-import Data.List (fromFoldable, List(..))
-import Data.Version.Haskell (Version(..))
-import Data.Argonaut (jsonParser)
-import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Eff.Exception as Exception
-import Control.Monad.Eff.Unsafe (unsafePerformEff)
-import Control.Monad.Error.Class (throwError)
-import Control.Monad.Aff (attempt, apathize)
-import Node.Process as Process
-import Node.Path as Path
-import Node.Encoding (Encoding(UTF8))
-import Node.FS.Aff as FS
-import ExternsCheck as ExternsCheck
-
-import Pulp.System.FFI
-import Pulp.System.Stream (write, end, WritableStream, stdout)
-import Pulp.Outputter
-import Pulp.System.Files as Files
+import Prelude
 import Pulp.Args
 import Pulp.Args.Get
-import Pulp.Exec (psa, pursBuild, pursBundle)
 import Pulp.Files
-import Pulp.Validate (getPsaVersion, getPursVersion)
-import Pulp.Utils (throw)
+import Pulp.Outputter
+import Pulp.System.FFI
+
+import Control.Monad.Error.Class (throwError)
+import Data.Argonaut (jsonParser)
+import Data.Array as Array
+import Data.Array.NonEmpty as NonEmptyArray
+import Data.Either (Either(..), either)
+import Data.Foldable (fold, elem, for_)
+import Data.List (fromFoldable, List(..))
+import Data.Map (union)
+import Data.Newtype (unwrap)
+import Data.Set as Set
+import Data.String (split, Pattern(..), joinWith, trim)
+import Data.Version.Haskell (Version(..))
+import Effect.Aff (Aff, apathize, attempt)
+import Effect.Class (liftEffect)
+import Effect.Exception as Exception
+import Effect.Unsafe (unsafePerformEffect)
+import ExternsCheck as ExternsCheck
+import Node.Encoding (Encoding(UTF8))
+import Node.FS.Aff as FS
+import Node.Path as Path
+import Node.Process as Process
+import Pulp.Exec (psa, pursBuild, pursBundle)
 import Pulp.Sorcery (sorcery)
+import Pulp.System.Files as Files
+import Pulp.System.Stream (write, end, WritableStream, stdout)
+import Pulp.Utils (throw)
+import Pulp.Validate (getPsaVersion, getPursVersion)
 
 data BuildType = NormalBuild | TestBuild | RunBuild
 
@@ -50,13 +50,13 @@ derive instance eqBuildType :: Eq BuildType
 action :: Action
 action = go NormalBuild
 
-build :: Args -> AffN Unit
+build :: Args -> Aff Unit
 build = runAction action
 
-testBuild :: Args -> AffN Unit
+testBuild :: Args -> Aff Unit
 testBuild = runAction (go TestBuild)
 
-runBuild :: Args -> AffN Unit
+runBuild :: Args -> Aff Unit
 runBuild = runAction (go RunBuild)
 
 go :: BuildType -> Action
@@ -64,7 +64,7 @@ go buildType = Action \args -> do
   let opts = union args.globalOpts args.commandOpts
   out <- getOutputter args
 
-  cwd <- liftEff Process.cwd
+  cwd <- liftEffect Process.cwd
   out.log $ "Building project in " <> cwd
 
   globs <- Set.union <$> defaultGlobs opts
@@ -104,7 +104,7 @@ go buildType = Action \args -> do
   shouldBundle <- (||) <$> getFlag "optimise" opts <*> hasOption "to" opts
   when shouldBundle (bundle args)
 
-shouldUsePsa :: Args -> AffN Boolean
+shouldUsePsa :: Args -> Aff Boolean
 shouldUsePsa args = do
   noPsa <- getFlag "noPsa" args.commandOpts
 
@@ -124,7 +124,7 @@ shouldUsePsa args = do
   -- TODO this is actually semver
   minimumPsaVersion = Version (fromFoldable [0,5,0]) Nil
 
-bundle :: Args -> AffN Unit
+bundle :: Args -> Aff Unit
 bundle args = do
   let opts = union args.globalOpts args.commandOpts
   out <- getOutputter args
@@ -165,7 +165,7 @@ bundle args = do
 
 -- | Get a writable stream which output should be written to, based on the
 -- | value of the 'to' option.
-withOutputStream :: Options -> (WritableStream -> AffN Unit) -> AffN Unit
+withOutputStream :: Options -> (WritableStream -> Aff Unit) -> Aff Unit
 withOutputStream opts aff = do
   to :: Maybe String <- getOption "to" opts
   case to of
@@ -175,7 +175,7 @@ withOutputStream opts aff = do
         let tmpFile = dir <> Path.sep <> "." <> Path.basename destFile
         Files.mkdirIfNotExist dir
         res <- attempt do
-                stream <- liftEff $ Files.createWriteStream tmpFile
+                stream <- liftEffect $ Files.createWriteStream tmpFile
                 void $ aff stream
                 void $ end stream
         case res of
@@ -187,7 +187,7 @@ withOutputStream opts aff = do
     Nothing ->
       aff stdout
 
-checkEntryPoint :: Outputter -> Options -> AffN Unit
+checkEntryPoint :: Outputter -> Options -> Aff Unit
 checkEntryPoint out opts = do
   buildPath     <- getOption' "buildPath" opts
   main          <- getOption' "main" opts
@@ -270,4 +270,4 @@ commaList arr =
       ""
 
 internalError :: forall a. String -> a
-internalError = unsafePerformEff <<< Exception.throw <<< ("internal error: " <> _)
+internalError = unsafePerformEffect <<< Exception.throw <<< ("internal error: " <> _)

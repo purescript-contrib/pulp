@@ -1,25 +1,26 @@
 module Pulp.Run where
 
 import Prelude
-import Data.Maybe (Maybe(..))
-import Data.Map as Map
-import Data.StrMap (StrMap())
-import Data.StrMap as StrMap
-import Data.String (replace, Pattern(..), Replacement(..))
-import Control.Monad.Eff.Class (liftEff)
-import Node.Path as Path
-import Node.FS.Aff as FS
-import Node.Buffer as Buffer
-import Node.Encoding (Encoding(UTF8))
-import Node.Process as Process
-
 import Pulp.Args
 import Pulp.Args.Get
-import Pulp.Build as Build
 import Pulp.Exec
 import Pulp.Outputter
-import Pulp.System.Files (openTemp)
 import Pulp.System.FFI
+
+import Data.Map as Map
+import Data.Maybe (Maybe(..))
+import Data.String (replace, Pattern(..), Replacement(..))
+import Effect.Aff (Aff)
+import Effect.Class (liftEffect)
+import Foreign.Object (Object)
+import Foreign.Object as Object
+import Node.Buffer as Buffer
+import Node.Encoding (Encoding(UTF8))
+import Node.FS.Aff as FS
+import Node.Path as Path
+import Node.Process as Process
+import Pulp.Build as Build
+import Pulp.System.Files (openTemp)
 
 action :: Action
 action = Action \args -> do
@@ -33,7 +34,7 @@ action = Action \args -> do
     (Build.checkEntryPoint out opts)
 
   main <- getOption' "main" opts
-  src <- liftEff $ Buffer.fromString (makeEntry main) UTF8
+  src <- liftEffect $ Buffer.fromString (makeEntry main) UTF8
 
   info <- openTemp { prefix: "pulp-run", suffix: ".js" }
   _ <- FS.fdAppend info.fd src
@@ -46,10 +47,11 @@ action = Action \args -> do
 
 -- | Given a build path, create an environment that is just like this process'
 -- | environment, except with NODE_PATH set up for commands like `pulp run`.
-setupEnv :: String -> AffN (StrMap String)
+setupEnv :: String -> Aff (Object String)
 setupEnv buildPath = do
-  env <- liftEff Process.getEnv
-  pure $ StrMap.alter (prependPath (Path.resolve [] buildPath))
+  env <- liftEffect Process.getEnv
+  path <- liftEffect (Path.resolve [] buildPath)
+  pure $ Object.alter (prependPath path)
                       "NODE_PATH"
                       env
 

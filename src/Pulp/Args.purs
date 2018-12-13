@@ -2,31 +2,29 @@ module Pulp.Args where
 
 import Prelude
 
-import Control.Monad.Aff
 import Data.Map (Map())
 import Data.Maybe (Maybe(..))
 import Data.List (List())
-import Data.Foreign (Foreign(), toForeign)
+import Effect.Aff (Aff)
+import Foreign (Foreign(), unsafeToForeign)
 
 import Text.Parsing.Parser (ParserT())
-
-import Pulp.System.FFI
 
 type Options = Map String (Maybe Foreign)
 
 -- | Action is a newtype because a normal type synonym would lead to a loop,
 -- | which is disallowed by the compiler.
-newtype Action = Action (Args -> AffN Unit)
+newtype Action = Action (Args -> Aff Unit)
 
-runAction :: Action -> Args -> AffN Unit
+runAction :: Action -> Args -> Aff Unit
 runAction (Action f) = f
 
-type OptParser a = ParserT (List String) (Aff PulpEffects) a
+type OptParser a = ParserT (List String) Aff a
 
 newtype Help = Help Command
 
 -- | We use Foreign for the result of the parser because we want to be able to
--- | put any type in at first. Then, we can use other functions in Data.Foreign
+-- | put any type in at first. Then, we can use other functions in Foreign
 -- | to get it out again, or throw an error if the types don't match.
 -- |
 -- | I expect there is a better way of doing this but this will do for now.
@@ -85,7 +83,7 @@ option name match parser desc = {
 
 optionDefault :: forall a. String -> Array String -> OptionParser -> String -> a -> Option
 optionDefault n m p d defaultValue =
-  (option n m p d) { defaultValue = Just (toForeign defaultValue) }
+  (option n m p d) { defaultValue = Just (unsafeToForeign defaultValue) }
 
 argument :: String -> ArgumentParser -> String -> Boolean -> Argument
 argument name parser desc required = {

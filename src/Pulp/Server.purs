@@ -3,32 +3,33 @@ module Pulp.Server
   ( action
   ) where
 
-import Prelude
-import Data.Maybe
 import Data.Either
-import Data.Map as Map
-import Data.Foreign (toForeign)
-import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Aff (makeAff, launchAff, attempt)
-import Control.Monad.Aff.AVar as AVar
-import Node.HTTP as HTTP
-import Node.Encoding (Encoding(..))
-import Node.Stream as Stream
-
-import Pulp.System.FFI
-import Pulp.System.StaticServer as StaticServer
-import Pulp.Outputter
+import Data.Maybe
+import Prelude
 import Pulp.Args
 import Pulp.Args.Get
-import Pulp.Watch (watchAff, watchDirectories)
+import Pulp.Outputter
+import Pulp.System.FFI
+
+import Data.Map as Map
+import Effect (Effect)
+import Effect.Aff (Aff, attempt, launchAff, makeAff)
+import Effect.Aff.AVar as AVar
+import Effect.Class (liftEffect)
+import Foreign (unsafeToForeign)
+import Node.Encoding (Encoding(..))
+import Node.HTTP as HTTP
+import Node.Stream as Stream
 import Pulp.Build as Build
+import Pulp.System.StaticServer as StaticServer
 import Pulp.Utils (orErr)
+import Pulp.Watch (watchAff, watchDirectories)
 
 data BuildResult
   = Succeeded
   | Failed
 
-getBundleFileName :: Options -> AffN String
+getBundleFileName :: Options -> Aff String
 getBundleFileName opts =
   (_ <> "/app.js") <$> getOption' "buildPath" opts
 
@@ -45,9 +46,9 @@ action = Action \args -> do
   -- most recent build attempt has finished; in this case, the value inside
   -- tells you whether the build was successful and the bundle can be served
   -- to the client.
-  rebuildV <- AVar.makeVar
+  rebuildV <- AVar.empty
 
-  server <- liftEff $ createServer rebuildV bundleFileName
+  server <- liftEffect $ createServer rebuildV bundleFileName
   listen server { hostname, port, backlog: Nothing }
 
   out.log $ "Server listening on http://" <> hostname <> ":" <> show port <> "/"
@@ -57,28 +58,28 @@ action = Action \args -> do
         r <- attempt (rebuildWith { bundleFileName, quiet } args)
         case r of
           Right _ ->
-            AVar.putVar rebuildV Succeeded
+            AVar.put Succeeded rebuildV
           Left _ -> do
-            AVar.putVar rebuildV Failed
+            AVar.put Failed rebuildV
             out.err $ "Failed to rebuild; try to fix the compile errors"
   rebuild
 
   dirs <- watchDirectories opts >>= orErr "Internal error: unexpected Nothing"
   watchAff dirs \_ -> do
-    void $ AVar.takeVar rebuildV
+    void $ AVar.take rebuildV
     rebuild
 
-createServer :: AVar.AVar BuildResult -> String -> EffN HTTP.Server
+createServer :: AVar.AVar BuildResult -> String -> Effect HTTP.Server
 createServer rebuildV bundleFileName = do
   static <- StaticServer.new "."
   HTTP.createServer \req res ->
     case (HTTP.requestURL req) of
       "/app.js" ->
-        void $ unsafeToEffN $ launchAff do
+        void $ launchAff do
           -- The effect of this line should be to block until the current
           -- rebuild is finished (if any).
-          r <- AVar.peekVar rebuildV
-          liftEff $ case r of
+          r <- AVar.read rebuildV
+          liftEffect $ case r of
             Succeeded ->
               StaticServer.serveFile static bundleFileName 200 req res
             Failed -> do
@@ -92,15 +93,15 @@ createServer rebuildV bundleFileName = do
       _ ->
         StaticServer.serve static req res
 
-listen :: HTTP.Server -> HTTP.ListenOptions -> AffN Unit
+listen :: HTTP.Server -> HTTP.ListenOptions -> Aff Unit
 listen server opts =
   -- TODO: error handling?
-  makeAff \_ done -> HTTP.listen server opts (done unit)
+  makeAff \cb -> mempty <* HTTP.listen server opts (cb (Right unit))
 
-rebuildWith :: { bundleFileName :: String, quiet :: Boolean } -> Args -> AffN Unit
+rebuildWith :: { bundleFileName :: String, quiet :: Boolean } -> Args -> Aff Unit
 rebuildWith { bundleFileName, quiet } args =
   Build.build (args { commandOpts = addExtras args.commandOpts })
   where
   addExtras =
-    Map.insert "to" (Just (toForeign bundleFileName))
-    >>> if quiet then Map.insert "_silenced" Nothing else id
+    Map.insert "to" (Just (unsafeToForeign bundleFileName))
+    >>> if quiet then Map.insert "_silenced" Nothing else identity

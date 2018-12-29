@@ -1,5 +1,12 @@
 # Pulp Release History
 
+## 12.3.1
+
+* Bug fix: the compiler command line interface changed in 0.12 to replace the
+  `--source-maps` option with a new `--codegen` option. `pulp` has now been
+  made aware of this and so generating source maps should now work (with
+  compilers from both before and after this change). (@nwolverson, #343)
+
 ## 12.3.0
 
 * Have `pulp init` generate projects based on compiler version: the `pulp init`

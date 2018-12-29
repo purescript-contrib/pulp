@@ -13,14 +13,15 @@ import Node.ChildProcess as CP
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff as FS
 import Node.Process as Process
-import Pulp.Exec (execQuietWithStderr)
+
+import Pulp.Exec (execQuiet)
 import Pulp.Git (getVersionFromGitTag)
 import Pulp.System.Files (tempDir)
-import Test.Assert (assertEqual)
+import Test.Assert (assert', assertEqual)
 
--- | Run a shell command, swallowing stderr.
+-- | Run a shell command
 run :: String -> Array String -> Aff String
-run cmd args = execQuietWithStderr CP.Ignore cmd args Nothing
+run cmd args = execQuiet cmd args Nothing
 
 run_ :: String -> Array String -> Aff Unit
 run_ cmd args = void $ run cmd args
@@ -39,6 +40,8 @@ main = launchAff do
   dir <- tempDir { prefix: "pulp-unit-test-", suffix: "" }
   liftEffect $ Process.chdir dir
   run_ "git" ["init"]
+  run_ "git" ["config", "user.email", "pulp-test@example.com"]
+  run_ "git" ["config", "user.name", "Pulp Tester"]
 
   -----------------------------------------------------------------------------
   log "getVersionFromGitTag (basic)"

@@ -38,7 +38,7 @@
     "psc_test_version": "v0.11.6"
   },
   "scripts": {
-    "prepublish": "node scripts.js prepublish",
+    "prepare": "node scripts.js prepare",
     "test": "node scripts.js test",
     "build": "node scripts.js build"
   },

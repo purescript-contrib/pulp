@@ -26,7 +26,7 @@ const restArgs = process.argv.slice(3);
 if (!subcommand) {
   console.error("Expected a subcommand.");
   console.error("Usage: ");
-  console.error("  node scripts.js [build|test|prepublish]");
+  console.error("  node scripts.js [build|test|prepare]");
   process.exit(1);
 }
 
@@ -37,8 +37,8 @@ switch (subcommand) {
   case "test":
     test();
     break;
-  case "prepublish":
-    prepublish();
+  case "prepare":
+    prepare();
     break;
   default:
     throw new Error("Unrecognised subcommand: " + subcommand);
@@ -59,7 +59,7 @@ function test() {
   execScript("test:integration");
 }
 
-function prepublish() {
+function prepare() {
   ensurePscVersionsInstalled();
   spawnSync("bower install");
   build();

@@ -13,10 +13,10 @@
     "Harry Garrood"
   ],
   "license": "LGPL-3.0+",
-  "homepage": "https://github.com/bodil/pulp",
+  "homepage": "https://github.com/purescript-contrib/pulp",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bodil/pulp.git"
+    "url": "https://github.com/purescript-contrib/pulp.git"
   },
   "bin": {
     "pulp": "index.js"

@@ -98,7 +98,7 @@ execQuietWithStderr stderrBehaviour cmd args env = do
               , Just stderrBehaviour -- stderr
               ]
   child <- liftEffect $ CP.spawn cmd args (def { env = env, stdio = stdio })
-  outVar <- Avar.new ""
+  outVar <- Avar.empty
   _ <- forkAff (concatStream (CP.stdout child) >>= \x -> Avar.put x outVar)
   wait child >>= either (handleErrors cmd retry) (onExit outVar)
 

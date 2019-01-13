@@ -519,7 +519,8 @@ describe("integration tests", function() {
     }));
   });
 
-  it("pulp browserify --source-maps -O --to", run(function*(sh, pulp, assert) {
+  // See https://github.com/purescript-contrib/pulp/pull/362
+  it.skip("pulp browserify --source-maps -O --to", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("browserify --source-maps -O --to out.js");
     const [out] = yield sh("node out.js");
@@ -527,7 +528,8 @@ describe("integration tests", function() {
     assert.exists("out.js.map");
   }));
 
-  it("pulp browserify --source-maps -O --to subdir", run(function*(sh, pulp, assert, temp) {
+  // See https://github.com/purescript-contrib/pulp/pull/362
+  it.skip("pulp browserify --source-maps -O --to subdir", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield fs.mkdir(path.join(temp, "subdir"));
     yield pulp("browserify --source-maps -O --to subdir/out.js");

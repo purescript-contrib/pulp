@@ -3,13 +3,14 @@ module Pulp.Sorcery (sorcery) where
 
 import Prelude
 
-import Control.Monad.Aff (makeAff)
-import Control.Monad.Eff.Exception (Error)
-import Control.Monad.Eff.Uncurried (EffFn1, EffFn3, mkEffFn1, runEffFn3)
-import Pulp.System.FFI (EffN, PulpEffects, AffN)
+import Data.Either (Either(..))
+import Effect (Effect)
+import Effect.Aff (Aff, makeAff)
+import Effect.Exception (Error)
+import Effect.Uncurried (EffectFn1, EffectFn3, mkEffectFn1, runEffectFn3)
 
-foreign import sorceryImpl :: EffFn3 PulpEffects String (EffN Unit) (EffFn1 PulpEffects Error Unit) Unit
+foreign import sorceryImpl :: EffectFn3 String (Effect Unit) (EffectFn1 Error Unit) Unit
 
 -- | Run sorcery given JS file
-sorcery ::  String -> AffN Unit
-sorcery file = makeAff \err succ -> runEffFn3 sorceryImpl file (succ unit) (mkEffFn1 err)
+sorcery ::  String -> Aff Unit
+sorcery file = makeAff \cb -> mempty <* runEffectFn3 sorceryImpl file (cb (Right unit)) (mkEffectFn1 (cb <<< Left))

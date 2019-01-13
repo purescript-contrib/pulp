@@ -1,24 +1,25 @@
 module Pulp.System.HTTP where
 
 import Prelude
-import Control.Monad.Aff
-import Data.Maybe
+
+import Data.Either (Either(..))
+import Data.Maybe (Maybe(..))
 import Data.Options (Options)
+import Effect.Aff (Aff, makeAff)
 import Node.Buffer (Buffer)
 import Node.HTTP.Client as HTTP
 import Node.Stream as Stream
 
-import Pulp.System.FFI
-
-httpRequest :: Options HTTP.RequestOptions -> Maybe Buffer -> AffN HTTP.Response
+httpRequest :: Options HTTP.RequestOptions -> Maybe Buffer -> Aff HTTP.Response
 httpRequest reqOptions reqBody =
-  makeAff \err done -> do
-    req <- HTTP.request reqOptions done
+  makeAff \cb -> do
+    req <- HTTP.request reqOptions (cb <<< Right)
     let reqStream = HTTP.requestAsStream req
-    Stream.onError reqStream err
+    Stream.onError reqStream (cb <<< Left)
     maybeWrite reqStream reqBody do
       Stream.end reqStream do
         pure unit
+    pure mempty
   where
   maybeWrite stream (Just body) next = void (Stream.write stream body next)
   maybeWrite _ Nothing next = next

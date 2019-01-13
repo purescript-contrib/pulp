@@ -14,14 +14,17 @@ import Pulp.Sorcery
 import Pulp.System.FFI
 import Pulp.System.Files
 
-import Control.Monad.Aff (apathize)
-import Control.Monad.Eff.Class (liftEff)
-import Data.Argonaut (Json, foldJsonArray, foldJsonObject, foldJsonString, fromArray, fromObject, fromString, jsonEmptyObject, jsonNull, jsonParser)
+import Data.Argonaut (Json, caseJsonArray, caseJsonObject, caseJsonString, fromArray, fromObject, fromString, jsonEmptyObject, jsonNull, jsonParser)
 import Data.Argonaut.Core (stringify)
-import Data.Either (either)
+import Data.Either (Either(..))
+import Data.Map (Map, lookup, update)
 import Data.Map as Map
 import Data.Nullable (Nullable, toNullable)
-import Data.StrMap (update)
+import Data.Traversable (traverse)
+import Effect (Effect)
+import Effect.Aff (Aff, apathize)
+import Effect.Class (liftEffect)
+import Foreign.Object as Object
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff (unlink, writeTextFile, readTextFile)
 import Node.Path as Path
@@ -35,7 +38,7 @@ action :: Action
 action = Action \args -> do
   out <- getOutputter args
 
-  cwd <- liftEff Process.cwd
+  cwd <- liftEffect Process.cwd
   out.log $ "Browserifying project in " <> cwd
 
   optimise <- getFlag "optimise" args.commandOpts
@@ -55,20 +58,20 @@ makeExport main export =
 makeOptExport :: String -> String
 makeOptExport main = "module.exports = PS[\"" <> jsEscape main <> "\"];\n"
 
-buildForBrowserify :: Args -> AffN Unit
+buildForBrowserify :: Args -> Aff Unit
 buildForBrowserify args = do
   skip <- getFlag "skipCompile" args.commandOpts
   when (not skip) do
     let munge = Map.delete "to" >>> Map.delete "optimise"
     Build.build $ args { commandOpts = munge args.commandOpts, remainder = [] }
 
-shouldSkipEntryPoint :: Options -> AffN Boolean
+shouldSkipEntryPoint :: Options -> Aff Boolean
 shouldSkipEntryPoint opts = do
   skipEntryPoint <- getFlag "skipEntryPoint" opts
   standalone :: Maybe String <- getOption "standalone" opts
   pure (skipEntryPoint || isJust standalone)
 
-shouldSkipMainCheck :: Options -> AffN Boolean
+shouldSkipMainCheck :: Options -> Aff Boolean
 shouldSkipMainCheck opts = do
   noCheckMain <- getFlag "noCheckMain" opts
   skipEntryPoint <- shouldSkipEntryPoint opts
@@ -108,21 +111,24 @@ optimising = Action \args -> do
   let mapFile = tmpFilePath <> ".map"
   when sourceMaps do
     smText <- readTextFile UTF8 mapFile
-    writeTextFile UTF8 mapFile (updateSourceMapPaths (Path.dirname mapFile) smText)
+    path <- liftEffect $ updateSourceMapPaths (Path.dirname mapFile) smText
+    writeTextFile UTF8 mapFile path
 
   out.log "Browserifying..."
 
-  liftEff $ setupNodePath buildPath
+  liftEffect $ setupNodePath buildPath
 
   Build.withOutputStream opts $ \out' -> do
+    basedir <- liftEffect $ Path.resolve [] buildPath
+    outDir <- liftEffect $ maybe (pure buildPath) (Path.resolve [ buildPath ] <<< Path.dirname) toOpt
     browserifyBundle
-      { basedir: Path.resolve [] buildPath
+      { basedir
       , src: bundledJs <> if isJust standalone then makeOptExport main else ""
       , transform: toNullable transform
       , standalone: toNullable standalone
       , out: out'
       , debug: sourceMaps
-      , outDir: maybe buildPath (Path.resolve [ buildPath ] <<< Path.dirname) toOpt
+      , outDir
       , tmpFilePath: tmpFilePath
       }
   case toOpt of
@@ -140,11 +146,11 @@ incremental = Action \args -> do
   out.log "Browserifying..."
 
   buildPath <- getOption' "buildPath" opts
-  liftEff $ setupNodePath buildPath
+  liftEffect $ setupNodePath buildPath
 
   force       <- getFlag "force" opts
   Project pro <- getOption' "_project" opts
-  let cachePath = Path.resolve [pro.cache] "browserify.json"
+  cachePath <- liftEffect $ Path.resolve [pro.cache] "browserify.json"
   when force
     (apathize $ unlink cachePath)
 
@@ -168,6 +174,7 @@ incremental = Action \args -> do
 
   toOpt <- getOption "to" opts
   Build.withOutputStream opts $ \out' -> do
+    outDir <- liftEffect $ maybe (pure buildPath) (Path.resolve [ buildPath ] <<< Path.dirname) toOpt
     browserifyIncBundle
       { basedir: buildPath
       , cacheFile: cachePath
@@ -176,7 +183,7 @@ incremental = Action \args -> do
       , standalone: toNullable standalone
       , out: out'
       , debug: sourceMaps
-      , outDir: maybe buildPath (Path.resolve [ buildPath ] <<< Path.dirname) toOpt
+      , outDir
       }
   case toOpt of
     Just to | sourceMaps -> sorcery to
@@ -184,10 +191,10 @@ incremental = Action \args -> do
 
 -- | Given the build path, modify this process' NODE_PATH environment variable
 -- | for browserify.
-setupNodePath :: String -> EffN Unit
+setupNodePath :: String -> Effect Unit
 setupNodePath buildPath = do
   nodePath <- Process.lookupEnv "NODE_PATH"
-  let buildPath' = Path.resolve [] buildPath
+  buildPath' <- Path.resolve [] buildPath
   Process.setEnv "NODE_PATH" $
     case nodePath of
       Just p  -> buildPath' <> Path.delimiter <> p
@@ -208,7 +215,7 @@ foreign import browserifyBundle' :: Fn2 BrowserifyOptions
                                         (Callback Unit)
                                         Unit
 
-browserifyBundle :: BrowserifyOptions -> AffN Unit
+browserifyBundle :: BrowserifyOptions -> Aff Unit
 browserifyBundle opts = runNode $ runFn2 browserifyBundle' opts
 
 type BrowserifyIncOptions =
@@ -226,17 +233,23 @@ foreign import browserifyIncBundle' :: Fn2 BrowserifyIncOptions
                                           (Callback Unit)
                                           Unit
 
-browserifyIncBundle :: BrowserifyIncOptions -> AffN Unit
+browserifyIncBundle :: BrowserifyIncOptions -> Aff Unit
 browserifyIncBundle opts = runNode $ runFn2 browserifyIncBundle' opts
 
-updateSourceMapPaths :: String -> String -> String
+updateSourceMapPaths :: String -> String -> Effect String
 updateSourceMapPaths basePath text =
-  either (const text) 
-    (stringify <<< foldJsonObject jsonEmptyObject (fromObject <<< update resolveFiles "sources"))
-    (jsonParser text)
+  case jsonParser text of
+    Left _ -> pure text
+    Right json -> do
+      resolutions <- caseJsonObject (pure jsonEmptyObject) (map fromObject <<< updateWithEffect resolveFiles "sources") json
+      pure (stringify resolutions)
   where
-    resolveFiles :: Json -> Maybe Json
-    resolveFiles = foldJsonArray Nothing (Just <<< fromArray <<< map resolveFile)
+    updateWithEffect effect key map = do
+      value <- maybe (pure Nothing) effect (Object.lookup key map)
+      pure $ Object.update (const value) key map
 
-    resolveFile :: Json -> Json
-    resolveFile = foldJsonString jsonNull (fromString <<< Path.resolve [ basePath ])
+    resolveFiles :: Json -> Effect (Maybe Json)
+    resolveFiles = caseJsonArray (pure Nothing) (map (Just <<< fromArray) <<< traverse resolveFile)
+
+    resolveFile :: Json -> Effect Json
+    resolveFile = caseJsonString (pure jsonNull) (map fromString <<< Path.resolve [ basePath ])

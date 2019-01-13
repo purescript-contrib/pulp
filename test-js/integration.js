@@ -13,7 +13,7 @@ const bowerMissing = "* ERROR: No bower.json or psc-package.json found in curren
 const initWithoutForce = f => new RegExp('\\* ERROR: Found .*'+f+': There\'s already a project here. Run `pulp init --force` if you\'re sure you want to overwrite it.');
 const filesToOverwrite = ['./bower.json', './.gitignore', 'src/Main.purs', 'test/Main.purs'];
 const testDocLine1 = "## Module Test.Main";
-const consoleDocLine1 = "## Module Control.Monad.Eff.Console";
+const consoleDocLine1 = "## Module Effect.Console";
 const buildHelp = ["Command: build", "Build the project."];
 const docsHelp = ["Command: docs", "Generate project documentation."];
 const skipped = "* Project unchanged; skipping build step.";
@@ -519,7 +519,8 @@ describe("integration tests", function() {
     }));
   });
 
-  it("pulp browserify --source-maps -O --to", run(function*(sh, pulp, assert) {
+  // See https://github.com/purescript-contrib/pulp/pull/362
+  it.skip("pulp browserify --source-maps -O --to", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("browserify --source-maps -O --to out.js");
     const [out] = yield sh("node out.js");
@@ -527,7 +528,8 @@ describe("integration tests", function() {
     assert.exists("out.js.map");
   }));
 
-  it("pulp browserify --source-maps -O --to subdir", run(function*(sh, pulp, assert, temp) {
+  // See https://github.com/purescript-contrib/pulp/pull/362
+  it.skip("pulp browserify --source-maps -O --to subdir", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield fs.mkdir(path.join(temp, "subdir"));
     yield pulp("browserify --source-maps -O --to subdir/out.js");
@@ -560,14 +562,14 @@ describe("integration tests", function() {
   it("pulp docs --with-dependencies", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("docs --with-dependencies");
-    assert.file("generated-docs/Control/Monad/Eff/Console.md", (c) =>
+    assert.file("generated-docs/Effect/Console.md", (c) =>
       assert.equal(c.split(newlines)[0], consoleDocLine1));
   }));
 
   it("pulp docs --with-dependencies with psc-package", run(function*(sh, pulp, assert) {
     yield pulp("--psc-package init");
     yield pulp("docs --with-dependencies");
-    assert.file("generated-docs/Control/Monad/Eff/Console.md", (c) =>
+    assert.file("generated-docs/Effect/Console.md", (c) =>
       assert.equal(c.split(newlines)[0], consoleDocLine1));
   }));
 

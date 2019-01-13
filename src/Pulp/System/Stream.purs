@@ -13,45 +13,47 @@ module Pulp.System.Stream
   ) where
 
 import Prelude
+
+import Data.Either (Either(..))
 import Data.Function.Uncurried (runFn2, Fn2)
-import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Aff (makeAff)
-import Node.Stream as Node
+import Effect (Effect)
+import Effect.Aff (Aff, makeAff)
+import Effect.Class (liftEffect)
 import Node.Buffer (Buffer)
 import Node.Buffer as Buffer
-import Node.Process as Process
 import Node.Encoding (Encoding(UTF8))
+import Node.Process as Process
+import Node.Stream as Node
+import Pulp.System.FFI (Callback, runNode)
 import Unsafe.Coerce (unsafeCoerce)
 
-import Pulp.System.FFI
-
-type ReadableStream = Node.Readable () PulpEffects
-type WritableStream = Node.Writable () PulpEffects
+type ReadableStream = Node.Readable ()
+type WritableStream = Node.Writable ()
 
 -- | A stream which might or might not be readable or writable.
 foreign import data AnyStream :: Type
 
 -- | Forget about whether a particular stream is readable or writable.
-forget :: forall eff r. Node.Stream r eff -> AnyStream
+forget :: forall r. Node.Stream r -> AnyStream
 forget = unsafeCoerce
 
-write :: forall r. Node.Writable r PulpEffects -> String -> AffN Unit
-write stream str = makeAff (\_ done -> void (Node.writeString stream UTF8 str (done unit)))
+write :: forall r. Node.Writable r -> String -> Aff Unit
+write stream str = makeAff (\cb -> mempty <* void (Node.writeString stream UTF8 str (cb (Right unit))))
 
-end :: forall r. Node.Writable r PulpEffects -> AffN Unit
-end stream = makeAff (\_ done -> void (Node.end stream (done unit)))
+end :: forall r. Node.Writable r -> Aff Unit
+end stream = makeAff (\cb -> mempty <* void (Node.end stream (cb (Right unit))))
 
-concatStream :: forall w. Node.Readable w PulpEffects -> AffN String
+concatStream :: forall w. Node.Readable w -> Aff String
 concatStream stream = do
   buf <- concatStreamToBuffer stream
-  liftEff (Buffer.toString UTF8 buf)
+  liftEffect (Buffer.toString UTF8 buf)
 
-concatStreamToBuffer :: forall w. Node.Readable w PulpEffects -> AffN Buffer
+concatStreamToBuffer :: forall w. Node.Readable w -> Aff Buffer
 concatStreamToBuffer stream = runNode $ runFn2 concatStreamToBuffer' stream
 
-foreign import concatStreamToBuffer' :: forall w. Fn2 (Node.Readable w PulpEffects) (Callback Buffer) Unit
+foreign import concatStreamToBuffer' :: forall w. Fn2 (Node.Readable w) (Callback Buffer) Unit
 
-foreign import createGzip :: EffN (Node.Duplex PulpEffects)
+foreign import createGzip :: Effect (Node.Duplex)
 
 stdout :: WritableStream
 stdout = unsafeCoerce Process.stdout

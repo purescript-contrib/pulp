@@ -3,36 +3,37 @@ module Pulp.Login
   , tokenFilePath
   ) where
 
-import Prelude
-import Control.Monad.Eff.Exception
-import Control.Monad.Eff.Class
 import Control.Monad.Error.Class
-import Control.Monad.Except (runExcept)
+import Data.Either
 import Data.Maybe
 import Data.Tuple.Nested
-import Data.Either
-import Data.Foldable (fold)
-import Data.Foreign (readString)
-import Data.Foreign.Index (readProp)
-import Data.Foreign.JSON (parseJSON)
-import Data.String as String
-import Data.StrMap as StrMap
-import Data.Options ((:=))
-import Node.Process as Process
-import Node.Platform (Platform(Win32))
-import Node.Path as Path
-import Node.FS.Aff as FS
+import Effect.Class
+import Effect.Exception
 import Node.FS.Perms
-import Node.Encoding (Encoding(..))
-import Node.HTTP.Client as HTTP
-
-import Pulp.System.HTTP
+import Prelude
+import Pulp.Args
+import Pulp.Outputter
 import Pulp.System.FFI
-import Pulp.System.Stream (concatStream)
+import Pulp.System.HTTP
+
+import Control.Monad.Except (runExcept)
+import Data.Foldable (fold)
+import Data.Options ((:=))
+import Data.String as String
+import Effect.Aff (Aff)
+import Foreign (readString)
+import Foreign.Index (readProp)
+import Foreign.JSON (parseJSON)
+import Foreign.Object as Object
+import Node.Encoding (Encoding(..))
+import Node.FS.Aff as FS
+import Node.HTTP.Client as HTTP
+import Node.Path as Path
+import Node.Platform (Platform(Win32))
+import Node.Process as Process
 import Pulp.System.Files (mkdirIfNotExist)
 import Pulp.System.Read as Read
-import Pulp.Outputter
-import Pulp.Args
+import Pulp.System.Stream (concatStream)
 import Pulp.Version as PulpVersion
 
 -- TODO: Obtain tokens automatically after prompting for a username and
@@ -51,7 +52,7 @@ action = Action \args -> do
 
   writeTokenFile token
 
-obtainTokenFromStdin :: Outputter -> AffN String
+obtainTokenFromStdin :: Outputter -> Aff String
 obtainTokenFromStdin out = do
   out.write "Please obtain a GitHub personal access token at:\n"
   out.write "  https://github.com/settings/tokens/new\n"
@@ -62,7 +63,7 @@ obtainTokenFromStdin out = do
     , silent: true
     }
 
-checkToken :: Outputter -> String -> AffN Unit
+checkToken :: Outputter -> String -> Aff Unit
 checkToken out token = do
   res <- httpRequest reqOptions Nothing
 
@@ -91,28 +92,28 @@ checkToken out token = do
     [ HTTP.protocol := "https:"
     , HTTP.hostname := "api.github.com"
     , HTTP.path := "/user"
-    , HTTP.headers := HTTP.RequestHeaders (StrMap.fromFoldable
+    , HTTP.headers := HTTP.RequestHeaders (Object.fromFoldable
         [ "Accept" /\ "application/vnd.github.v3+json"
         , "Authorization" /\ ("token " <> token)
         , "User-Agent" /\ ("Pulp-" <> PulpVersion.versionString)
         ])
     ]
 
-writeTokenFile :: String -> AffN Unit
+writeTokenFile :: String -> Aff Unit
 writeTokenFile token = do
   filepath <- tokenFilePath
   mkdirIfNotExist (Path.dirname filepath)
   FS.writeTextFile UTF8 filepath token
   FS.chmod filepath (mkPerms (read + write) none none)
 
-tokenFilePath :: AffN String
+tokenFilePath :: Aff String
 tokenFilePath =
   (<>) <$> getHome <*> pure "/.pulp/github-oauth-token"
 
-getHome :: AffN String
+getHome :: Aff String
 getHome = do
   let homeVar = if Process.platform == Just Win32 then "USERPROFILE" else "HOME"
-  home <- liftEff (Process.lookupEnv homeVar)
+  home <- liftEffect (Process.lookupEnv homeVar)
   case home of
     Just h ->
       pure h

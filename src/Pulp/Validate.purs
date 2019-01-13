@@ -4,21 +4,22 @@ module Pulp.Validate
   , getPsaVersion
   ) where
 
-import Prelude
-import Data.Maybe
 import Data.Either
-import Data.List (fromFoldable, List(..))
-import Data.String (trim, takeWhile)
-import Data.Version.Haskell (Version(..), parseVersion, showVersion)
-import Control.Monad.Eff.Exception (error)
+import Data.Maybe
+import Prelude
+import Pulp.System.FFI
+
 import Control.Monad.Error.Class (throwError)
+import Data.List (fromFoldable, List(..))
+import Data.String (codePointFromChar, takeWhile, trim)
+import Data.Version.Haskell (Version(..), parseVersion, showVersion)
+import Effect.Aff (Aff)
+import Effect.Exception (error)
+import Pulp.Exec (execQuiet)
+import Pulp.Outputter (Outputter)
 import Text.Parsing.Parser (parseErrorMessage)
 
-import Pulp.Exec (execQuiet)
-import Pulp.System.FFI
-import Pulp.Outputter (Outputter())
-
-validate :: Outputter -> AffN Version
+validate :: Outputter -> Aff Version
 validate out = do
   ver <- getPursVersion out
   when (ver < minimumPursVersion) $ do
@@ -30,18 +31,18 @@ validate out = do
     throwError $ error "Minimum purs version not satisfied"
   pure ver
 
-getPursVersion :: Outputter -> AffN Version
+getPursVersion :: Outputter -> Aff Version
 getPursVersion = getVersionFrom "purs"
 
 minimumPursVersion :: Version
 minimumPursVersion = Version (fromFoldable [0, 11, 0]) Nil
 
-getPsaVersion :: Outputter -> AffN Version
+getPsaVersion :: Outputter -> Aff Version
 getPsaVersion = getVersionFrom "psa"
 
-getVersionFrom :: String -> Outputter -> AffN Version
+getVersionFrom :: String -> Outputter -> Aff Version
 getVersionFrom bin out = do
-  verStr <- takeWhile (_ /= ' ') <$> trim <$> execQuiet bin ["--version"] Nothing
+  verStr <- takeWhile (_ /= codePointFromChar ' ') <$> trim <$> execQuiet bin ["--version"] Nothing
   case parseVersion verStr of
     Right v ->
       pure v

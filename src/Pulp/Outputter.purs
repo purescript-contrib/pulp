@@ -5,25 +5,26 @@ module Pulp.Outputter
   ) where
 
 import Prelude
-import Ansi.Codes (Color(..))
-import Ansi.Output (withGraphics, foreground, bold)
-
-import Pulp.System.FFI
-import Pulp.System.Stream (write, WritableStream, stderr)
-import Pulp.System.SupportsColor as Color
 import Pulp.Args
 import Pulp.Args.Get
+import Pulp.System.FFI
+
+import Ansi.Codes (Color(..))
+import Ansi.Output (withGraphics, foreground, bold)
+import Effect.Aff (Aff)
+import Pulp.System.Stream (write, WritableStream, stderr)
+import Pulp.System.SupportsColor as Color
 
 type Outputter =
-  { log :: String -> AffN Unit
-  , err :: String -> AffN Unit
-  , write  :: String -> AffN Unit
-  , bolded :: String -> AffN Unit
+  { log :: String -> Aff Unit
+  , err :: String -> Aff Unit
+  , write  :: String -> Aff Unit
+  , bolded :: String -> Aff Unit
   , monochrome :: Boolean
   }
 
 -- | Get an outputter, with monochrome based on the command line arguments.
-getOutputter :: Args -> AffN Outputter
+getOutputter :: Args -> Aff Outputter
 getOutputter args = do
   -- Bit of a hack, this is used in `pulp server`
   q <- getFlag "_silenced" args.commandOpts
@@ -58,13 +59,13 @@ ansiOutputter =
   { log: bullet stderr Green
   , err: bullet stderr Red
   , write: write stderr
-  , bolded: withGraphics (write stderr) bold
+  , bolded: write stderr <<< withGraphics bold
   , monochrome: false
   }
 
-bullet :: WritableStream -> Color -> String -> AffN Unit
+bullet :: WritableStream -> Color -> String -> Aff Unit
 bullet stream color text = do
-  withGraphics (write stream) (foreground color) "* "
+  write stream (withGraphics (foreground color) "* ")
   write stream (text <> "\n")
 
 -- | An outputter which doesn't ever output anything.

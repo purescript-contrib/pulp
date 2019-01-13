@@ -1,47 +1,43 @@
 module Test.Main where
 
 import Prelude
-import Data.Tuple (Tuple(..))
+
 import Data.List (List(..))
 import Data.Maybe (Maybe(..), isNothing)
+import Data.Tuple (Tuple(..))
 import Data.Version (Version, version)
-import Control.Monad.Eff.Unsafe (unsafeCoerceEff)
-import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Aff.Console (log)
-import Control.Monad.Aff (launchAff)
-import Node.Process as Process
+import Effect.Aff (Aff, launchAff)
+import Effect.Class (liftEffect)
+import Effect.Class.Console (log)
 import Node.ChildProcess as CP
-import Node.FS.Aff as FS
 import Node.Encoding (Encoding(UTF8))
-import Test.Assert (assert')
-
+import Node.FS.Aff as FS
+import Node.Process as Process
 import Pulp.Exec (execQuiet)
-import Pulp.System.FFI (AffN, EffN)
-import Pulp.System.Files (tempDir)
 import Pulp.Git (getVersionFromGitTag)
+import Pulp.System.Files (tempDir)
+import Test.Assert (assertEqual)
 
 -- | Run a shell command
-run :: String -> Array String -> AffN String
+run :: String -> Array String -> Aff String
 run cmd args = execQuiet cmd args Nothing
 
-run_ :: String -> Array String -> AffN Unit
+run_ :: String -> Array String -> Aff Unit
 run_ cmd args = void $ run cmd args
 
-commitFile :: String -> String -> AffN Unit
+commitFile :: String -> String -> Aff Unit
 commitFile name contents = do
   FS.writeTextFile UTF8 name contents
   run_ "git" ["add", name]
   run_ "git" ["commit", "--message", "add " <> name]
 
-assertEq :: forall a. Show a => Eq a => a -> a -> AffN Unit
+assertEq :: forall a. Show a => Eq a => a -> a -> Aff Unit
 assertEq expected actual =
-  liftEff $
-    assert' ("Expected " <> show expected <> ", got " <> show actual)
-            (expected == actual)
+  liftEffect $ assertEqual { actual, expected }
 
 main = launchAff do
   dir <- tempDir { prefix: "pulp-unit-test-", suffix: "" }
-  liftEff $ unsafeCoerceEff $ Process.chdir dir
+  liftEffect $ Process.chdir dir
   run_ "git" ["init"]
   run_ "git" ["config", "user.email", "pulp-test@example.com"]
   run_ "git" ["config", "user.name", "Pulp Tester"]

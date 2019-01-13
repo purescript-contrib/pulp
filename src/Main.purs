@@ -1,55 +1,54 @@
 module Main where
 
+import Effect.Aff
+import Effect.Class
+import Effect.Exception
 import Prelude
+import Pulp.Args.Get
+import Pulp.Args.Help
+import Pulp.Outputter
+import Pulp.System.FFI
 
-import Control.Monad.Aff
-import Control.Monad.Eff.Class
-import Control.Monad.Eff.Console as Console
-import Control.Monad.Eff.Unsafe (unsafePerformEff)
-import Control.Monad.Eff.Exception
 import Control.Monad.Error.Class (throwError)
 import Control.Monad.Except (runExcept)
-import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Either (Either(..))
-import Data.Map (insert)
-import Data.Foreign (Foreign, toForeign, readString)
-import Data.Foreign.JSON (parseJSON)
-import Data.Foreign.Index (readProp)
 import Data.Array (head, drop)
+import Data.Either (Either(..), either)
 import Data.Foldable (elem)
 import Data.List (List(Nil))
-import Data.Version (Version(), version, showVersion, parseVersion)
+import Data.Map (insert)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.String (stripPrefix, Pattern(..))
-import Text.Parsing.Parser (parseErrorMessage)
+import Data.Version (Version, version, showVersion, parseVersion)
+import Effect (Effect)
+import Effect.Console as Console
+import Effect.Unsafe (unsafePerformEffect)
+import Foreign (Foreign, unsafeToForeign, readString)
+import Foreign.Index (readProp)
+import Foreign.JSON (parseJSON)
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Sync (readTextFile)
 import Node.Path as Path
 import Node.Process as Process
-
 import Pulp.Args as Args
-import Pulp.Args.Get
-import Pulp.Args.Help
-import Pulp.Args.Types as Type
 import Pulp.Args.Parser (parse)
-import Pulp.System.FFI
-import Pulp.Outputter
+import Pulp.Args.Types as Type
+import Pulp.Browserify as Browserify
+import Pulp.Build as Build
+import Pulp.BumpVersion as BumpVersion
+import Pulp.Docs as Docs
+import Pulp.Init as Init
+import Pulp.Login as Login
+import Pulp.Project (getProject)
+import Pulp.Publish as Publish
+import Pulp.Repl as Repl
+import Pulp.Run as Run
+import Pulp.Server as Server
+import Pulp.Shell as Shell
+import Pulp.Test as Test
 import Pulp.Validate (validate)
 import Pulp.Version (printVersion)
-import Pulp.Project (getProject)
-
-import Pulp.Init as Init
-import Pulp.Build as Build
-import Pulp.Run as Run
-import Pulp.Test as Test
-import Pulp.Browserify as Browserify
-import Pulp.Docs as Docs
-import Pulp.Repl as Repl
-import Pulp.Server as Server
-import Pulp.Login as Login
-import Pulp.BumpVersion as BumpVersion
-import Pulp.Publish as Publish
 import Pulp.Watch as Watch
-import Pulp.Shell as Shell
+import Text.Parsing.Parser (parseErrorMessage)
 
 globals :: Array Args.Option
 globals = [
@@ -73,7 +72,7 @@ globals = [
 
 defaultDependencyPath :: String
 defaultDependencyPath =
-  unsafePerformEff (catchException (const (pure "bower_components")) readFromBowerRc)
+  unsafePerformEffect (catchException (const (pure "bower_components")) readFromBowerRc)
   where
   readFromBowerRc = do
     json <- readTextFile UTF8 ".bowerrc"
@@ -226,21 +225,21 @@ commands = [
     ]
   ]
 
-failed :: forall a. Error -> EffN a
+failed :: forall a. Error -> Effect a
 failed err = do
   Console.error $ "* ERROR: " <> message err
   -- logStack err
   Process.exit 1
 
-foreign import logStack :: Error -> EffN Unit
+foreign import logStack :: Error -> Effect Unit
 
-succeeded :: Unit -> EffN Unit
+succeeded :: Unit -> Effect Unit
 succeeded = const (pure unit)
 
-main :: EffN Unit
-main = void $ runAff failed succeeded do
+main :: Effect Unit
+main = void $ runAff (either failed succeeded) do
                 requireNodeAtLeast (version 4 0 0 Nil Nil)
-                argv <- drop 2 <$> liftEff Process.argv
+                argv <- drop 2 <$> liftEffect Process.argv
                 args <- parse globals commands argv
                 case args of
                   Left err ->
@@ -259,11 +258,11 @@ main = void $ runAff failed succeeded do
   handleParseError _ err = do
     out.err $ "Error: " <> err
     printHelp out globals commands
-    liftEff $ Process.exit 1
+    liftEffect $ Process.exit 1
 
   out = makeOutputter false
 
-runWithArgs :: Args.Args -> AffN Unit
+runWithArgs :: Args.Args -> Aff Unit
 runWithArgs args = do
   out <- getOutputter args
   _ <- validate out
@@ -278,7 +277,7 @@ runWithArgs args = do
       case result of
         Left e  -> do
           runShellForOption "else" args'.globalOpts out
-          liftEff $ throwException e
+          liftEffect $ throwException e
         Right r ->
           runShellForOption "then" args'.globalOpts out
   where
@@ -291,7 +290,7 @@ runWithArgs args = do
       then pure as
       else do
         proj <- getProject as.globalOpts
-        let globalOpts' = insert "_project" (Just (toForeign proj)) as.globalOpts
+        let globalOpts' = insert "_project" (Just (unsafeToForeign proj)) as.globalOpts
         pure $ as { globalOpts = globalOpts' }
 
   runShellForOption option opts out = do
@@ -300,7 +299,7 @@ runWithArgs args = do
       Just cmd -> Shell.shell out cmd
       Nothing  -> pure unit
 
-requireNodeAtLeast :: Version -> AffN Unit
+requireNodeAtLeast :: Version -> Aff Unit
 requireNodeAtLeast minimum = do
   case parseVersion (stripV Process.version) of
     Left err ->
@@ -317,7 +316,7 @@ requireNodeAtLeast minimum = do
   stripV str =
     fromMaybe str (stripPrefix (Pattern "v") str)
 
-argsParserDiagnostics :: Args.Args -> AffN Unit
+argsParserDiagnostics :: Args.Args -> Aff Unit
 argsParserDiagnostics opts = do
   let out = makeOutputter false
   out.log $ "Globals: " <> show ((map <<< map) showForeign opts.globalOpts)

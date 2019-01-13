@@ -10,33 +10,33 @@ module Pulp.Exec
   , pursBundle
   ) where
 
+import Effect.Aff
 import Prelude
-import Data.Either (Either(..), either)
-import Data.String (stripSuffix, Pattern(..))
-import Data.StrMap (StrMap())
-import Data.Maybe (Maybe(..))
-import Data.Foldable (for_)
-import Control.Monad.Error.Class (throwError)
-import Control.Monad.Eff.Exception (error)
-import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Aff
-import Control.Monad.Aff.AVar (takeVar, putVar, makeVar)
-import Data.Posix.Signal (Signal(SIGTERM, SIGINT))
-import Node.Process as Process
-import Node.Platform (Platform(Win32))
-import Node.ChildProcess as CP
+import Pulp.System.FFI
+import Pulp.System.Stream
 import Unsafe.Coerce
 
-import Pulp.System.Stream
-import Pulp.System.FFI
+import Control.Monad.Error.Class (throwError)
+import Data.Either (Either(..), either)
+import Data.Foldable (for_)
+import Data.Maybe (Maybe(..))
+import Data.Posix.Signal (Signal(SIGTERM, SIGINT))
+import Data.String (stripSuffix, Pattern(..))
+import Effect.Aff.AVar as Avar
+import Effect.Class (liftEffect)
+import Effect.Exception (error)
+import Foreign.Object (Object)
+import Node.ChildProcess as CP
+import Node.Platform (Platform(Win32))
+import Node.Process as Process
 
-psa :: Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
+psa :: Array String -> Array String -> Maybe (Object String) -> Aff Unit
 psa = compiler "psa"
 
-pursBuild :: Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
+pursBuild :: Array String -> Array String -> Maybe (Object String) -> Aff Unit
 pursBuild deps args = compiler "purs" deps (["compile"] <> args)
 
-compiler :: String -> Array String -> Array String -> Maybe (StrMap String) -> AffN Unit
+compiler :: String -> Array String -> Array String -> Maybe (Object String) -> Aff Unit
 compiler name deps args env =
   execWithStdio inheritButOutToErr name (args <> deps) env
   where
@@ -48,7 +48,7 @@ compiler name deps args env =
     , CP.ShareStream (unsafeCoerce Process.stderr)
     ]
 
-pursBundle :: Array String -> Array String -> Maybe (StrMap String) -> AffN String
+pursBundle :: Array String -> Array String -> Maybe (Object String) -> Aff String
 pursBundle files args env =
   execQuiet "purs" (["bundle"] <> files <> args) env
 
@@ -63,13 +63,13 @@ pursBundle files args env =
 -- | process (that is, data on stdin from pulp is relayed to the child process,
 -- | and any stdout and stderr from the child process are relayed back out by
 -- | pulp, which usually means they will immediately appear in the terminal).
-exec :: String -> Array String -> Maybe (StrMap String) -> AffN Unit
+exec :: String -> Array String -> Maybe (Object String) -> Aff Unit
 exec = execWithStdio CP.inherit
 
 -- | Like exec, but allows you to supply your own StdIOBehaviour.
-execWithStdio :: Array (Maybe CP.StdIOBehaviour) -> String -> Array String -> Maybe (StrMap String) -> AffN Unit
+execWithStdio :: Array (Maybe CP.StdIOBehaviour) -> String -> Array String -> Maybe (Object String) -> Aff Unit
 execWithStdio stdio cmd args env = do
-  child <- liftEff $ CP.spawn cmd args (def { env = env, stdio = stdio })
+  child <- liftEffect $ CP.spawn cmd args (def { env = env, stdio = stdio })
   wait child >>= either (handleErrors cmd retry) onExit
 
   where
@@ -87,26 +87,26 @@ execWithStdio stdio cmd args env = do
 
 -- | Same as exec, except instead of relaying stdout immediately, it is
 -- | captured and returned as a String.
-execQuiet :: String -> Array String -> Maybe (StrMap String) -> AffN String
+execQuiet :: String -> Array String -> Maybe (Object String) -> Aff String
 execQuiet =
   execQuietWithStderr (CP.ShareStream (unsafeCoerce Process.stderr))
 
-execQuietWithStderr :: CP.StdIOBehaviour -> String -> Array String -> Maybe (StrMap String) -> AffN String
+execQuietWithStderr :: CP.StdIOBehaviour -> String -> Array String -> Maybe (Object String) -> Aff String
 execQuietWithStderr stderrBehaviour cmd args env = do
   let stdio = [ Just (CP.ShareStream (unsafeCoerce Process.stdin)) -- stdin
               , Just CP.Pipe -- stdout
               , Just stderrBehaviour -- stderr
               ]
-  child <- liftEff $ CP.spawn cmd args (def { env = env, stdio = stdio })
-  outVar <- makeVar
-  _ <- forkAff (concatStream (CP.stdout child) >>= putVar outVar)
+  child <- liftEffect $ CP.spawn cmd args (def { env = env, stdio = stdio })
+  outVar <- Avar.empty
+  _ <- forkAff (concatStream (CP.stdout child) >>= \x -> Avar.put x outVar)
   wait child >>= either (handleErrors cmd retry) (onExit outVar)
 
   where
   def = CP.defaultSpawnOptions
 
   onExit outVar exit =
-    takeVar outVar >>= \childOut ->
+    Avar.take outVar >>= \childOut ->
       case exit of
         CP.Normally 0 ->
           pure childOut
@@ -118,11 +118,11 @@ execQuietWithStderr stderrBehaviour cmd args env = do
 
 -- | A version of `exec` which installs signal handlers to make sure that the
 -- | signals SIGINT and SIGTERM are relayed to the child process, if received.
-execInteractive :: String -> Array String -> Maybe (StrMap String) -> AffN Unit
+execInteractive :: String -> Array String -> Maybe (Object String) -> Aff Unit
 execInteractive cmd args env = do
-  child <- liftEff $ CP.spawn cmd args (def { env = env
+  child <- liftEffect $ CP.spawn cmd args (def { env = env
                                             , stdio = CP.inherit })
-  liftEff $
+  liftEffect $
     for_ [SIGTERM, SIGINT] \sig ->
       Process.onSignal sig
         (void (CP.kill sig child))
@@ -134,16 +134,18 @@ execInteractive cmd args env = do
   retry newCmd = exec newCmd args env
 
 -- | A slightly weird combination of `onError` and `onExit` into one.
-wait :: CP.ChildProcess -> AffN (Either CP.Error CP.Exit)
-wait child = makeAff \_ win -> do
-  CP.onExit child (win <<< Right)
-  CP.onError child (win <<< Left)
+wait :: CP.ChildProcess -> Aff (Either CP.Error CP.Exit)
+wait child = makeAff \cb -> do
+  let success = cb <<< Right
+  CP.onExit child (success <<< Right)
+  CP.onError child (success <<< Left)
+  pure mempty
 
 showExit :: CP.Exit -> String
 showExit (CP.Normally x) = "with exit code " <> show x
 showExit (CP.BySignal sig) = "as a result of receiving " <> show sig
 
-handleErrors :: forall a. String -> (String -> AffN a) -> CP.Error -> AffN a
+handleErrors :: forall a. String -> (String -> Aff a) -> CP.Error -> Aff a
 handleErrors cmd retry err
   | err.code == "ENOENT" = do
      -- On windows, if the executable wasn't found, try adding .cmd

@@ -9,7 +9,6 @@ import Pulp.Args.Help
 import Pulp.Outputter
 import Pulp.System.FFI
 
-import Control.Monad.Error.Class (throwError)
 import Control.Monad.Except (runExcept)
 import Data.Array (head, drop)
 import Data.Either (Either(..), either)
@@ -80,6 +79,11 @@ defaultDependencyPath =
       Right dir -> pure dir
       Left err  -> throwException (error (show err))
 
+dependencyPathOption :: Args.Option
+dependencyPathOption =
+  Args.optionDefault "dependencyPath" ["--dependency-path"] Type.directory
+    "Directory for PureScript dependency files." defaultDependencyPath
+
 -- | Options for any command requiring paths
 pathArgs :: Array Args.Option
 pathArgs = [
@@ -90,8 +94,7 @@ pathArgs = [
     "Directory for PureScript source files." "src",
   Args.optionDefault "testPath" ["--test-path"] Type.directory
     "Directory for PureScript test files." "test",
-  Args.optionDefault "dependencyPath" ["--dependency-path"] Type.directory
-    "Directory for PureScript dependency files." defaultDependencyPath
+  dependencyPathOption
   ]
 
 -- | Options common to 'build', 'test', and 'browserify'
@@ -215,13 +218,15 @@ commands = [
         "Display nothing to the console when rebuilding."
     ] <> buildishArgs,
   Args.command "login" "Obtain and store a token for uploading packages to Pursuit." Nothing Login.action [],
-  Args.commandWithArgs "version" "Bump and tag a new version in preparation for release." Nothing BumpVersion.action []
-    [Args.argument "bump" Type.versionBump "How to bump the version. Acceptable values: 'major', 'minor', 'patch', or any specific version. If omitted, Pulp will prompt you for a version." false],
+  Args.commandWithArgs "version" "Bump and tag a new version in preparation for release." Nothing BumpVersion.action [ dependencyPathOption ]
+    [ Args.argument "bump" Type.versionBump "How to bump the version. Acceptable values: 'major', 'minor', 'patch', or any specific version. If omitted, Pulp will prompt you for a version." false
+    ],
   Args.command "publish" "Publish a previously tagged version to Bower and Pursuit." Nothing Publish.action [
       Args.optionDefault "pushTo" ["--push-to"] Type.string
         "The Git remote to push commits and tags to." "origin",
       Args.option "noPush" ["--no-push"] Type.flag
-        "Skip pushing commits or tags to any remote."
+        "Skip pushing commits or tags to any remote.",
+      dependencyPathOption
     ]
   ]
 

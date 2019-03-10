@@ -1,42 +1,49 @@
 module Pulp.Publish ( action, resolutionsFile ) where
 
 import Prelude
-import Effect.Class
-import Control.Monad.Error.Class
-import Effect.Aff
+
 import Control.Monad.Except (runExcept)
-import Data.Maybe
-import Data.Tuple
-import Data.Tuple.Nested ((/\))
-import Data.Either
+import Control.MonadPlus (guard)
+import Control.Parallel (parTraverse)
+import Data.Array as Array
+import Data.Either (Either(..))
 import Data.Foldable (fold)
-import Foreign (Foreign, readString)
-import Foreign.Index (readProp)
-import Foreign.JSON (parseJSON)
+import Data.List (List(..))
+import Data.List as List
+import Data.Maybe (Maybe(..), maybe)
+import Data.Options ((:=))
+import Data.String as String
+import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested ((/\))
 import Data.Version (Version)
 import Data.Version as Version
-import Data.String as String
+import Data.Version.Haskell (Version(..)) as Haskell
+import Effect.Aff (Aff, attempt, throwError)
+import Effect.Class (liftEffect)
+import Foreign (Foreign, readString, renderForeignError)
+import Foreign.Index (readProp)
+import Foreign.JSON (parseJSON)
 import Foreign.Object as Object
-import Data.Options ((:=))
-import Node.Encoding (Encoding(..))
 import Node.Buffer (Buffer)
 import Node.Buffer as Buffer
 import Node.ChildProcess as CP
+import Node.Encoding (Encoding(..))
 import Node.FS.Aff as FS
 import Node.HTTP.Client as HTTP
-
-import Pulp.System.FFI
-import Pulp.System.HTTP
-import Pulp.System.Stream
-import Pulp.Exec
-import Pulp.Args
-import Pulp.Args.Get
-import Pulp.Outputter
-import Pulp.System.Files
-import Pulp.System.Read as Read
-import Pulp.Git
+import Node.Path as Path
+import Pulp.Args (Action(..), Args)
+import Pulp.Args.Get (getFlag, getOption')
+import Pulp.Exec (exec, execQuiet, execQuietWithStderr)
+import Pulp.Git (getVersionFromGitTag, requireCleanGitWorkingTree)
 import Pulp.Login (tokenFilePath)
+import Pulp.Outputter (Outputter, getOutputter)
+import Pulp.System.Files (isENOENT, openTemp)
+import Pulp.System.HTTP (httpRequest)
+import Pulp.System.Read as Read
+import Pulp.System.Stream (concatStream, concatStreamToBuffer, createGzip, end, write)
 import Pulp.Utils (throw)
+import Pulp.Validate (getPursVersion)
+import Simple.JSON as SimpleJSON
 
 -- TODO:
 -- * Check that the 'origin' remote matches with bower.json
@@ -52,7 +59,8 @@ action = Action \args -> do
   requireCleanGitWorkingTree
   authToken <- readTokenFile
 
-  gzippedJson <- pursPublish >>= gzip
+  resolutionsPath <- resolutionsFile args
+  gzippedJson <- pursPublish resolutionsPath >>= gzip
 
   Tuple tagStr tagVersion <- getVersion
   bowerJson <- readBowerJson
@@ -101,18 +109,104 @@ gzip str = do
   end gzipStream
   concatStreamToBuffer gzipStream
 
-resolutionsFile :: Aff String
-resolutionsFile = do
-  resolutions <- execQuiet "bower" ["list", "--json", "--offline"] Nothing
+-- Just the fields we care about
+type InstalledBowerJson =
+  { name :: String
+  , version :: String
+  , _resolution ::
+      { type :: String
+      }
+  }
+
+-- | Create a resolutions file, using the new format where the installed
+-- | version of `purs` is recent enough to be able to understand it, and using
+-- | the legacy format otherwise. Returns the created file path.
+resolutionsFile :: Args -> Aff String
+resolutionsFile args = do
+  out <- getOutputter args
+  ver <- getPursVersion out
+  dependencyPath <- getOption' "dependencyPath" args.commandOpts
+  let go =
+        if ver >= Haskell.Version (List.fromFoldable [0,12,4]) Nil
+          then getResolutions
+          else getResolutionsLegacy
+  resolutionsData <- go dependencyPath
+  writeResolutionsFile resolutionsData
+
+getResolutions :: String -> Aff String
+getResolutions dependencyPath = do
+  serializeResolutions <$> getResolutionsBower dependencyPath
+
+-- Obtain resolutions information for a Bower project. If a dependency has been
+-- installed in a non-standard way, e.g. via a particular branch or commit
+-- rather than a published version, the `version` field for that package in the
+-- result will be Nothing.
+getResolutionsBower ::
+  String ->
+  Aff
+    (Array
+      { packageName :: String
+      , version :: Maybe String
+      , path :: String
+      })
+getResolutionsBower dependencyPath = do
+  dependencyDirs <- FS.readdir dependencyPath
+  flip parTraverse dependencyDirs \dir -> do
+    let jsonPath = Path.concat [dependencyPath, dir, ".bower.json"]
+    json <- FS.readTextFile UTF8 jsonPath
+    case SimpleJSON.readJSON json of
+      Left errs ->
+        throw ("Error while decoding " <> jsonPath <> ":\n"
+          <> String.joinWith "; " (Array.fromFoldable (map renderForeignError errs)))
+      Right (pkgInfo :: InstalledBowerJson) ->
+        let
+          packageName =
+            pkgInfo.name
+          version =
+            guard (pkgInfo._resolution."type" == "version")
+            *> Just pkgInfo.version
+          path =
+            dependencyPath <> Path.sep <> dir
+        in
+          pure
+            { packageName
+            , version
+            , path
+            }
+
+serializeResolutions ::
+  Array
+    { packageName :: String
+    , version :: Maybe String
+    , path :: String
+    } ->
+  String
+serializeResolutions rs =
+  let
+    toKeyValuePair { packageName, version, path } =
+      Tuple packageName { version, path }
+    obj =
+      Object.fromFoldable (map toKeyValuePair rs)
+  in
+    SimpleJSON.writeJSON obj
+
+getResolutionsLegacy :: String -> Aff String
+getResolutionsLegacy dependencyPath = do
+  execQuiet "bower" ["list", "--json", "--offline"] Nothing
+
+writeResolutionsFile :: String -> Aff String
+writeResolutionsFile resolutionsContents = do
   info <- openTemp { prefix: "pulp-publish", suffix: ".json" }
-  _ <- FS.fdAppend info.fd =<< liftEffect (Buffer.fromString resolutions UTF8)
+  _ <- FS.fdAppend info.fd =<< liftEffect (Buffer.fromString resolutionsContents UTF8)
   _ <- FS.fdClose info.fd
   pure info.path
 
-pursPublish :: Aff String
-pursPublish = do
-  resolutions <- resolutionsFile
-  execQuiet "purs" ["publish", "--manifest", "bower.json", "--resolutions", resolutions] Nothing
+pursPublish :: String -> Aff String
+pursPublish resolutionsPath =
+  execQuiet
+    "purs"
+    ["publish", "--manifest", "bower.json", "--resolutions", resolutionsPath]
+    Nothing
 
 confirmRun :: Outputter -> String -> Array String -> Aff Unit
 confirmRun out cmd args = do

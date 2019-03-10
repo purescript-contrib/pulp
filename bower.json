@@ -24,7 +24,8 @@
     "purescript-avar": "^3.0.0",
     "purescript-versions": "^5.0.0",
     "purescript-foreign-generic": "^7.0.0",
-    "purescript-ansi": "^5.0.0"
+    "purescript-ansi": "^5.0.0",
+    "purescript-simple-json": "^4.4.1"
   },
   "devDependencies": {
     "purescript-assert": "^4.0.0"

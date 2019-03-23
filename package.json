@@ -33,14 +33,15 @@
   "engines": {
     "node": ">= 4"
   },
-  "config": {
-    "psc_build_version": "v0.12.1",
-    "psc_test_version": "v0.12.1"
-  },
   "scripts": {
-    "prepare": "node scripts.js prepare",
-    "test": "node scripts.js test",
-    "build": "node scripts.js build"
+    "prepare": "bower install && npm run build",
+    "test": "npm run test:unit && npm run test:integration",
+    "build": "npm run lint && npm run compile && npm run bundle",
+    "lint": "jshint src",
+    "compile": "psa -c \"src/**/*.purs\" \"test/**/*.purs\" \"bower_components/purescript-*/src/**/*.purs\" --censor-lib --censor-codes=ImplicitImport,HidingImport",
+    "bundle": "purs bundle \"output/*/*.js\" --output pulp.js --module Main --main Main",
+    "test:unit": "purs bundle \"output/*/*.js\" --output unit-tests.js --module Test.Main --main Test.Main && node unit-tests.js",
+    "test:integration": "mocha test-js --require babel/register"
   },
   "dependencies": {
     "browserify": "^16.2.3",
@@ -69,7 +70,6 @@
     "jshint": "^2.9.7",
     "mkdirp": "^0.5.1",
     "mocha": "^5.2.0",
-    "psvm": "^0.1.6",
     "purescript-psa": "^0.7.3",
     "semver": "^5.6.0",
     "touch": "^3.1.0"

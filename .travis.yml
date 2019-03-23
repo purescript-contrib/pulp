@@ -10,9 +10,7 @@ language: node_js
 node_js:
   - "stable"
 env:
-  - PATH=$HOME/bin:$PATH
-  - PURS_VERSION=v0.12.3
-  - PSC_PACKAGE_VERSION=v0.5.1
+  - PATH=$HOME/bin:$PATH PURS_VERSION=v0.12.3 PSC_PACKAGE_VERSION=v0.5.1
 install:
   - mkdir -p $HOME/bin
   - wget -O $HOME/bin/purescript.tar.gz https://github.com/purescript/purescript/releases/download/$PURS_VERSION/linux64.tar.gz

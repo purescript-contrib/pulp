@@ -1,16 +1,24 @@
 sudo: required
 dist: trusty
-language: node_js
-node_js:
-  - "stable"
 branches:
   # Only build master and tagged versions, i.e. not feature branches; feature
   # branches already get built after opening a pull request.
   only:
     - master
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
-before_install:
+language: node_js
+node_js:
+  - "stable"
+env:
+  - PATH=$HOME/bin:$PATH PURS_VERSION=v0.12.3 PSC_PACKAGE_VERSION=v0.5.1
+install:
+  - mkdir -p $HOME/bin
+  - wget -O $HOME/bin/purescript.tar.gz https://github.com/purescript/purescript/releases/download/$PURS_VERSION/linux64.tar.gz
+  - tar -xvf $HOME/bin/purescript.tar.gz -C $HOME/bin --strip-components 1 purescript/purs
+  - wget -O $HOME/bin/psc-package.tar.gz https://github.com/purescript/psc-package/releases/download/$PSC_PACKAGE_VERSION/linux64.tar.gz
+  - tar -xvf $HOME/bin/psc-package.tar.gz -C $HOME/bin --strip-components 1 psc-package/psc-package
+  - chmod -R a+x $HOME/bin
   - travis_retry npm install -g bower
-  - wget -q -O - https://github.com/purescript/psc-package/releases/download/v0.2.2/linux64.tar.gz | sudo tar xzf - -C /usr/local/bin --strip-components 1 psc-package/psc-package
 script:
+  - npm install
   - npm test

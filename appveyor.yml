@@ -1,6 +1,8 @@
 # Test against this version of Node.js
 environment:
   nodejs_version: "10"
+  purs_version: "v0.12.3"
+  psc_package_version: "v0.5.1"
 
 # Only build master and tagged versions, i.e. not feature branches; feature
 # branches already get built after opening a pull request.
@@ -23,14 +25,13 @@ cache:
 install:
   - ps: Install-Product node $env:nodejs_version x64
   - npm install -g bower
-  - npm install
   - set PATH=%PATH%;C:\tools
-  - pushd C:\tools & curl -opsc-package.tar.gz -L https://github.com/purescript/psc-package/releases/download/v0.2.2/win64.tar.gz & 7z e psc-package.tar.gz & 7z e psc-package.tar psc-package/psc-package.exe & popd
+  - pushd C:\tools & curl -opsc-package.tar.gz -L https://github.com/purescript/psc-package/releases/download/%psc_package_version%/win64.tar.gz & 7z e psc-package.tar.gz & 7z e psc-package.tar psc-package/psc-package.exe & popd
+  - pushd C:\tools & curl -opurescript.tar.gz -L https://github.com/purescript/purescript/releases/download/%purs_version%/win64.tar.gz & 7z e purescript.tar.gz & 7z e purescript.tar purescript/purs.exe & popd
 
 # Post-install test scripts.
 test_script:
-  - node --version
-  - npm --version
+  - npm install
   - npm run test
 
 # "build" means "build using the project or solution file", which we don't

@@ -19,5 +19,7 @@ install:
   - tar -xvf $HOME/bin/psc-package.tar.gz -C $HOME/bin --strip-components 1 psc-package/psc-package
   - chmod -R a+x $HOME/bin
   - travis_retry npm install -g bower
+  - bower install
 script:
+  - npm run build
   - npm test

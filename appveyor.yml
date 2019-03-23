@@ -25,8 +25,6 @@ cache:
 install:
   - ps: Install-Product node $env:nodejs_version x64
   - npm install -g bower
-  - npm install
-  - bower install
   - set PATH=%PATH%;C:\tools
   - pushd C:\tools
   - curl -opsc-package.tar.gz -L https://github.com/purescript/psc-package/releases/download/%psc_package_version%/win64.tar.gz
@@ -37,7 +35,7 @@ install:
 
 # Post-install test scripts.
 test_script:
-  - npm run build
+  - npm install
   - npm run test
 
 # "build" means "build using the project or solution file", which we don't

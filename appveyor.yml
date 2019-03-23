@@ -26,12 +26,8 @@ install:
   - ps: Install-Product node $env:nodejs_version x64
   - npm install -g bower
   - set PATH=%PATH%;C:\tools
-  - pushd C:\tools
-  - curl -opsc-package.tar.gz -L https://github.com/purescript/psc-package/releases/download/%psc_package_version%/win64.tar.gz
-  - 7z e psc-package.tar.gz & 7z e psc-package.tar psc-package/psc-package.exe
-  - curl -opurescript.tar.gz -L https://github.com/purescript/purescript/releases/download/%purs_version%/win64.tar.gz
-  - 7z e purescript.tar.gz & 7z e purescript.tar purescript/purs.exe
-  - popd
+  - pushd C:\tools & curl -opsc-package.tar.gz -L https://github.com/purescript/psc-package/releases/download/%psc_package_version%/win64.tar.gz & 7z e psc-package.tar.gz & 7z e psc-package.tar psc-package/psc-package.exe & popd
+  - pushd C:\tools & curl -opurescript.tar.gz -L https://github.com/purescript/purescript/releases/download/%purs_version%/win64.tar.gz & 7z e purescript.tar.gz & 7z e purescript.tar purescript/purs.exe & popd
 
 # Post-install test scripts.
 test_script:

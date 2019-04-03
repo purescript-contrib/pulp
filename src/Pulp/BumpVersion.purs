@@ -1,45 +1,48 @@
 module Pulp.BumpVersion ( action ) where
 
-import Control.Monad.Error.Class
-import Data.Either
-import Data.Maybe
-import Data.Tuple
-import Effect.Exception
 import Prelude
-import Pulp.Args
-import Pulp.Args.Get
-import Pulp.Exec
-import Pulp.Git
-import Pulp.Outputter
-import Pulp.System.FFI
-import Pulp.VersionBump
 
+import Control.Monad.Error.Class (throwError)
+import Data.Either (Either(..))
 import Data.Foldable as Foldable
 import Data.List (List(..))
+import Data.Maybe (Maybe(..), maybe)
 import Data.String as String
+import Data.Tuple (Tuple(..), lookup, snd)
 import Data.Version (Version)
 import Data.Version as Version
 import Effect.Aff (Aff)
+import Effect.Exception (error)
+import Pulp.Args (Action(..), Args)
+import Pulp.Args.Get (getOption)
+import Pulp.Exec (exec)
+import Pulp.Git (dropPrefix, getLatestTaggedVersion, requireCleanGitWorkingTree)
+import Pulp.Outputter (Outputter, getOutputter)
 import Pulp.Publish (resolutionsFile)
 import Pulp.System.Read as Read
+import Pulp.VersionBump (VersionBump(..), applyBump, parseBump)
 
 action :: Action
 action = Action \args -> do
   out <- getOutputter args
 
   requireCleanGitWorkingTree
-  checkPursPublish out
+  checkPursPublish args
   version <- bumpVersion args
   tagNewVersion version
   out.log ("Bumped to: v" <> Version.showVersion version)
 
 -- | Try running `purs publish --dry-run` to make sure the code is suitable for
 -- | release.
-checkPursPublish :: Outputter -> Aff Unit
-checkPursPublish out = do
+checkPursPublish :: Args -> Aff Unit
+checkPursPublish args = do
+  out <- getOutputter args
   out.log "Checking your package using purs publish..."
-  resolutions <- resolutionsFile
-  exec "purs" ["publish", "--manifest", "bower.json", "--resolutions", resolutions, "--dry-run"] Nothing
+  resolutions <- resolutionsFile args
+  exec
+    "purs"
+    ["publish", "--manifest", "bower.json", "--resolutions", resolutions, "--dry-run"]
+    Nothing
 
 -- | Returns the new version that we should bump to.
 bumpVersion :: Args -> Aff Version

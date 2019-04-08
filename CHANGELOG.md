@@ -1,5 +1,12 @@
 # Pulp Release History
 
+## 12.4.0
+
+* When running against a sufficiently new version of the PureScript compiler
+  (specifically, v0.12.4 or later), when publishing, generate the new JSON
+  format for resolutions files. This fixes an issue where Bower would produce
+  out of memory errors when attempting to publish. (@hdgarrood, #351)
+
 ## 12.3.1
 
 * Bug fix: the compiler command line interface changed in 0.12 to replace the

@@ -2,21 +2,16 @@
 
 "use strict";
 
-exports.watch = function watch(directories) {
+exports.watch = function(pattern) {
   return function(act) {
     return function() {
-      var Watchpack = require("watchpack");
-      var watchpack = new Watchpack();
-      watchpack.watch([], directories, Date.now() - 10000);
-      watchpack.on("change", function(path) {
+      var Gaze = require("gaze").Gaze;
+
+      var gaze = new Gaze(pattern);
+
+      gaze.on("all", function(_, path) {
         act(path)();
       });
     };
-  };
-};
-
-exports.minimatch = function(str) {
-  return function(glob) {
-    return require("minimatch")(str, glob);
   };
 };

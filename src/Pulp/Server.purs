@@ -66,7 +66,7 @@ action = Action \args -> do
   rebuild
 
   dirs <- watchDirectories opts >>= orErr "Internal error: unexpected Nothing"
-  let pattern = Path.concat <$> (dirs <#> \d -> [d, "**/*"])
+  let pattern = map (\d -> Path.concat [d, "**", "*"]) dirs
   watchAff pattern \_ -> do
     void $ AVar.take rebuildV
     rebuild

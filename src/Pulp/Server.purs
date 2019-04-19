@@ -19,6 +19,7 @@ import Effect.Class (liftEffect)
 import Foreign (unsafeToForeign)
 import Node.Encoding (Encoding(..))
 import Node.HTTP as HTTP
+import Node.Path as Path
 import Node.Stream as Stream
 import Pulp.Build as Build
 import Pulp.System.StaticServer as StaticServer
@@ -65,7 +66,8 @@ action = Action \args -> do
   rebuild
 
   dirs <- watchDirectories opts >>= orErr "Internal error: unexpected Nothing"
-  watchAff dirs \_ -> do
+  let pattern = map (\d -> Path.concat [d, "**", "*"]) dirs
+  watchAff pattern \_ -> do
     void $ AVar.take rebuildV
     rebuild
 

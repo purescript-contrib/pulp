@@ -3,7 +3,6 @@ module Pulp.Watch
   , watchAff
   , watchDirectories
   , action
-  , minimatch
   ) where
 
 import Data.Maybe
@@ -61,8 +60,6 @@ debounce cooldown callback = do
       Ref.write now timer
       callback info
 
-foreign import minimatch :: String -> String -> Boolean
-
 -- Returns Nothing if the given Options did not include the relevant options
 -- i.e. watching does not make sense with this command.
 watchDirectories :: Options -> Aff (Maybe (Array String))
@@ -82,7 +79,7 @@ action = Action \args -> do
   out <- getOutputter args
 
   -- It is important to do this before attempting to `fork` a separate process.
-  directories <- watchDirectories opts >>= orErr "This command does not work with --watch"
+  _ <- watchDirectories opts >>= orErr "This command does not work with --watch"
 
   argv' <- liftEffect $ Array.filter (_ `notElem` ["-w", "--watch"]) <<< Array.drop 2 <$> Process.argv
   childV <- AVar.empty
@@ -91,10 +88,9 @@ action = Action \args -> do
   globs <- Set.union <$> defaultGlobs opts <*> testGlobs opts
   let fileGlobs = sources globs <> ffis globs
 
-  watchAff directories $ \path -> do
-    when (any (minimatch path) fileGlobs) do
-      child <- AVar.take childV
-      liftEffect $ treeKill (pid child) "SIGTERM"
-      out.write "---\n"
-      out.log "Source tree changed; restarting:"
-      liftEffect (fork __filename argv') >>= AVar.put <@> childV
+  watchAff fileGlobs $ \path -> do
+    child <- AVar.take childV
+    liftEffect $ treeKill (pid child) "SIGTERM"
+    out.write "---\n"
+    out.log "Source tree changed; restarting:"
+    liftEffect (fork __filename argv') >>= AVar.put <@> childV

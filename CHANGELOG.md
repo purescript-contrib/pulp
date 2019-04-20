@@ -1,5 +1,10 @@
 # Pulp Release History
 
+## 12.4.2
+
+* Fix `pulp version` and `pulp publish`, which were both completely broken as
+  of changes in v12.4.1 (@hdgarrood)
+
 ## 12.4.1
 
 * Switch to gaze instead of watchpack for `--watch` and `pulp server`; this

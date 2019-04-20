@@ -13,10 +13,24 @@ env:
   # Test against multiple versions of the PureScript compiler
   - PURS_TEST_VERSION=v0.12.3
   - PURS_TEST_VERSION=v0.12.5
+os:
+  - linux
+  - windows
 install:
   - export PURS_BUILD_VERSION=v0.12.5
   - export PSC_PACKAGE_VERSION=v0.5.1
   - export PATH=$HOME/bin:$PATH
+  - |
+    case "$TRAVIS_OS_NAME" in
+      "linux")
+        export BUNDLE_NAME=linux64;;
+      "osx")
+        echo BUNDLE_NAME=macos;;
+      "windows")
+        echo BUNDLE_NAME=win64;;
+      *)
+        echo "Unknown TRAVIS_OS_NAME: $TRAVIS_OS_NAME";
+        exit 1;;
   - mkdir -p $HOME/bin
 
   # Download the PureScript compiler
@@ -26,7 +40,7 @@ install:
       VERSION=$1
       DIR=$HOME/bin/purescript-$VERSION
       mkdir $DIR
-      wget -O $DIR/purescript.tar.gz https://github.com/purescript/purescript/releases/download/$VERSION/linux64.tar.gz
+      wget -O $DIR/purescript.tar.gz https://github.com/purescript/purescript/releases/download/$VERSION/$BUNDLE_NAME.tar.gz
       tar -xvf $DIR/purescript.tar.gz -C $DIR --strip-components 1 purescript/purs
       chmod a+x $DIR/purs
     }
@@ -38,7 +52,7 @@ install:
     fi
 
   # Download psc-package
-  - wget -O $HOME/bin/psc-package.tar.gz https://github.com/purescript/psc-package/releases/download/$PSC_PACKAGE_VERSION/linux64.tar.gz
+  - wget -O $HOME/bin/psc-package.tar.gz https://github.com/purescript/psc-package/releases/download/$PSC_PACKAGE_VERSION/$BUNDLE_NAME.tar.gz
   - tar -xvf $HOME/bin/psc-package.tar.gz -C $HOME/bin --strip-components 1 psc-package/psc-package
   - chmod a+x $HOME/bin/psc-package
 

@@ -135,7 +135,7 @@ resolutionsFile :: BowerJson -> Args -> Aff String
 resolutionsFile manifest args = do
   out <- getOutputter args
   ver <- getPursVersion out
-  let hasDependencies = maybe false Object.isEmpty manifest.dependencies
+  let hasDependencies = maybe false (not <<< Object.isEmpty) manifest.dependencies
   resolutionsData <-
     if hasDependencies
       then do

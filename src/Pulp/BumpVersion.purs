@@ -18,7 +18,7 @@ import Pulp.Args.Get (getOption)
 import Pulp.Exec (exec)
 import Pulp.Git (dropPrefix, getLatestTaggedVersion, requireCleanGitWorkingTree)
 import Pulp.Outputter (Outputter, getOutputter)
-import Pulp.Publish (resolutionsFile)
+import Pulp.Publish (resolutionsFile, parseJsonFile, BowerJson)
 import Pulp.System.Read as Read
 import Pulp.VersionBump (VersionBump(..), applyBump, parseBump)
 
@@ -38,7 +38,8 @@ checkPursPublish :: Args -> Aff Unit
 checkPursPublish args = do
   out <- getOutputter args
   out.log "Checking your package using purs publish..."
-  resolutions <- resolutionsFile args
+  manifest :: BowerJson <- parseJsonFile "bower.json"
+  resolutions <- resolutionsFile manifest args
   exec
     "purs"
     ["publish", "--manifest", "bower.json", "--resolutions", resolutions, "--dry-run"]

@@ -1,4 +1,4 @@
-module Pulp.Publish ( action, resolutionsFile ) where
+module Pulp.Publish ( action, resolutionsFile, BowerJson, parseJsonFile ) where
 
 import Prelude
 
@@ -56,13 +56,12 @@ action = Action \args -> do
 
   requireCleanGitWorkingTree
   authToken <- readTokenFile
+  manifest :: BowerJson <- parseJsonFile "bower.json"
 
-  resolutionsPath <- resolutionsFile args
+  resolutionsPath <- resolutionsFile manifest args
   gzippedJson <- pursPublish resolutionsPath >>= gzip
 
   Tuple tagStr tagVersion <- getVersion
-  manifest :: BowerJson <- parseJsonFile "bower.json"
-
   confirm ("Publishing " <> manifest.name <> " at v" <> Version.showVersion tagVersion <> ". Is this ok?")
 
   noPush <- getFlag "noPush" args.commandOpts
@@ -132,16 +131,20 @@ type InstalledBowerJson =
 -- | Create a resolutions file, using the new format where the installed
 -- | version of `purs` is recent enough to be able to understand it, and using
 -- | the legacy format otherwise. Returns the created file path.
-resolutionsFile :: Args -> Aff String
-resolutionsFile args = do
+resolutionsFile :: BowerJson -> Args -> Aff String
+resolutionsFile manifest args = do
   out <- getOutputter args
   ver <- getPursVersion out
-  dependencyPath <- getOption' "dependencyPath" args.commandOpts
-  let go =
+  let hasDependencies = maybe false Object.isEmpty manifest.dependencies
+  resolutionsData <-
+    if hasDependencies
+      then do
+        dependencyPath <- getOption' "dependencyPath" args.commandOpts
         if ver >= Haskell.Version (List.fromFoldable [0,12,4]) Nil
-          then getResolutions
-          else getResolutionsLegacy
-  resolutionsData <- go dependencyPath
+          then getResolutions dependencyPath
+          else getResolutionsLegacy dependencyPath
+      else
+        pure (serializeResolutions [])
   writeResolutionsFile resolutionsData
 
 getResolutions :: String -> Aff String

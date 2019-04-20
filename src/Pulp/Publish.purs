@@ -135,16 +135,14 @@ resolutionsFile :: BowerJson -> Args -> Aff String
 resolutionsFile manifest args = do
   out <- getOutputter args
   ver <- getPursVersion out
-  dependencyPath <- getOption' "dependencyPath" args.commandOpts
   resolutionsData <-
     if ver >= Haskell.Version (List.fromFoldable [0,12,4]) Nil
-      then
-        let
-          hasDependencies = maybe false Object.isEmpty manifest.dependencies
-        in
-          getResolutions hasDependencies dependencyPath
+      then do
+        let hasDependencies = maybe false Object.isEmpty manifest.dependencies
+        dependencyPath <- getOption' "dependencyPath" args.commandOpts
+        getResolutions hasDependencies dependencyPath
       else
-        getResolutionsLegacy dependencyPath
+        getResolutionsLegacy
   writeResolutionsFile resolutionsData
 
 -- Obtain resolutions information for a Bower project as a string containing
@@ -203,8 +201,8 @@ serializeResolutions rs =
   in
     SimpleJSON.writeJSON obj
 
-getResolutionsLegacy :: String -> Aff String
-getResolutionsLegacy dependencyPath = do
+getResolutionsLegacy :: Aff String
+getResolutionsLegacy =
   execQuiet "bower" ["list", "--json", "--offline"] Nothing
 
 writeResolutionsFile :: String -> Aff String

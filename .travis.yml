@@ -25,9 +25,9 @@ install:
       "linux")
         export BUNDLE_NAME=linux64;;
       "osx")
-        echo BUNDLE_NAME=macos;;
+        export BUNDLE_NAME=macos;;
       "windows")
-        echo BUNDLE_NAME=win64;;
+        export BUNDLE_NAME=win64;;
       *)
         echo "Unknown TRAVIS_OS_NAME: $TRAVIS_OS_NAME";
         exit 1;;

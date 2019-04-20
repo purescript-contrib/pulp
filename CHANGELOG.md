@@ -1,5 +1,14 @@
 # Pulp Release History
 
+## 12.4.1
+
+* Switch to gaze instead of watchpack for `--watch` and `pulp server`; this
+  fixes an issue where if you have source files which are symbolic links which
+  point outside your source directory, changes to those files would not be
+  picked up (@rnons, #371)
+* Fix an issue where `pulp version` and `pulp publish` would fail for packages
+  which do not have any dependencies (@hdgarrood)
+
 ## 12.4.0
 
 * When running against a sufficiently new version of the PureScript compiler

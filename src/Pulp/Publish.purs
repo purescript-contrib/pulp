@@ -39,7 +39,7 @@ import Pulp.System.Files (isENOENT, openTemp)
 import Pulp.System.HTTP (httpRequest)
 import Pulp.System.Read as Read
 import Pulp.System.Stream (concatStream, concatStreamToBuffer, createGzip, end, write)
-import Pulp.Utils (throw)
+import Pulp.Utils (orErr, throw)
 import Pulp.Validate (getPursVersion)
 import Simple.JSON as SimpleJSON
 
@@ -72,7 +72,8 @@ action = Action \args -> do
 
     -- Only attempt to register on Bower after a successful push, to avoid
     -- accidental squatting by non-package-owners.
-    registerOnBowerIfNecessary out manifest.name manifest.repository.url
+    repoUrl <- map _.url manifest.repository # orErr "'repository' key not present in bower.json"
+    registerOnBowerIfNecessary out manifest.name repoUrl
 
   out.log "Uploading documentation to Pursuit..."
   uploadPursuitDocs out authToken gzippedJson

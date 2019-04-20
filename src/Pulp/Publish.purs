@@ -2,7 +2,6 @@ module Pulp.Publish ( action, resolutionsFile ) where
 
 import Prelude
 
-import Control.Monad.Except (runExcept)
 import Control.MonadPlus (guard)
 import Control.Parallel (parTraverse)
 import Data.Array as Array
@@ -20,9 +19,8 @@ import Data.Version as Version
 import Data.Version.Haskell (Version(..)) as Haskell
 import Effect.Aff (Aff, attempt, throwError)
 import Effect.Class (liftEffect)
-import Foreign (Foreign, readString, renderForeignError)
-import Foreign.Index (readProp)
-import Foreign.JSON (parseJSON)
+import Foreign (renderForeignError)
+import Foreign.Object (Object)
 import Foreign.Object as Object
 import Node.Buffer (Buffer)
 import Node.Buffer as Buffer
@@ -63,10 +61,9 @@ action = Action \args -> do
   gzippedJson <- pursPublish resolutionsPath >>= gzip
 
   Tuple tagStr tagVersion <- getVersion
-  bowerJson <- readBowerJson
+  manifest :: BowerJson <- parseJsonFile "bower.json"
 
-  name <- getBowerName bowerJson
-  confirm ("Publishing " <> name <> " at v" <> Version.showVersion tagVersion <> ". Is this ok?")
+  confirm ("Publishing " <> manifest.name <> " at v" <> Version.showVersion tagVersion <> ". Is this ok?")
 
   noPush <- getFlag "noPush" args.commandOpts
   unless noPush do
@@ -75,15 +72,14 @@ action = Action \args -> do
 
     -- Only attempt to register on Bower after a successful push, to avoid
     -- accidental squatting by non-package-owners.
-    repoUrl <- getBowerRepositoryUrl bowerJson
-    registerOnBowerIfNecessary out name repoUrl
+    registerOnBowerIfNecessary out manifest.name manifest.repository.url
 
   out.log "Uploading documentation to Pursuit..."
   uploadPursuitDocs out authToken gzippedJson
 
   out.log "Done."
   out.log ("You can view your package's documentation at: " <>
-           pursuitUrl name tagVersion)
+           pursuitUrl manifest.name tagVersion)
 
   where
   getVersion =
@@ -109,7 +105,21 @@ gzip str = do
   end gzipStream
   concatStreamToBuffer gzipStream
 
--- Just the fields we care about
+-- Format for actual bower.json files, written by project maintainers. This
+-- type synonym only contains the fields we care about.
+type BowerJson =
+  { name :: String
+  , dependencies :: Maybe (Object String)
+  , repository ::
+      Maybe { url :: String
+            , type :: String
+            }
+  }
+
+-- Format for .bower.json files written automatically by Bower inside
+-- subdirectories of bower_components. This type synonym only contains the
+-- fields we care about for extracting the necessary information for passing on
+-- to `purs publish`.
 type InstalledBowerJson =
   { name :: String
   , version :: String
@@ -152,27 +162,21 @@ getResolutionsBower ::
 getResolutionsBower dependencyPath = do
   dependencyDirs <- FS.readdir dependencyPath
   flip parTraverse dependencyDirs \dir -> do
-    let jsonPath = Path.concat [dependencyPath, dir, ".bower.json"]
-    json <- FS.readTextFile UTF8 jsonPath
-    case SimpleJSON.readJSON json of
-      Left errs ->
-        throw ("Error while decoding " <> jsonPath <> ":\n"
-          <> String.joinWith "; " (Array.fromFoldable (map renderForeignError errs)))
-      Right (pkgInfo :: InstalledBowerJson) ->
-        let
-          packageName =
-            pkgInfo.name
-          version =
-            guard (pkgInfo._resolution."type" == "version")
-            *> Just pkgInfo.version
-          path =
-            dependencyPath <> Path.sep <> dir
-        in
-          pure
-            { packageName
-            , version
-            , path
-            }
+    pkgInfo :: InstalledBowerJson <-
+      parseJsonFile (Path.concat [dependencyPath, dir, ".bower.json"])
+    let
+      packageName =
+        pkgInfo.name
+      version =
+        guard (pkgInfo._resolution."type" == "version")
+        *> Just pkgInfo.version
+      path =
+        dependencyPath <> Path.sep <> dir
+    pure
+      { packageName
+      , version
+      , path
+      }
 
 serializeResolutions ::
   Array
@@ -223,33 +227,6 @@ confirm q = do
       pure unit
     _ ->
       throw "Aborted"
-
-newtype BowerJson = BowerJson Foreign
-
-readBowerJson :: Aff BowerJson
-readBowerJson = do
-  json <- FS.readTextFile UTF8 "bower.json"
-  case runExcept (parseJSON json) of
-    Right parsedJson ->
-      pure (BowerJson parsedJson)
-    Left err ->
-      throw ("Unable to parse bower.json:" <> show err)
-
-getBowerName :: BowerJson -> Aff String
-getBowerName (BowerJson json) =
-  case runExcept (readProp "name" json >>= readString) of
-    Right name ->
-      pure name
-    Left err ->
-      throw ("Unable to read property 'name' from bower.json:" <> show err)
-
-getBowerRepositoryUrl :: BowerJson -> Aff String
-getBowerRepositoryUrl (BowerJson json) =
-  case runExcept (readProp "repository" json >>= readProp "url" >>= readString) of
-    Right url ->
-      pure url
-    Left err ->
-      throw ("Unable to read property 'repository.url' from bower.json:" <> show err)
 
 readTokenFile :: Aff String
 readTokenFile = do
@@ -306,3 +283,14 @@ uploadPursuitDocs out authToken gzippedJson = do
     , HTTP.path := "/packages"
     , HTTP.headers := headers
     ]
+
+-- | Read a file containing JSON text and parse it, or throw an error.
+parseJsonFile :: forall a. SimpleJSON.ReadForeign a => String -> Aff a
+parseJsonFile filePath = do
+  json <- FS.readTextFile UTF8 filePath
+  case SimpleJSON.readJSON json of
+    Left errs ->
+      throw ("Error while decoding " <> filePath <> ":\n"
+        <> String.joinWith "; " (Array.fromFoldable (map renderForeignError errs)))
+    Right x ->
+      pure x

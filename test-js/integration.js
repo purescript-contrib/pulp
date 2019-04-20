@@ -20,7 +20,7 @@ const skipped = "* Project unchanged; skipping build step.";
 
 const newlines = /\r?\n/g;
 
-const testBowerJson = JSON.stringify({
+const testBowerJson = {
   "name": "test-package-for-pulp-tests",
   "license": "MIT",
   "ignore": [
@@ -36,7 +36,7 @@ const testBowerJson = JSON.stringify({
   "dependencies": {
     "purescript-console": "^0.1.0"
   }
-});
+};
 
 function resolvePath(cmd) {
   return new Promise((resolve, reject) => {
@@ -739,7 +739,7 @@ describe("integration tests", function() {
       yield pulp("init");
       yield setupPackage(temp, sh);
 
-      yield fs.writeFile(path.join(temp, "bower.json"), testBowerJson);
+      yield fs.writeFile(path.join(temp, "bower.json"), JSON.stringify(testBowerJson));
       yield sh("git commit -am \"updating bower.json\"");
       yield sh("git tag v2.0.0");
       yield sh("git commit --allow-empty -m \"an empty commit for the new tag\"");
@@ -748,6 +748,22 @@ describe("integration tests", function() {
       assert.match(err, pattern);
     }));
   });
+
+  it("pulp version for packages with no dependencies", run(function*(sh, pulp, assert, temp) {
+    yield setupPackage(temp, sh);
+    var bowerJson = Object.assign({}, testBowerJson, {"dependencies":{}});
+    yield fs.writeFile(path.join(temp, "bower.json"), JSON.stringify(bowerJson));
+    yield fs.mkdir(path.join(temp, "src"));
+    yield fs.writeFile(path.join(temp, "src", "Example.purs"), "module Example where\nexample = 1");
+
+    yield sh("git add .");
+    yield sh("git commit -m \"update bower.json and src/Example.purs\"");
+    yield sh("git tag v2.0.0");
+    yield sh("git commit --allow-empty -m \"an empty commit for the new tag\"");
+
+    const [out, err] = yield pulp("version minor");
+    assert.match(err, /v2.1.0/);
+  }));
 
   it("pulp build -j 4", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");

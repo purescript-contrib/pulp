@@ -8,7 +8,7 @@ branches:
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 language: node_js
 node_js:
-  - "stable"
+  - "10"
 env:
   # Test against multiple versions of the PureScript compiler
   - PURS_TEST_VERSION=v0.12.3
@@ -31,6 +31,7 @@ install:
       *)
         echo "Unknown TRAVIS_OS_NAME: $TRAVIS_OS_NAME";
         exit 1;;
+    esac
   - mkdir -p $HOME/bin
 
   # Download the PureScript compiler

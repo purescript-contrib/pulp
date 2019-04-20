@@ -37,7 +37,7 @@ install:
   # Download the PureScript compiler
   - |
     function download_purescript() {
-      local DIR, VERSION
+      local DIR VERSION
       VERSION=$1
       DIR=$HOME/bin/purescript-$VERSION
       mkdir $DIR

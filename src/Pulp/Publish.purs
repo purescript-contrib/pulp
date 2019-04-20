@@ -138,7 +138,8 @@ resolutionsFile manifest args = do
   resolutionsData <-
     if ver >= Haskell.Version (List.fromFoldable [0,12,4]) Nil
       then do
-        let hasDependencies = maybe false Object.isEmpty manifest.dependencies
+        let hasDependencies =
+              maybe false (not <<< Object.isEmpty) manifest.dependencies
         dependencyPath <- getOption' "dependencyPath" args.commandOpts
         getResolutions hasDependencies dependencyPath
       else

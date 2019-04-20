@@ -135,21 +135,25 @@ resolutionsFile :: BowerJson -> Args -> Aff String
 resolutionsFile manifest args = do
   out <- getOutputter args
   ver <- getPursVersion out
-  let hasDependencies = maybe false (not <<< Object.isEmpty) manifest.dependencies
   resolutionsData <-
-    if hasDependencies
+    if ver >= Haskell.Version (List.fromFoldable [0,12,4]) Nil
       then do
+        let hasDependencies =
+              maybe false (not <<< Object.isEmpty) manifest.dependencies
         dependencyPath <- getOption' "dependencyPath" args.commandOpts
-        if ver >= Haskell.Version (List.fromFoldable [0,12,4]) Nil
-          then getResolutions dependencyPath
-          else getResolutionsLegacy dependencyPath
+        getResolutions hasDependencies dependencyPath
       else
-        pure (serializeResolutions [])
+        getResolutionsLegacy
   writeResolutionsFile resolutionsData
 
-getResolutions :: String -> Aff String
-getResolutions dependencyPath = do
-  serializeResolutions <$> getResolutionsBower dependencyPath
+-- Obtain resolutions information for a Bower project as a string containing
+-- JSON, using the new format.
+getResolutions :: Boolean -> String -> Aff String
+getResolutions hasDeps dependencyPath = do
+  serializeResolutions <$>
+    if hasDeps
+      then getResolutionsBower dependencyPath
+      else pure []
 
 -- Obtain resolutions information for a Bower project. If a dependency has been
 -- installed in a non-standard way, e.g. via a particular branch or commit
@@ -198,8 +202,8 @@ serializeResolutions rs =
   in
     SimpleJSON.writeJSON obj
 
-getResolutionsLegacy :: String -> Aff String
-getResolutionsLegacy dependencyPath = do
+getResolutionsLegacy :: Aff String
+getResolutionsLegacy =
   execQuiet "bower" ["list", "--json", "--offline"] Nothing
 
 writeResolutionsFile :: String -> Aff String

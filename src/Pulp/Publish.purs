@@ -135,21 +135,26 @@ resolutionsFile :: BowerJson -> Args -> Aff String
 resolutionsFile manifest args = do
   out <- getOutputter args
   ver <- getPursVersion out
-  let hasDependencies = maybe false (not <<< Object.isEmpty) manifest.dependencies
+  dependencyPath <- getOption' "dependencyPath" args.commandOpts
   resolutionsData <-
-    if hasDependencies
-      then do
-        dependencyPath <- getOption' "dependencyPath" args.commandOpts
-        if ver >= Haskell.Version (List.fromFoldable [0,12,4]) Nil
-          then getResolutions dependencyPath
-          else getResolutionsLegacy dependencyPath
+    if ver >= Haskell.Version (List.fromFoldable [0,12,4]) Nil
+      then
+        let
+          hasDependencies = maybe false Object.isEmpty manifest.dependencies
+        in
+          getResolutions hasDependencies dependencyPath
       else
-        pure (serializeResolutions [])
+        getResolutionsLegacy dependencyPath
   writeResolutionsFile resolutionsData
 
-getResolutions :: String -> Aff String
-getResolutions dependencyPath = do
-  serializeResolutions <$> getResolutionsBower dependencyPath
+-- Obtain resolutions information for a Bower project as a string containing
+-- JSON, using the new format.
+getResolutions :: Boolean -> String -> Aff String
+getResolutions hasDeps dependencyPath = do
+  serializeResolutions <$>
+    if hasDeps
+      then getResolutionsBower dependencyPath
+      else pure []
 
 -- Obtain resolutions information for a Bower project. If a dependency has been
 -- installed in a non-standard way, e.g. via a particular branch or commit

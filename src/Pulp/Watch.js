@@ -7,7 +7,7 @@ exports.watch = function(pattern) {
     return function() {
       var Gaze = require("gaze").Gaze;
 
-      var gaze = new Gaze(pattern);
+      var gaze = new Gaze(pattern, { follow: true });
 
       gaze.on("all", function(_, path) {
         act(path)();

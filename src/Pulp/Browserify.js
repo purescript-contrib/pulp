@@ -10,13 +10,15 @@ function write(input, output, callback) {
 }
 
 exports["browserifyBundle'"] = function browserifyBundle$prime(opts, callback) {
-  var StringStream = require("string-stream");
+  var stream = new require("stream").Readable();
   var browserify = require("browserify");
   var mold = require("mold-source-map");
   var path = require("path");
+  stream.push(opts.src);
+  stream.push(null);
   var b = browserify({
     basedir: opts.basedir,
-    entries: new StringStream(opts.src),
+    entries: stream,
     standalone: opts.standalone,
     debug: opts.debug
   });

@@ -13,7 +13,6 @@ import Node.FS.Perms
 import Prelude
 import Pulp.Args
 import Pulp.Outputter
-import Pulp.System.FFI
 import Pulp.System.HTTP
 
 import Control.Monad.Except (runExcept)

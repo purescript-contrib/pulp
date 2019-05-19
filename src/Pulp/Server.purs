@@ -9,7 +9,6 @@ import Prelude
 import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Outputter
-import Pulp.System.FFI
 
 import Data.Map as Map
 import Effect (Effect)

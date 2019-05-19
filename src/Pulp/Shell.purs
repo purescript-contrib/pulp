@@ -4,7 +4,6 @@ module Pulp.Shell (shell) where
 import Prelude
 import Pulp.Exec
 import Pulp.Outputter
-import Pulp.System.FFI
 
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)

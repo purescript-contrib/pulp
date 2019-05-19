@@ -7,7 +7,6 @@ import Partial.Unsafe
 import Prelude
 import Pulp.Args
 import Pulp.Outputter
-import Pulp.System.FFI
 
 import Control.Monad.Except (runExcept)
 import Data.Array (sort, (!!), null)

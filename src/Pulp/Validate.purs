@@ -7,7 +7,6 @@ module Pulp.Validate
 import Data.Either
 import Data.Maybe
 import Prelude
-import Pulp.System.FFI
 
 import Control.Monad.Error.Class (throwError)
 import Data.List (fromFoldable, List(..))

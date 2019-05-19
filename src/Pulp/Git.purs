@@ -11,7 +11,6 @@ import Data.Maybe
 import Data.Tuple
 import Prelude
 import Pulp.Exec
-import Pulp.System.FFI
 
 import Data.Array as Array
 import Data.Foldable as Foldable

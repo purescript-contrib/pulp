@@ -7,7 +7,6 @@ module Pulp.Outputter
 import Prelude
 import Pulp.Args
 import Pulp.Args.Get
-import Pulp.System.FFI
 
 import Ansi.Codes (Color(..))
 import Ansi.Output (withGraphics, foreground, bold)

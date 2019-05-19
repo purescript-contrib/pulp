@@ -5,7 +5,6 @@ module Pulp.Init
 import Prelude
 import Pulp.Args
 import Pulp.Outputter
-import Pulp.System.FFI
 
 import Control.Monad.Error.Class (throwError)
 import Data.Array (cons)

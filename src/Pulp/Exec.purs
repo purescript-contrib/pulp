@@ -12,11 +12,9 @@ module Pulp.Exec
 
 import Effect.Aff
 import Prelude
-import Pulp.System.FFI
 import Pulp.System.Stream
 import Unsafe.Coerce
 
-import Control.Monad.Error.Class (throwError)
 import Data.Either (Either(..), either)
 import Data.Foldable (for_)
 import Data.Maybe (Maybe(..))

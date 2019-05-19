@@ -17,7 +17,6 @@ import Pulp.System.Files
 import Data.Argonaut (Json, caseJsonArray, caseJsonObject, caseJsonString, fromArray, fromObject, fromString, jsonEmptyObject, jsonNull, jsonParser)
 import Data.Argonaut.Core (stringify)
 import Data.Either (Either(..))
-import Data.Map (Map, lookup, update)
 import Data.Map as Map
 import Data.Nullable (Nullable, toNullable)
 import Data.Traversable (traverse)

@@ -5,7 +5,6 @@ import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Exec
 import Pulp.Outputter
-import Pulp.System.FFI
 
 import Data.Map as Map
 import Data.Maybe (Maybe(..))

@@ -7,7 +7,6 @@ import Pulp.Args.Get
 import Pulp.Exec
 import Pulp.Files
 import Pulp.Outputter
-import Pulp.System.FFI
 
 import Data.Array as Array
 import Data.Foldable (fold, for_, elem)

@@ -13,7 +13,6 @@ import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Files
 import Pulp.Outputter
-import Pulp.System.FFI
 
 import Control.Monad.Error.Class (throwError)
 import Data.Argonaut (jsonParser)

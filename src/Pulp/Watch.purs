@@ -11,14 +11,12 @@ import Pulp.Args
 import Pulp.Args.Get
 import Pulp.Files
 import Pulp.Outputter
-import Pulp.System.FFI
 import Pulp.Utils
 
-import Control.Comonad (extract)
 import Data.Array as Array
 import Data.DateTime (DateTime)
 import Data.DateTime as DateTime
-import Data.Foldable (any, notElem)
+import Data.Foldable (notElem)
 import Data.Map as Map
 import Data.Set as Set
 import Data.Time.Duration (Milliseconds(..))

@@ -204,9 +204,7 @@ commands = [
   Args.command "docs" "Generate project documentation." remainderToDocs Docs.action $ [
     buildPath,
     Args.option "withTests" ["--with-tests", "-t"] Type.flag
-      "Include tests.",
-    Args.option "withDependencies" ["--with-dependencies", "-d"] Type.flag
-      "Include external dependencies."
+      "Include tests."
     ] <> pathArgs,
   Args.commandWithAlias "repl"
     "Launch a PureScript REPL configured for the project." remainderToRepl

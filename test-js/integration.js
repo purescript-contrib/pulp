@@ -554,18 +554,6 @@ describe("integration tests", function() {
     assert.file("generated-docs/html/Test.Main.html");
   }));
 
-  it("pulp docs --with-dependencies", run(function*(sh, pulp, assert) {
-    yield pulp("init");
-    yield pulp("docs --with-dependencies");
-    assert.file("generated-docs/html/Effect.Console.html");
-  }));
-
-  it("pulp docs --with-dependencies with psc-package", run(function*(sh, pulp, assert) {
-    yield pulp("--psc-package init");
-    yield pulp("docs --with-dependencies");
-    assert.file("generated-docs/html/Effect.Console.html");
-  }));
-
   it("pulp psci includes dependencies", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("psci");

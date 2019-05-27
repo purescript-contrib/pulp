@@ -120,6 +120,15 @@ function* createModule(sh, temp, name) {
   return path.join("output", name, "index.js");
 }
 
+const getPursVersion = co.wrap(function*(sh, assert) {
+  const [out] = yield sh("purs --version");
+  const pursVer = semver.parse(out.split(/\s/)[0]);
+  if (pursVer == null) {
+    assert.fail("Unable to parse output of purs --version");
+  }
+  return pursVer;
+});
+
 describe("integration tests", function() {
   // This is, unfortunately, required, as CI is horrendously slow.
   this.timeout(90000);
@@ -545,13 +554,19 @@ describe("integration tests", function() {
   it("pulp docs", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("docs");
-    assert.file("generated-docs/html/Main.html");
+    const pursVer = yield getPursVersion(sh, assert);
+    if (semver.gte(pursVer, semver.parse('0.13.0'))) {
+      assert.file("generated-docs/html/Main.html");
+    }
   }));
 
   it("pulp docs --with-tests", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("docs --with-tests");
-    assert.file("generated-docs/html/Test.Main.html");
+    const pursVer = yield getPursVersion(sh, assert);
+    if (semver.gte(pursVer, semver.parse('0.13.0'))) {
+      assert.file("generated-docs/html/Test.Main.html");
+    }
   }));
 
   it("pulp psci includes dependencies", run(function*(sh, pulp, assert) {

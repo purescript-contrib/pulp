@@ -32,14 +32,11 @@ action = Action \args -> do
   globInputFiles <- Set.union <$> includeWhen withTests (testGlobs opts)
                               <*> defaultGlobs opts
 
-  buildPathArgs <-
-    if pursVersion >= Version (fromFoldable [0,13,0]) Nil
-      then do
-        buildPath <- getOption' "buildPath" opts
-        pure ["--compile-output", buildPath]
-      else
-        pure []
+  buildPath <- getOption' "buildPath" opts
 
-  exec "purs" (["docs"] <> buildPathArgs <> args.remainder <> sources globInputFiles) Nothing
+  when (pursVersion < Version (fromFoldable [0,13,0]) Nil)
+    (out.log "Warning: 'pulp docs' now only supports 'purs' v0.13.0 and above. Please either update 'purs' or downgrade 'pulp'.")
+
+  exec "purs" (["docs", "--compile-output", buildPath] <> args.remainder <> sources globInputFiles) Nothing
 
   out.log "Documentation generated."

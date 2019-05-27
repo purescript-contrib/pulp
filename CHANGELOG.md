@@ -2,6 +2,9 @@
 
 ## Unreleased changes
 
+* Changes to support `purs >= 0.13.0` in `pulp docs`. Because of idiosyncrasies
+  in the previous `purs docs` CLI, it has not been possible to support both,
+  so support for `purs < 0.13.0` in `pulp docs` has been dropped.
 * Remove the `--with-dependencies` option in `pulp docs`; now that html is the
   default output format of `purs docs`, it makes less sense to only produce
   local modules by default (since if we don't produce dependency modules then

@@ -552,19 +552,19 @@ describe("integration tests", function() {
   }));
 
   it("pulp docs", run(function*(sh, pulp, assert) {
-    yield pulp("init");
-    yield pulp("docs");
     const pursVer = yield getPursVersion(sh, assert);
     if (semver.gte(pursVer, semver.parse('0.13.0'))) {
+      yield pulp("init");
+      yield pulp("docs");
       assert.file("generated-docs/html/Main.html");
     }
   }));
 
   it("pulp docs --with-tests", run(function*(sh, pulp, assert) {
-    yield pulp("init");
-    yield pulp("docs --with-tests");
     const pursVer = yield getPursVersion(sh, assert);
     if (semver.gte(pursVer, semver.parse('0.13.0'))) {
+      yield pulp("init");
+      yield pulp("docs --with-tests");
       assert.file("generated-docs/html/Test.Main.html");
     }
   }));

@@ -33,7 +33,7 @@ action = Action \args -> do
                               <*> defaultGlobs opts
 
   buildPathArgs <-
-    if true --(pursVersion >= Version (fromFoldable [0,13,0]) Nil) do
+    if pursVersion >= Version (fromFoldable [0,13,0]) Nil
       then do
         buildPath <- getOption' "buildPath" opts
         pure ["--compile-output", buildPath]

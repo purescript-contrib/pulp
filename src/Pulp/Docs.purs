@@ -2,29 +2,25 @@
 module Pulp.Docs where
 
 import Prelude
-import Pulp.Args
-import Pulp.Args.Get
-import Pulp.Exec
-import Pulp.Files
-import Pulp.Outputter
 
-import Data.Array as Array
-import Data.Foldable (fold, for_, elem)
+import Data.List (List(..), fromFoldable)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Set as Set
-import Data.String as String
-import Data.Traversable (traverse)
-import Data.Tuple (Tuple(..))
-import Effect.Aff (Aff)
+import Data.Version.Haskell (Version(..))
 import Effect.Class (liftEffect)
-import Node.Encoding (Encoding(..))
-import Node.FS.Aff as FS
 import Node.Process as Process
+import Pulp.Args (Action(..))
+import Pulp.Args.Get (getFlag, getOption')
+import Pulp.Exec (exec)
+import Pulp.Files (defaultGlobs, sources, testGlobs)
+import Pulp.Outputter (getOutputter)
+import Pulp.Validate (getPursVersion)
 
 action :: Action
 action = Action \args -> do
   out <- getOutputter args
+  pursVersion <- getPursVersion out
 
   cwd <- liftEffect Process.cwd
   out.log $ "Generating documentation in " <> cwd
@@ -32,63 +28,15 @@ action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
 
   withTests <- getFlag "withTests" opts
-  withDeps <- getFlag "withDependencies" opts
-
   let includeWhen b act = if b then act else pure Set.empty
-  optionalExtras <- Set.union <$> includeWhen withTests (testGlobs opts)
-                              <*> includeWhen withDeps  (dependencyGlobs opts)
+  globInputFiles <- Set.union <$> includeWhen withTests (testGlobs opts)
+                              <*> defaultGlobs opts
 
-  globSrc <- Set.union optionalExtras <$> defaultGlobs opts
-  globGen <- Set.union optionalExtras <$> localGlobs opts
+  buildPath <- getOption' "buildPath" opts
 
-  genFiles <- resolveGlobs (sources globGen)
+  when (pursVersion < Version (fromFoldable [0,13,0]) Nil)
+    (out.log "Warning: 'pulp docs' now only supports 'purs' v0.13.0 and above. Please either update 'purs' or downgrade 'pulp'.")
 
-  Tuple docgen fails <- fold <$> traverse makeDocgen genFiles
-
-  unless (Array.null fails) $ do
-    out.err $ "Unable to extract module name from the following modules:"
-    for_ fails (out.log <<< ("  " <> _))
-    out.err $ "This may be a bug."
-
-  _ <- execQuiet "purs" (["docs"] <> args.remainder <> sources globSrc <> docgen) Nothing
+  exec "purs" (["docs", "--compile-output", buildPath] <> args.remainder <> sources globInputFiles) Nothing
 
   out.log "Documentation generated."
-
--- | Given a file path to be included in the documentation, return a --docgen
--- | argument for it, to be passed to `purs docs`.
-makeDocgen :: String -> Aff (Tuple (Array String) (Array String))
-makeDocgen path = do
-  maybeModName <- extractModuleName path
-  pure $ case maybeModName of
-    Just mn ->
-      Tuple ["--docgen", showModuleName mn <> ":" <> docPath mn] []
-    Nothing ->
-      Tuple [] [path]
-
--- | Given a module name, return the file path where its documentation should
--- | be written to.
-docPath :: ModuleName -> String
-docPath mn = "generated-docs/" <> String.joinWith "/" mn <> ".md"
-
-type ModuleName = Array String
-
-showModuleName :: ModuleName -> String
-showModuleName = String.joinWith "."
-
--- | Given a PureScript source file path, extract its module name (or throw
--- | an error).
-extractModuleName :: String -> Aff (Maybe ModuleName)
-extractModuleName path = go <$> FS.readTextFile UTF8 path
-  where
-  go = String.split (String.Pattern "\n")
-        >>> map moduleNameFromLine
-        >>> Array.catMaybes
-        >>> Array.head
-
--- | Given a line in a PureScript source file, attempt to extract its name.
-moduleNameFromLine :: String -> Maybe ModuleName
-moduleNameFromLine =
-  String.stripPrefix (String.Pattern "module ")
-  >>> map (   String.takeWhile (not <<< (_ `elem` String.codePointFromChar <$> [' ', '(']))
-          >>> String.split (String.Pattern ".")
-          )

@@ -40,7 +40,7 @@ function sh(cwd, cmd, input, opts) {
 function asserts(path) {
   const file = (filename, pred) => {
     const data = fs.readFileSync(resolve(path, filename), "utf-8");
-    pred(data);
+    pred ? pred(data) : true;
   };
 
   const exists = (filename) => file(filename, (data) => true);

@@ -1,13 +1,6 @@
 module Main where
 
-import Effect.Aff
-import Effect.Class
-import Effect.Exception
 import Prelude
-import Pulp.Args.Get
-import Pulp.Args.Help
-import Pulp.Outputter
-import Pulp.System.FFI
 
 import Control.Monad.Except (runExcept)
 import Data.Array (head, drop)
@@ -19,7 +12,10 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.String (stripPrefix, Pattern(..))
 import Data.Version (Version, version, showVersion, parseVersion)
 import Effect (Effect)
+import Effect.Aff (Aff, attempt, runAff, throwError)
+import Effect.Class (liftEffect)
 import Effect.Console as Console
+import Effect.Exception (Error, catchException, error, message, throwException)
 import Effect.Unsafe (unsafePerformEffect)
 import Foreign (Foreign, unsafeToForeign, readString)
 import Foreign.Index (readProp)
@@ -29,6 +25,8 @@ import Node.FS.Sync (readTextFile)
 import Node.Path as Path
 import Node.Process as Process
 import Pulp.Args as Args
+import Pulp.Args.Get (getFlag, getOption)
+import Pulp.Args.Help (printCommandHelp, printHelp)
 import Pulp.Args.Parser (parse)
 import Pulp.Args.Types as Type
 import Pulp.Browserify as Browserify
@@ -37,12 +35,14 @@ import Pulp.BumpVersion as BumpVersion
 import Pulp.Docs as Docs
 import Pulp.Init as Init
 import Pulp.Login as Login
+import Pulp.Outputter (getOutputter, makeOutputter)
 import Pulp.Project (getProject)
 import Pulp.Publish as Publish
 import Pulp.Repl as Repl
 import Pulp.Run as Run
 import Pulp.Server as Server
 import Pulp.Shell as Shell
+import Pulp.System.FFI (unsafeInspect)
 import Pulp.Test as Test
 import Pulp.Validate (validate)
 import Pulp.Version (printVersion)
@@ -97,11 +97,15 @@ pathArgs = [
   dependencyPathOption
   ]
 
+buildPath :: Args.Option
+buildPath =
+  Args.optionDefault "buildPath" ["--build-path", "-o"] Type.string
+    "Path for compiler output." "./output"
+
 -- | Options common to 'build', 'test', and 'browserify'
 buildishArgs :: Array Args.Option
 buildishArgs = [
-  Args.optionDefault "buildPath" ["--build-path", "-o"] Type.string
-    "Path for compiler output." "./output",
+  buildPath,
   Args.option "noPsa" ["--no-psa"] Type.flag
     "Do not attempt to use the psa frontend instead of purs compile",
   Args.option "noCheckMain" ["--no-check-main"] Type.flag
@@ -198,10 +202,9 @@ commands = [
       "Run the program using this command instead of Node." "node"
     ] <> runArgs,
   Args.command "docs" "Generate project documentation." remainderToDocs Docs.action $ [
+    buildPath,
     Args.option "withTests" ["--with-tests", "-t"] Type.flag
-      "Include tests.",
-    Args.option "withDependencies" ["--with-dependencies", "-d"] Type.flag
-      "Include external dependencies."
+      "Include tests."
     ] <> pathArgs,
   Args.commandWithAlias "repl"
     "Launch a PureScript REPL configured for the project." remainderToRepl

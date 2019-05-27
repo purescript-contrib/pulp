@@ -1,5 +1,16 @@
 # Pulp Release History
 
+## Unreleased changes
+
+* Remove the `--with-dependencies` option in `pulp docs`; now that html is the
+  default output format of `purs docs`, it makes less sense to only produce
+  local modules by default (since if we don't produce dependency modules then
+  links will be broken). To restore the previous behaviour, you will need to
+  run `pulp docs -- --format markdown`, and then manually delete non-local
+  modules from the `generated-docs/md` directory.
+* Add a --build-path argument for `pulp docs`; to be passed to `purs docs` for
+  `purs >= 0.13.0`, since `purs docs` now uses a compiler output directory.
+
 ## 12.4.2
 
 * Fix `pulp version` and `pulp publish`, which were both completely broken as

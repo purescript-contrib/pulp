@@ -85,6 +85,7 @@ optimising = Action \args -> do
   globs     <- defaultGlobs opts
   buildPath <- getOption' "buildPath" opts
   main      <- getOption' "main" opts
+  node      <- getFlag "node" opts
   transform <- getOption "transform" opts
   standalone <- getOption "standalone" opts
   sourceMaps <- getFlag "sourceMaps" opts
@@ -125,6 +126,7 @@ optimising = Action \args -> do
       , src: bundledJs <> if isJust standalone then makeOptExport main else ""
       , transform: toNullable transform
       , standalone: toNullable standalone
+      , node: node
       , out: out'
       , debug: sourceMaps
       , outDir
@@ -156,6 +158,7 @@ incremental = Action \args -> do
   transform <- getOption "transform" opts
   standalone <- getOption "standalone" opts
   main <- getOption' "main" opts
+  node <- getFlag "node" opts
   sourceMaps <- getFlag "sourceMaps" opts
 
   unlessM (shouldSkipMainCheck opts)
@@ -180,6 +183,7 @@ incremental = Action \args -> do
       , path: path
       , transform: toNullable transform
       , standalone: toNullable standalone
+      , node: node
       , out: out'
       , debug: sourceMaps
       , outDir
@@ -204,6 +208,7 @@ type BrowserifyOptions =
   , src        :: String
   , transform  :: Nullable String
   , standalone :: Nullable String
+  , node       :: Boolean
   , out        :: WritableStream
   , debug      :: Boolean
   , outDir     :: String
@@ -223,6 +228,7 @@ type BrowserifyIncOptions =
   , path       :: String
   , transform  :: Nullable String
   , standalone :: Nullable String
+  , node       :: Boolean
   , out        :: WritableStream
   , debug      :: Boolean
   , outDir     :: String

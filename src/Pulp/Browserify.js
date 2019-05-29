@@ -19,6 +19,7 @@ exports["browserifyBundle'"] = function browserifyBundle$prime(opts, callback) {
   var b = browserify({
     basedir: opts.basedir,
     entries: stream,
+    node: opts.node,
     standalone: opts.standalone,
     debug: opts.debug
   });
@@ -47,6 +48,7 @@ exports["browserifyIncBundle'"] = function browserifyIncBundle$prime(opts, callb
   var b = browserifyInc({
     basedir: opts.buildPath,
     cacheFile: opts.cachePath,
+    node: opts.node,
     standalone: opts.standalone,
     debug: opts.debug
   });

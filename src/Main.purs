@@ -195,7 +195,9 @@ commands = [
       Args.option "standalone" ["--standalone"] Type.string
         "Output a UMD bundle with the given external module name.",
       Args.option "skipCompile" ["--skip-compile"] Type.flag
-        "Assume PureScript code has already been compiled. Useful for when you want to pass options to purs."
+        "Assume PureScript code has already been compiled. Useful for when you want to pass options to purs.",
+      Args.option "node" ["--node"] Type.flag
+        "Output a bundle optimized to be run with node."
       ] <> buildArgs,
   Args.command "run" "Compile and run the project." remainderToProgram Run.action $ [
     Args.optionDefault "runtime" ["--runtime", "-r"] Type.string

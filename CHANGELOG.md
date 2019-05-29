@@ -1,6 +1,6 @@
 # Pulp Release History
 
-## Unreleased changes
+## 13.0.0
 
 * Changes to support `purs >= 0.13.0` in `pulp docs`. Because of idiosyncrasies
   in the previous `purs docs` CLI, it has not been possible to support both,
@@ -13,6 +13,9 @@
   modules from the `generated-docs/md` directory.
 * Add a --build-path argument for `pulp docs`; to be passed to `purs docs` for
   `purs >= 0.13.0`, since `purs docs` now uses a compiler output directory.
+* Avoid using string-stream to fix `pulp browserify` on node 12.x (#380,
+  @rnons).
+* Pass `follow: true` to `gaze` to follow symlinked directories (#378, @rnons).
 
 ## 12.4.2
 

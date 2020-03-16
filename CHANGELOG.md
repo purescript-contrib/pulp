@@ -1,5 +1,11 @@
 # Pulp Release History
 
+## 14.0.0
+
+* Stop attempting to register on the Bower registry on publish, since the Bower
+  registry no longer accepts new registrations. Instead, require the user to
+  register their package in the purescript/registry repo (#388).
+
 ## 13.0.0
 
 * Changes to support `purs >= 0.13.0` in `pulp docs`. Because of idiosyncrasies

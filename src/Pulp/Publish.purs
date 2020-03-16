@@ -123,7 +123,7 @@ checkRegistered out pkgName repoUrl = do
         <> pkgName
         <> " exists in the registry."
       out.err $
-        "Please register your package by sending a PR to purescript/registry first."
+        "Please register your package by sending a PR to purescript/registry first, adding your package to `new-packages.json`"
       throw "Package not registered"
 
   where

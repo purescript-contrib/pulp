@@ -6,7 +6,7 @@ import Control.MonadPlus (guard)
 import Control.Parallel (parTraverse)
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Foldable (fold)
+import Data.Foldable (fold, or)
 import Data.List (List(..))
 import Data.List as List
 import Data.Maybe (Maybe(..), maybe)
@@ -24,14 +24,13 @@ import Foreign.Object (Object)
 import Foreign.Object as Object
 import Node.Buffer (Buffer)
 import Node.Buffer as Buffer
-import Node.ChildProcess as CP
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff as FS
 import Node.HTTP.Client as HTTP
 import Node.Path as Path
 import Pulp.Args (Action(..), Args)
 import Pulp.Args.Get (getFlag, getOption')
-import Pulp.Exec (exec, execQuiet, execQuietWithStderr)
+import Pulp.Exec (exec, execQuiet)
 import Pulp.Git (getVersionFromGitTag, requireCleanGitWorkingTree)
 import Pulp.Login (tokenFilePath)
 import Pulp.Outputter (Outputter, getOutputter)
@@ -61,6 +60,9 @@ action = Action \args -> do
   resolutionsPath <- resolutionsFile manifest args
   gzippedJson <- pursPublish resolutionsPath >>= gzip
 
+  repoUrl <- map _.url manifest.repository # orErr "'repository' key not present in bower.json"
+  checkRegistered out manifest.name repoUrl
+
   Tuple tagStr tagVersion <- getVersion
   confirm ("Publishing " <> manifest.name <> " at v" <> Version.showVersion tagVersion <> ". Is this ok?")
 
@@ -68,11 +70,6 @@ action = Action \args -> do
   unless noPush do
     remote <- getOption' "pushTo" args.commandOpts
     confirmRun out "git" ["push", remote, "HEAD", "refs/tags/" <> tagStr]
-
-    -- Only attempt to register on Bower after a successful push, to avoid
-    -- accidental squatting by non-package-owners.
-    repoUrl <- map _.url manifest.repository # orErr "'repository' key not present in bower.json"
-    registerOnBowerIfNecessary out manifest.name repoUrl
 
   out.log "Uploading documentation to Pursuit..."
   uploadPursuitDocs out authToken gzippedJson
@@ -94,9 +91,71 @@ checkBowerProject :: Aff Unit
 checkBowerProject = do
   bower <- FS.exists "bower.json"
   if bower then pure unit
-    else throw ("For the time being, libraries should be published on Bower"
+    else throw ("For the time being, libraries should be installable with Bower"
              <> " before being submitted to Pursuit. Please create a "
              <> " bower.json file first.")
+
+checkRegistered :: Outputter -> String -> String -> Aff Unit
+checkRegistered out pkgName repoUrl = do
+  out.write "Checking your package is registered in purescript/registry... "
+  bowerPkgs <- get "bower-packages.json" >>= parseJsonText "registry bower-packages.json"
+  newPkgs <- get "new-packages.json" >>= parseJsonText "registry new-packages.json"
+  case Object.lookup pkgName (Object.union bowerPkgs newPkgs) of
+    Just repoUrl' -> do
+      if (packageUrlIsEqual repoUrl repoUrl')
+        then out.write "ok\n"
+        else do
+          out.write "\n"
+          out.err $
+            "A package with the name "
+            <> pkgName
+            <> " already exists in the registry, but the repository urls did not match."
+          out.err "Repository url in your bower.json file:"
+          out.err $ "  " <> repoUrl
+          out.err "Repository url in the registry:"
+          out.err $ "  " <> repoUrl'
+          out.err "Please make sure these urls match."
+          throw "Package repository url mismatch"
+    Nothing -> do
+      out.write "\n"
+      out.err $
+        "No package with the name "
+        <> pkgName
+        <> " exists in the registry."
+      out.err $
+        "Please register your package by sending a PR to purescript/registry first, adding your package to `new-packages.json`"
+      throw "Package not registered"
+
+  where
+  get :: String -> Aff String
+  get filepath = do
+    let
+      reqOptions = fold
+        [ HTTP.method := "GET"
+        , HTTP.protocol := "https:"
+        , HTTP.hostname := "raw.githubusercontent.com"
+        , HTTP.path := ("/purescript/registry/master/" <> filepath)
+        ]
+    res <- httpRequest reqOptions Nothing
+    case HTTP.statusCode res of
+      200 ->
+        concatStream (HTTP.responseAsStream res)
+      other -> do
+        let msg = "Unable to fetch file " <> filepath <> " from purescript/registry"
+        out.err msg
+        out.err ("HTTP " <> show other <> " " <> HTTP.statusMessage res)
+        out.err =<< concatStream (HTTP.responseAsStream res)
+        throw msg
+
+-- | Like normal string equality, except also allow cases where one is the same
+-- | as the other except for a trailing ".git".
+packageUrlIsEqual :: String -> String -> Boolean
+packageUrlIsEqual a b =
+  or
+    [ a == b
+    , a <> ".git" == b
+    , a == b <> ".git"
+    ]
 
 gzip :: String -> Aff Buffer
 gzip str = do
@@ -252,20 +311,6 @@ pursuitUrl :: String -> Version -> String
 pursuitUrl name vers =
   "https://pursuit.purescript.org/packages/" <> name <> "/" <> Version.showVersion vers
 
-registerOnBowerIfNecessary :: Outputter -> String -> String -> Aff Unit
-registerOnBowerIfNecessary out name repoUrl = do
-  result <- attempt (run "bower" ["info", name, "--json"] Nothing)
-  case result of
-    Left _ -> do
-      out.log "Registering your package on Bower..."
-      confirmRun out "bower" ["register", name, repoUrl]
-    Right _ ->
-      -- already registered, don't need to do anything.
-      pure unit
-  where
-  -- Run a command, sending stderr to /dev/null
-  run = execQuietWithStderr CP.Ignore
-
 uploadPursuitDocs :: Outputter -> String -> Buffer -> Aff Unit
 uploadPursuitDocs out authToken gzippedJson = do
   res <- httpRequest reqOptions (Just gzippedJson)
@@ -296,9 +341,14 @@ uploadPursuitDocs out authToken gzippedJson = do
 parseJsonFile :: forall a. SimpleJSON.ReadForeign a => String -> Aff a
 parseJsonFile filePath = do
   json <- FS.readTextFile UTF8 filePath
+  parseJsonText ("file " <> filePath) json
+
+-- | Parse some JSON, or throw an error.
+parseJsonText :: forall a. SimpleJSON.ReadForeign a => String -> String -> Aff a
+parseJsonText source json = do
   case SimpleJSON.readJSON json of
     Left errs ->
-      throw ("Error while decoding " <> filePath <> ":\n"
+      throw ("Error while decoding " <> source <> ":\n"
         <> String.joinWith "; " (Array.fromFoldable (map renderForeignError errs)))
     Right x ->
       pure x

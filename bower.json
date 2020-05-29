@@ -25,7 +25,8 @@
     "purescript-prelude": "^4.1.1",
     "purescript-simple-json": "^7.0.0",
     "purescript-versions": "^5.0.0",
-    "purescript-argonaut-codecs": "^6.0.2"
+    "purescript-argonaut-codecs": "^6.0.2",
+    "purescript-argonaut": "^6.0.0"
   },
   "devDependencies": {
     "purescript-assert": "^4.0.0"

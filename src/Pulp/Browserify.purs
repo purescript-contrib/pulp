@@ -70,12 +70,6 @@ shouldSkipEntryPoint opts = do
   standalone :: Maybe String <- getOption "standalone" opts
   pure (skipEntryPoint || isJust standalone)
 
-shouldSkipMainCheck :: Options -> Aff Boolean
-shouldSkipMainCheck opts = do
-  noCheckMain <- getFlag "noCheckMain" opts
-  skipEntryPoint <- shouldSkipEntryPoint opts
-  pure (noCheckMain || skipEntryPoint)
-
 optimising :: Action
 optimising = Action \args -> do
   out <- getOutputter args
@@ -89,9 +83,6 @@ optimising = Action \args -> do
   standalone <- getOption "standalone" opts
   sourceMaps <- getFlag "sourceMaps" opts
   toOpt <- getOption "to" opts
-
-  unlessM (shouldSkipMainCheck opts)
-    (Build.checkEntryPoint out opts)
 
   { path: tmpFilePath } <- openTemp { prefix: "pulp-browserify-bundle-", suffix: ".js" }
 
@@ -157,9 +148,6 @@ incremental = Action \args -> do
   standalone <- getOption "standalone" opts
   main <- getOption' "main" opts
   sourceMaps <- getFlag "sourceMaps" opts
-
-  unlessM (shouldSkipMainCheck opts)
-    (Build.checkEntryPoint out opts)
 
   skipEntryPoint <- shouldSkipEntryPoint opts
   path <- if skipEntryPoint

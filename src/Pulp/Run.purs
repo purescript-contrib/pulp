@@ -28,10 +28,6 @@ action = Action \args -> do
 
   Build.runBuild args
 
-  noCheckMain <- getFlag "noCheckMain" opts
-  when (not noCheckMain)
-    (Build.checkEntryPoint out opts)
-
   main <- getOption' "main" opts
   src <- liftEffect $ Buffer.fromString (makeEntry main) UTF8
 

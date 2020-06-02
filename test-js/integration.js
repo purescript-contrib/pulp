@@ -312,95 +312,6 @@ describe("integration tests", function() {
     assert.equal(out.trim(), hello);
   }));
 
-  it("pulp build --to checks entry point module exists", run(function*(sh, pulp, assert, temp) {
-    yield pulp("init");
-    const [_, err] = yield pulp("build --to out.js --main DoesntExist", null, { expectedExitCode: 1 });
-    assert.match(err, /Entry point module \(DoesntExist\) not found/);
-  }));
-
-  it("pulp build --to checks entry point module exports `main`", run(function*(sh, pulp, assert, temp) {
-    yield pulp("init");
-
-    const mainPath = path.join(temp, 'src', 'Main.purs');
-    yield fs.writeFile(
-      mainPath,
-      "module Main where\nmain2 = 0\n"
-    );
-
-    const [_, err] = yield pulp("build --to out.js", null, { expectedExitCode: 1 });
-    assert.match(err, /does not export a `main` value/);
-  }));
-
-  it("pulp build --to checks `main` has appropriate type", run(function*(sh, pulp, assert, temp) {
-    yield pulp("init");
-
-    const mainPath = path.join(temp, 'src', 'Main.purs');
-    yield fs.writeFile(
-      mainPath,
-      "module Main where\nmain = 0\n"
-    );
-
-    const [_, err] = yield pulp("build --to out.js", null, { expectedExitCode: 1 });
-    assert.match(err, /is not in the allowed list of types/);
-  }));
-
-  // Check with a single permissible `main` type
-  it("pulp build --check-main-type Prim.Int", run(function*(sh, pulp, assert, temp) {
-    yield pulp("init");
-
-    const mainPath = path.join(temp, 'src', 'Main.purs');
-    yield fs.writeFile(
-      mainPath,
-      "module Main where\nmain = 0\n"
-    );
-
-    yield pulp("build --to out.js --check-main-type Prim.Int");
-    assert.exists("output/Main/index.js");
-  }));
-
-  // Check with a list of permissible `main` types
-  it("pulp build --check-main-type Prim.Boolean,Prim.Int", run(function*(sh, pulp, assert, temp) {
-    yield pulp("init");
-
-    const mainPath = path.join(temp, 'src', 'Main.purs');
-    yield fs.writeFile(
-      mainPath,
-      "module Main where\nmain = 0\n"
-    );
-
-    yield pulp("build --to out.js --check-main-type Prim.Boolean,Prim.Int");
-    assert.exists("output/Main/index.js");
-  }));
-
-  // Skip `main` type check
-  it("pulp build --no-check-main", run(function*(sh, pulp, assert, temp) {
-    yield pulp("init");
-
-    const mainPath = path.join(temp, 'src', 'Main.purs');
-    yield fs.writeFile(
-      mainPath,
-      "module Main where\nmain = 0\n"
-    );
-
-    yield pulp("build --to out.js --no-check-main");
-    assert.exists("output/Main/index.js");
-  }));
-
-  ["build", "browserify"].forEach(function(subcommand) {
-    it("--skip-entry-point implies --no-check-main (" + subcommand + ")", run(function*(sh, pulp, assert, temp) {
-      yield pulp("init");
-
-      const mainPath = path.join(temp, 'src', 'Main.purs');
-      yield fs.writeFile(
-        mainPath,
-        "module Main where\nmain = 0\n"
-      );
-
-      yield pulp(subcommand + " --to out.js --skip-entry-point");
-      assert.exists("output/Main/index.js");
-    }));
-  });
-
   it("pulp build -O", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const [src] = yield pulp("build -O");
@@ -505,25 +416,6 @@ describe("integration tests", function() {
     const sub = (x) => (y) => x - y;
     assert.equal(dataFunction.flip(sub)(1)(5), 4);
   }));
-
-  [ false, true ].forEach(function(optimising) {
-    const msg = "browserifying with --standalone skips entry point check" +
-                (optimising ? " (optimising)" : "");
-    it(msg, run(function*(sh, pulp, assert, temp) {
-      yield pulp("init");
-
-      const mainPath = path.join(temp, 'src', 'Main.purs');
-      yield fs.writeFile(
-        mainPath,
-        "module Main where\ntest = 42\n"
-      );
-
-      const extraArg = optimising ? " --optimise" : "";
-      yield pulp("browserify --standalone main --to main.js" + extraArg);
-      const main = require(path.join(temp, "main.js"));
-      assert.equal(main.test, 42);
-    }));
-  });
 
   // See https://github.com/purescript-contrib/pulp/pull/362
   it.skip("pulp browserify --source-maps -O --to", run(function*(sh, pulp, assert) {

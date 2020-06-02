@@ -39,10 +39,6 @@ action = Action \args -> do
   out.log "Running tests..."
   if isNode
     then do
-      noCheckMain <- getFlag "noCheckMain" opts
-      when (not noCheckMain)
-        (Build.checkEntryPoint out opts)
-
       main <- getOption' "main" opts
       buildPath <- getOption' "buildPath" opts
       env <- setupEnv buildPath

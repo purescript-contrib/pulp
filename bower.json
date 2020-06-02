@@ -13,7 +13,6 @@
     "purescript-ansi": "^5.0.0",
     "purescript-avar": "^3.0.0",
     "purescript-effect": "^2.0.1",
-    "purescript-externs-check": "^2.0.0",
     "purescript-foreign-generic": "^10.0.0",
     "purescript-foreign-object": "^2.0.2",
     "purescript-globals": "^4.0.0",
@@ -24,9 +23,10 @@
     "purescript-now": "^4.0.0",
     "purescript-ordered-collections": "^1.6.1",
     "purescript-prelude": "^4.1.1",
-    "purescript-simple-json": "^5.1.0",
+    "purescript-simple-json": "^7.0.0",
     "purescript-versions": "^5.0.0",
-    "purescript-argonaut-codecs": "^6.0.2"
+    "purescript-argonaut-codecs": "^6.0.2",
+    "purescript-argonaut": "^6.0.0"
   },
   "devDependencies": {
     "purescript-assert": "^4.0.0"

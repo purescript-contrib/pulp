@@ -4,7 +4,6 @@ module Pulp.Build
   , testBuild
   , runBuild
   , withOutputStream
-  , checkEntryPoint
   ) where
 
 import Data.Maybe
@@ -15,23 +14,18 @@ import Pulp.Files
 import Pulp.Outputter
 
 import Control.Monad.Error.Class (throwError)
-import Data.Argonaut (jsonParser)
 import Data.Array as Array
-import Data.Array.NonEmpty as NonEmptyArray
-import Data.Either (Either(..), either)
-import Data.Foldable (fold, elem, for_)
+import Data.Either (Either(..))
+import Data.Foldable (fold)
 import Data.List (fromFoldable, List(..))
 import Data.Map (union)
-import Data.Newtype (unwrap)
 import Data.Set as Set
-import Data.String (split, Pattern(..), joinWith, trim)
+import Data.String (Pattern(..), joinWith, split)
 import Data.Version.Haskell (Version(..))
 import Effect.Aff (Aff, apathize, attempt)
 import Effect.Class (liftEffect)
 import Effect.Exception as Exception
 import Effect.Unsafe (unsafePerformEffect)
-import ExternsCheck as ExternsCheck
-import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff as FS
 import Node.Path as Path
 import Node.Process as Process
@@ -39,7 +33,6 @@ import Pulp.Exec (psa, pursBuild, pursBundle)
 import Pulp.Sorcery (sorcery)
 import Pulp.System.Files as Files
 import Pulp.System.Stream (write, end, WritableStream, stdout)
-import Pulp.Utils (throw)
 import Pulp.Validate (getPsaVersion, getPursVersion)
 
 data BuildType = NormalBuild | TestBuild | RunBuild
@@ -131,10 +124,6 @@ bundle args = do
   out.log "Bundling JavaScript..."
 
   skipEntry <- getFlag "skipEntryPoint" opts
-  noCheckMain <- getFlag "noCheckMain" opts
-  when (not (skipEntry || noCheckMain))
-    (checkEntryPoint out opts)
-
   modules <- parseModulesOption <$> getOption "modules" opts
   buildPath <- getOption' "buildPath" opts
   main <- getOption' "main" opts
@@ -185,77 +174,6 @@ withOutputStream opts aff = do
             throwError err
     Nothing ->
       aff stdout
-
-checkEntryPoint :: Outputter -> Options -> Aff Unit
-checkEntryPoint out opts = do
-  buildPath     <- getOption' "buildPath" opts
-  main          <- getOption' "main" opts
-  checkMainType <- getOption' "checkMainType" opts
-
-  let
-    externsFile =
-      joinWith Path.sep [buildPath, main, "externs.json"]
-
-    unableToParse msg =
-      throw $ "Invalid JSON in externs file " <> externsFile <> ": " <> msg
-
-    mainTypes =
-      checkMainType
-        # split (Pattern ",")
-        # map trim
-        # Array.filter (_ /= "")
-        # map ExternsCheck.FQName
-        # NonEmptyArray.fromArray
-        # fromMaybe ExternsCheck.defaultOptions.typeConstructors
-
-    externsCheckOpts =
-      ExternsCheck.defaultOptions
-        { typeConstructors = mainTypes }
-
-    handleReadErr err =
-      if Files.isENOENT err
-        then throw $ "Entry point module (" <> main <> ") not found."
-        else throwError err
-
-    onError errs = do
-      let hasMain = not (ExternsCheck.NoExport `elem` errs)
-      if hasMain
-        then do
-          out.err $ main <> ".main is not suitable as an entry point because it:"
-          out.err $ ""
-          for_ errs (out.err <<< (" - " <> _) <<< explainErr)
-        else do
-          out.err $ main <> " cannot be used as an entry point module because it"
-          out.err $ "does not export a `main` value."
-
-      out.err $ ""
-      out.err $ "If you need to create a JavaScript bundle without an entry point, use"
-      out.err $ "the --skip-entry-point flag."
-      out.err $ ""
-      when hasMain do
-        out.err $ "If you are certain that " <> main <> ".main has the correct runtime"
-        out.err $ "representation, use the --check-main-type or --no-check-main flags"
-        out.err $ "to amend or skip this check."
-        out.err $ ""
-      throw $ "Failed entry point check for module " <> main
-
-    explainErr = case _ of
-      ExternsCheck.NoExport ->
-        internalError "NoExport should have been handled"
-      ExternsCheck.TypeMismatch minstead ->
-        "is not in the allowed list of types. Expected one of: "
-        <> show (NonEmptyArray.toArray mainTypes)
-        <> maybe "" (\instead -> " but found: " <> unwrap instead) minstead
-      ExternsCheck.Constraints cs ->
-        case cs of
-          [] -> internalError "empty constraints array"
-          [c] -> "has a " <> unwrap c <> " constraint"
-          _ -> "has " <> commaList (map unwrap cs) <> " constraints"
-
-  res <- attempt $ FS.readTextFile UTF8 externsFile
-  externsStr <- either handleReadErr pure res
-  externs <- either unableToParse pure $ jsonParser externsStr
-  either onError pure $ ExternsCheck.checkEntryPoint externsCheckOpts externs
 
 -- | Render a list of strings using commas.
 commaList :: Array String -> String

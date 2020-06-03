@@ -1,5 +1,13 @@
 # Pulp Release History
 
+## 15.0.0
+
+* Remove the check for `main` being an appropriate entry point when generating
+  a call to `main`. This previously relied on a compiler-internal API (the
+  externs.json files) which the compiler no longer produces as of v0.13.8. Note
+  that previous versions of Pulp can work around this bug by passing the
+  `--no-check-main` flag. (#392, @garyb).
+
 ## 14.0.0
 
 * Stop attempting to register on the Bower registry on publish, since the Bower

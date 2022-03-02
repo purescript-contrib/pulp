@@ -42,7 +42,7 @@ jobs:
             chmod a+x $DIR/purs
           }
           download_purescript $PURS_BUILD_VERSION
-          if [ "$PURS_TEST_VERSION" != "v0.12.5" ]
+          if [ "$PURS_BUILD_VERSION" != "$PURS_TEST_VERSION" ]
           then
             download_purescript $PURS_TEST_VERSION
           fi

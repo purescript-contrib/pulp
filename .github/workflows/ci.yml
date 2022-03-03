@@ -10,11 +10,11 @@ defaults:
     shell: bash
 
 jobs:
-  strategy:
-    matrix:
-      os: [ubuntu-latest, windows-latest]
-      PURS_TEST_VERSION: [v0.12.3, v0.12.5]
   build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        PURS_TEST_VERSION: [v0.12.3, v0.12.5]
     runs-on: ${{ matrix.os }}
     env:
       PURS_BUILD_VERSION: v0.12.5

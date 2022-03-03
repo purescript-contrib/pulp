@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        PURS_TEST_VERSION: [v0.12.3, v0.12.5]
+    runs-on: ${{ matrix.os }}
+    env:
+      PURS_BUILD_VERSION: v0.12.5
+      PURS_TEST_VERSION: ${{ matrix.PURS_TEST_VERSION }}
+      PSC_PACKAGE_VERSION: v0.5.1
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "12"
+
+      - name: Setup $HOME/bin folder
+        run: mkdir -p $HOME/bin
+
+      - name: Download PureScript
+        run: |
+          function download_purescript() {
+            local DIR, VERSION
+            VERSION=$1
+            DIR=$HOME/bin/purescript-$VERSION
+            mkdir $DIR
+            wget -O $DIR/purescript.tar.gz https://github.com/purescript/purescript/releases/download/$VERSION/linux64.tar.gz
+            tar -xvf $DIR/purescript.tar.gz -C $DIR --strip-components 1 purescript/purs
+            chmod a+x $DIR/purs
+          }
+          download_purescript $PURS_BUILD_VERSION
+          if [ "$PURS_BUILD_VERSION" != "$PURS_TEST_VERSION" ]
+          then
+            download_purescript $PURS_TEST_VERSION
+          fi
+
+      - name: Download psc-package
+        run: |
+          wget -O $HOME/bin/psc-package.tar.gz https://github.com/purescript/psc-package/releases/download/$PSC_PACKAGE_VERSION/linux64.tar.gz
+          tar -xvf $HOME/bin/psc-package.tar.gz -C $HOME/bin --strip-components 1 psc-package/psc-package
+          chmod a+x $HOME/bin/psc-package
+
+      - name: Install NPM dependencies
+        run: npm install -g bower
+
+      - name: Run NPM install
+        run: PATH=$HOME/bin/purescript-$PURS_BUILD_VERSION:$PATH npm install
+
+      - name: Run NPM tests
+        run: PATH=$HOME/bin/purescript-$PURS_TEST_VERSION:$PATH npm test

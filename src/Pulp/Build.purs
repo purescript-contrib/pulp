@@ -15,19 +15,16 @@ import Pulp.Files (defaultGlobs, outputModules, sources, testGlobs)
 import Pulp.Outputter (getOutputter)
 
 import Control.Monad.Error.Class (throwError)
-import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.List (List(..))
 import Data.List.NonEmpty as NEL
 import Data.Map (union)
 import Data.Set as Set
-import Data.String (Pattern(..), joinWith, split)
+import Data.String (Pattern(..), split)
 import Data.Version.Haskell (Version(..))
 import Effect.Aff (Aff, apathize, attempt)
 import Effect.Class (liftEffect)
-import Effect.Exception as Exception
-import Effect.Unsafe (unsafePerformEffect)
 import Node.FS.Aff as FS
 import Node.Path as Path
 import Node.Process as Process
@@ -176,17 +173,3 @@ withOutputStream opts aff = do
             throwError err
     Nothing ->
       aff stdout
-
--- | Render a list of strings using commas.
-commaList :: Array String -> String
-commaList arr =
-  case Array.unsnoc arr of
-    Just { init: [init'], last } ->
-      init' <> " and " <> last
-    Just { init, last } ->
-      joinWith ", " init <> ", and " <> last
-    Nothing ->
-      ""
-
-internalError :: forall a. String -> a
-internalError = unsafePerformEffect <<< Exception.throw <<< ("internal error: " <> _)

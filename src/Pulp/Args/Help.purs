@@ -5,10 +5,6 @@ module Pulp.Args.Help
 
 import Prelude
 
-import Partial.Unsafe (unsafePartial)
-import Pulp.Args (Argument, Command, Option, option)
-import Pulp.Outputter (Outputter)
-
 import Control.Monad.Except (runExcept)
 import Data.Array (sort, (!!), null)
 import Data.Either (Either(..))
@@ -24,7 +20,10 @@ import Foreign.Class (decode)
 import Foreign.Object (Object, keys, lookup, insert, empty)
 import Node.Path as Path
 import Node.Process as Process
+import Partial.Unsafe (unsafePartial)
+import Pulp.Args (Argument, Command, Option, option)
 import Pulp.Args.Types as Type
+import Pulp.Outputter (Outputter)
 
 foreign import pad :: Int -> String
 

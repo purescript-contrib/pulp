@@ -3,22 +3,13 @@ module Pulp.Browserify where
 
 import Prelude
 
-import Data.Foldable (fold)
-import Data.Function.Uncurried (Fn2, runFn2)
-import Data.Maybe (Maybe(..), isJust, maybe)
-import Pulp.Args (Action(..), Args, Options, runAction)
-import Pulp.Args.Get (getFlag, getOption, getOption')
-import Pulp.Files (defaultGlobs, outputModules)
-import Pulp.Outputter (getOutputter)
-import Pulp.Project (Project(..))
-import Pulp.Sorcery (sorcery)
-import Pulp.System.FFI (Callback, runNode)
-import Pulp.System.Files (openTemp)
-
 import Data.Argonaut (Json, caseJsonArray, caseJsonObject, caseJsonString, fromArray, fromObject, fromString, jsonEmptyObject, jsonNull, jsonParser)
 import Data.Argonaut.Core (stringify)
 import Data.Either (Either(..))
+import Data.Foldable (fold)
+import Data.Function.Uncurried (Fn2, runFn2)
 import Data.Map as Map
+import Data.Maybe (Maybe(..), isJust, maybe)
 import Data.Nullable (Nullable, toNullable)
 import Data.Traversable (traverse)
 import Effect (Effect)
@@ -29,9 +20,17 @@ import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff (unlink, writeTextFile, readTextFile)
 import Node.Path as Path
 import Node.Process as Process
+import Pulp.Args (Action(..), Args, Options, runAction)
+import Pulp.Args.Get (getFlag, getOption, getOption')
 import Pulp.Build as Build
 import Pulp.Exec (pursBundle)
+import Pulp.Files (defaultGlobs, outputModules)
+import Pulp.Outputter (getOutputter)
+import Pulp.Project (Project(..))
 import Pulp.Run (makeEntry, jsEscape)
+import Pulp.Sorcery (sorcery)
+import Pulp.System.FFI (Callback, runNode)
+import Pulp.System.Files (openTemp)
 import Pulp.System.Stream (WritableStream)
 
 action :: Action

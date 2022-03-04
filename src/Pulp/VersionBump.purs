@@ -3,8 +3,8 @@ module Pulp.VersionBump where
 
 import Prelude
 
-import Data.Maybe (Maybe(..))
 import Data.Either (either)
+import Data.Maybe (Maybe(..))
 import Data.String as String
 import Data.Version (Version)
 import Data.Version as Version

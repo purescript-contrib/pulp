@@ -13,12 +13,8 @@ module Pulp.Files
 
 import Prelude
 
-import Data.Function.Uncurried (Fn2, runFn2)
-import Pulp.Args (Options)
-import Pulp.Args.Get (getOption, getOption')
-import Pulp.System.FFI (Callback, runNode)
-
 import Data.Array (concat, mapMaybe)
+import Data.Function.Uncurried (Fn2, runFn2)
 import Data.List as List
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Set (Set)
@@ -28,8 +24,11 @@ import Data.Traversable (sequence, traverse)
 import Effect.Aff (Aff)
 import Foreign.Class (class Decode)
 import Node.Path as Path
+import Pulp.Args (Options)
+import Pulp.Args.Get (getOption, getOption')
 import Pulp.Exec (execQuiet)
 import Pulp.Project (usingPscPackage)
+import Pulp.System.FFI (Callback, runNode)
 
 recursiveGlobWithExtension :: String -> Set String -> Array String
 recursiveGlobWithExtension ext =

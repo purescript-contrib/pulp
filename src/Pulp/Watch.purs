@@ -7,18 +7,12 @@ module Pulp.Watch
 
 import Prelude
 
-import Data.Maybe (Maybe, fromMaybe)
-import Pulp.Args (Action(..), Options)
-import Pulp.Args.Get (getOption)
-import Pulp.Files (defaultGlobs, ffis, sources, testGlobs)
-import Pulp.Outputter (getOutputter)
-import Pulp.Utils (orErr)
-
 import Data.Array as Array
 import Data.DateTime (DateTime)
 import Data.DateTime as DateTime
 import Data.Foldable (notElem)
 import Data.Map as Map
+import Data.Maybe (Maybe, fromMaybe)
 import Data.Set as Set
 import Data.Time.Duration (Milliseconds(..))
 import Data.Traversable (traverse, sequence)
@@ -31,7 +25,12 @@ import Effect.Ref as Ref
 import Node.ChildProcess (fork, pid)
 import Node.Globals (__filename)
 import Node.Process as Process
+import Pulp.Args (Action(..), Options)
+import Pulp.Args.Get (getOption)
+import Pulp.Files (defaultGlobs, ffis, sources, testGlobs)
+import Pulp.Outputter (getOutputter)
 import Pulp.System.TreeKill (treeKill)
+import Pulp.Utils (orErr)
 
 foreign import watch ::
   Array String

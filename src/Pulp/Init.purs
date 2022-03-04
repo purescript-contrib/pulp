@@ -4,9 +4,6 @@ module Pulp.Init
 
 import Prelude
 
-import Pulp.Args (Action(..))
-import Pulp.Outputter (Outputter, getOutputter)
-
 import Control.Monad.Error.Class (throwError)
 import Data.Array (cons)
 import Data.Foldable (for_)
@@ -21,7 +18,9 @@ import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff (writeTextFile, exists)
 import Node.Path as Path
 import Node.Process as Process
+import Pulp.Args (Action(..))
 import Pulp.Args.Get (getFlag)
+import Pulp.Outputter (Outputter, getOutputter)
 import Pulp.PackageManager (launchBower, launchPscPackage)
 import Pulp.System.Files (mkdirIfNotExist)
 import Pulp.Utils (throw)

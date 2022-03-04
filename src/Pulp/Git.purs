@@ -7,19 +7,18 @@ module Pulp.Git
 
 import Prelude
 
+import Data.Array as Array
 import Data.Either (either)
+import Data.Foldable as Foldable
 import Data.Function (on)
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Tuple (Tuple(..), snd)
-import Pulp.Exec (execQuiet, execQuietWithStderr)
-
-import Data.Array as Array
-import Data.Foldable as Foldable
 import Data.String as String
+import Data.Tuple (Tuple(..), snd)
 import Data.Version (Version)
 import Data.Version as Version
 import Effect.Aff (Aff, attempt)
 import Node.ChildProcess as CP
+import Pulp.Exec (execQuiet, execQuietWithStderr)
 import Pulp.Utils (throw)
 
 -- | Throw an error if the git working tree is dirty.

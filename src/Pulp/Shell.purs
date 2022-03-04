@@ -3,9 +3,6 @@ module Pulp.Shell (shell) where
 
 import Prelude
 
-import Pulp.Exec (exec)
-import Pulp.Outputter (Outputter)
-
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
@@ -14,6 +11,8 @@ import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff as FS
 import Node.Platform (Platform(Win32))
 import Node.Process as Process
+import Pulp.Exec (exec)
+import Pulp.Outputter (Outputter)
 import Pulp.System.Files (openTemp)
 
 shell :: Outputter -> String -> Aff Unit

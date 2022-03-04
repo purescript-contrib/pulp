@@ -2,10 +2,9 @@ module Pulp.Repl where
 
 import Prelude
 
-import Data.Maybe (Maybe(..))
 import Data.Map as Map
+import Data.Maybe (Maybe(..))
 import Data.Set as Set
-
 import Pulp.Args (Action(..))
 import Pulp.Exec (execInteractive)
 import Pulp.Files (defaultGlobs, sources, testGlobs)

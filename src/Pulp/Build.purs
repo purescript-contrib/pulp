@@ -8,18 +8,13 @@ module Pulp.Build
 
 import Prelude
 
-import Data.Maybe (Maybe(..), maybe)
-import Pulp.Args (Action(..), Args, Options, runAction)
-import Pulp.Args.Get (getFlag, getOption, getOption', hasOption)
-import Pulp.Files (defaultGlobs, outputModules, sources, testGlobs)
-import Pulp.Outputter (getOutputter)
-
 import Control.Monad.Error.Class (throwError)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.List (List(..))
 import Data.List.NonEmpty as NEL
 import Data.Map (union)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Set as Set
 import Data.String (Pattern(..), split)
 import Data.Version.Haskell (Version(..))
@@ -28,7 +23,11 @@ import Effect.Class (liftEffect)
 import Node.FS.Aff as FS
 import Node.Path as Path
 import Node.Process as Process
+import Pulp.Args (Action(..), Args, Options, runAction)
+import Pulp.Args.Get (getFlag, getOption, getOption', hasOption)
 import Pulp.Exec (psa, pursBuild, pursBundle)
+import Pulp.Files (defaultGlobs, outputModules, sources, testGlobs)
+import Pulp.Outputter (getOutputter)
 import Pulp.Sorcery (sorcery)
 import Pulp.System.Files as Files
 import Pulp.System.Stream (write, end, WritableStream, stdout)

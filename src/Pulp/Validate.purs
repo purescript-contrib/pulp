@@ -6,12 +6,11 @@ module Pulp.Validate
 
 import Prelude
 
-import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
-
 import Control.Monad.Error.Class (throwError)
+import Data.Either (Either(..))
 import Data.List (List(..))
 import Data.List.NonEmpty as NEL
+import Data.Maybe (Maybe(..))
 import Data.String (codePointFromChar, takeWhile, trim)
 import Data.Version.Haskell (Version(..), parseVersion, showVersion)
 import Effect.Aff (Aff)

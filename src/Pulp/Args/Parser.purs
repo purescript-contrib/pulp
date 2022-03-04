@@ -3,13 +3,11 @@ module Pulp.Args.Parser where
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Either (Either(..))
-import Pulp.Args (Args, Argument, Command, Help(..), OptParser, Option, Options)
-import Text.Parsing.Parser (ParseError, ParseState(..), ParserT, fail, runParserT)
-
 import Control.Monad.State.Class (get)
 import Control.Monad.Trans.Class (lift)
+import Data.Argonaut (fromString)
 import Data.Array (many)
+import Data.Either (Either(..))
 import Data.Foldable (find, elem)
 import Data.List (List)
 import Data.List as List
@@ -20,7 +18,9 @@ import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
 import Foreign (unsafeToForeign)
+import Pulp.Args (Args, Argument, Command, Help(..), OptParser, Option, Options)
 import Pulp.Utils (throw)
+import Text.Parsing.Parser (ParseError, ParseState(..), ParserT, fail, runParserT)
 import Text.Parsing.Parser.Combinators ((<?>), try, optionMaybe)
 import Text.Parsing.Parser.Pos as Pos
 import Text.Parsing.Parser.Token as Token
@@ -119,7 +119,7 @@ parseArgv globals commands = do
       commandArgs: Map.unions commandArgs,
       remainder
       }
-
+ 
   helpForCommand command =
     matchHelp *> pure (Left (Help command))
 

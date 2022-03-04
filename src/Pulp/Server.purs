@@ -6,12 +6,8 @@ module Pulp.Server
 import Prelude
 
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
-import Pulp.Args (Action(..), Args, Options)
-import Pulp.Args.Get (getFlag, getOption')
-import Pulp.Outputter (getOutputter)
-
 import Data.Map as Map
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff, attempt, launchAff, makeAff)
 import Effect.Aff.AVar as AVar
@@ -21,7 +17,10 @@ import Node.Encoding (Encoding(..))
 import Node.HTTP as HTTP
 import Node.Path as Path
 import Node.Stream as Stream
+import Pulp.Args (Action(..), Args, Options)
+import Pulp.Args.Get (getFlag, getOption')
 import Pulp.Build as Build
+import Pulp.Outputter (getOutputter)
 import Pulp.System.StaticServer as StaticServer
 import Pulp.Utils (orErr)
 import Pulp.Watch (watchAff, watchDirectories)

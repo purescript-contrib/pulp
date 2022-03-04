@@ -2,11 +2,6 @@ module Pulp.Run where
 
 import Prelude
 
-import Pulp.Args (Action(..))
-import Pulp.Args.Get (getOption')
-import Pulp.Exec (exec)
-import Pulp.Outputter (getOutputter)
-
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.String (replace, Pattern(..), Replacement(..))
@@ -19,7 +14,11 @@ import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff as FS
 import Node.Path as Path
 import Node.Process as Process
+import Pulp.Args (Action(..))
+import Pulp.Args.Get (getOption')
 import Pulp.Build as Build
+import Pulp.Exec (exec)
+import Pulp.Outputter (getOutputter)
 import Pulp.System.Files (openTemp)
 
 action :: Action

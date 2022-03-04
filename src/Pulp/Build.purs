@@ -64,7 +64,6 @@ go buildType = Action \args -> do
                             else pure Set.empty)
 
   buildPath <- getOption' "buildPath" args.commandOpts
-  noPsa <- getFlag "noPsa" args.commandOpts
   sourceMaps <- getFlag "sourceMaps" args.commandOpts
   ver <- getPursVersion out
   jobs :: Maybe Int <- getOption "jobs" args.commandOpts

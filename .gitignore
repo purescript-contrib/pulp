@@ -10,3 +10,6 @@
 .browserify-cache.json
 /.psvm/
 /unit-tests.js
+.psc*
+.purs-repl
+

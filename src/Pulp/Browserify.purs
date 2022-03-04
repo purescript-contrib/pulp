@@ -32,10 +32,14 @@ import Pulp.Sorcery (sorcery)
 import Pulp.System.FFI (Callback, runNode)
 import Pulp.System.Files (openTemp)
 import Pulp.System.Stream (WritableStream)
+import Pulp.Validate (failIfUsingEsModulesPsVersion)
 
 action :: Action
 action = Action \args -> do
   out <- getOutputter args
+
+  failIfUsingEsModulesPsVersion out $ Just
+    "Code path reason: browserify only works on CommonJS modules"
 
   cwd <- liftEffect Process.cwd
   out.log $ "Browserifying project in " <> cwd

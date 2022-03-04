@@ -24,7 +24,7 @@ import Pulp.Args (Action(..), Args, Options, runAction)
 import Pulp.Args.Get (getFlag, getOption, getOption')
 import Pulp.Build as Build
 import Pulp.Exec (pursBundle)
-import Pulp.Files (defaultGlobs, outputModules)
+import Pulp.Files (outputModules)
 import Pulp.Outputter (getOutputter)
 import Pulp.Project (Project(..))
 import Pulp.Run (makeEntry, jsEscape)
@@ -76,7 +76,6 @@ optimising = Action \args -> do
 
   let opts = Map.union args.globalOpts args.commandOpts
 
-  globs     <- defaultGlobs opts
   buildPath <- getOption' "buildPath" opts
   main      <- getOption' "main" opts
   transform <- getOption "transform" opts

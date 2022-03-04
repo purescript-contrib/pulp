@@ -18,13 +18,12 @@ import Pulp.Args (Action(..))
 import Pulp.Args.Get (getOption')
 import Pulp.Build as Build
 import Pulp.Exec (exec)
-import Pulp.Outputter (getOutputter)
 import Pulp.System.Files (openTemp)
 
 action :: Action
 action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
-  out <- getOutputter args
+  -- out <- getOutputter args
 
   Build.runBuild args
 

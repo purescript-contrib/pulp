@@ -1,6 +1,6 @@
 module Pulp.Args.Parser where
 
-import Prelude
+import Prelude hiding (when)
 
 import Control.Alt ((<|>))
 import Control.Monad.State.Class (get)

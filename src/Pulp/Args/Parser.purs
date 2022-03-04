@@ -5,7 +5,6 @@ import Prelude
 import Control.Alt ((<|>))
 import Control.Monad.State.Class (get)
 import Control.Monad.Trans.Class (lift)
-import Data.Argonaut (fromString)
 import Data.Array (many)
 import Data.Either (Either(..))
 import Data.Foldable (find, elem)

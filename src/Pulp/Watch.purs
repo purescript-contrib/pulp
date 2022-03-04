@@ -87,7 +87,7 @@ action = Action \args -> do
   globs <- Set.union <$> defaultGlobs opts <*> testGlobs opts
   let fileGlobs = sources globs <> ffis globs
 
-  watchAff fileGlobs $ \_path -> do
+  watchAff fileGlobs $ \_ -> do
     child <- AVar.take childV
     liftEffect $ treeKill (pid child) "SIGTERM"
     out.write "---\n"

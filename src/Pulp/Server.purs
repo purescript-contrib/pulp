@@ -3,12 +3,13 @@ module Pulp.Server
   ( action
   ) where
 
-import Data.Either
-import Data.Maybe
 import Prelude
-import Pulp.Args
-import Pulp.Args.Get
-import Pulp.Outputter
+
+import Data.Either (Either(..))
+import Data.Maybe (Maybe(..))
+import Pulp.Args (Action(..), Args, Options)
+import Pulp.Args.Get (getFlag, getOption')
+import Pulp.Outputter (getOutputter)
 
 import Data.Map as Map
 import Effect (Effect)

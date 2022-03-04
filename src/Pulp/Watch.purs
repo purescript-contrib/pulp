@@ -5,13 +5,14 @@ module Pulp.Watch
   , action
   ) where
 
-import Data.Maybe
 import Prelude
-import Pulp.Args
-import Pulp.Args.Get
-import Pulp.Files
-import Pulp.Outputter
-import Pulp.Utils
+
+import Data.Maybe (Maybe, fromMaybe)
+import Pulp.Args (Action(..), Options)
+import Pulp.Args.Get (getOption)
+import Pulp.Files (defaultGlobs, ffis, sources, testGlobs)
+import Pulp.Outputter (getOutputter)
+import Pulp.Utils (orErr)
 
 import Data.Array as Array
 import Data.DateTime (DateTime)
@@ -86,7 +87,7 @@ action = Action \args -> do
   globs <- Set.union <$> defaultGlobs opts <*> testGlobs opts
   let fileGlobs = sources globs <> ffis globs
 
-  watchAff fileGlobs $ \path -> do
+  watchAff fileGlobs $ \_path -> do
     child <- AVar.take childV
     liftEffect $ treeKill (pid child) "SIGTERM"
     out.write "---\n"

@@ -5,12 +5,13 @@ module Pulp.Git
   , dropPrefix
   ) where
 
-import Data.Either
-import Data.Function
-import Data.Maybe
-import Data.Tuple
 import Prelude
-import Pulp.Exec
+
+import Data.Either (either)
+import Data.Function (on)
+import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Tuple (Tuple(..), snd)
+import Pulp.Exec (execQuiet, execQuietWithStderr)
 
 import Data.Array as Array
 import Data.Foldable as Foldable

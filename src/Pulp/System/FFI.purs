@@ -15,10 +15,10 @@ foreign import data NodeError :: Type
 -- | the same as the type parameter.
 foreign import data Callback :: Type -> Type
 
-foreign import runNode'  :: forall a. Fn3 (Error -> Effect Unit) (a -> Effect Unit) (Callback a -> Unit) (Effect Unit)
+foreign import runNodeImpl  :: forall a. Fn3 (Error -> Effect Unit) (a -> Effect Unit) (Callback a -> Unit) (Effect Unit)
 
 runNode :: forall a. (Callback a -> Unit) -> Aff a
-runNode fn = makeAff (\cb -> mempty <* runFn3 runNode' (cb <<< Left) (cb <<< Right) fn)
+runNode fn = makeAff (\cb -> mempty <* runFn3 runNodeImpl (cb <<< Left) (cb <<< Right) fn)
 
 -- | This is quite unsafe but often useful.
 foreign import unsafeInspect :: forall a. a -> String

@@ -3,17 +3,18 @@ module Pulp.Login
   , tokenFilePath
   ) where
 
-import Control.Monad.Error.Class
-import Data.Either
-import Data.Maybe
-import Data.Tuple.Nested
-import Effect.Class
-import Effect.Exception
-import Node.FS.Perms
 import Prelude
-import Pulp.Args
-import Pulp.Outputter
-import Pulp.System.HTTP
+
+import Control.Monad.Error.Class (throwError)
+import Data.Either (Either(..))
+import Data.Maybe (Maybe(..))
+import Data.Tuple.Nested ((/\))
+import Effect.Class (liftEffect)
+import Effect.Exception (error)
+import Node.FS.Perms (mkPerms, none, read, write)
+import Pulp.Args (Action(..))
+import Pulp.Outputter (Outputter, getOutputter)
+import Pulp.System.HTTP (httpRequest)
 
 import Control.Monad.Except (runExcept)
 import Data.Foldable (fold)

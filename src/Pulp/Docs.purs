@@ -3,7 +3,8 @@ module Pulp.Docs where
 
 import Prelude
 
-import Data.List (List(..), fromFoldable)
+import Data.List (List(..))
+import Data.List.NonEmpty as NEL
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Set as Set
@@ -34,7 +35,7 @@ action = Action \args -> do
 
   buildPath <- getOption' "buildPath" opts
 
-  when (pursVersion < Version (fromFoldable [0,13,0]) Nil)
+  when (pursVersion < Version (NEL.cons' 0 (Cons 13 (Cons 0 Nil))) Nil)
     (out.log "Warning: 'pulp docs' now only supports 'purs' v0.13.0 and above. Please either update 'purs' or downgrade 'pulp'.")
 
   exec "purs" (["docs", "--compile-output", buildPath] <> args.remainder <> sources globInputFiles) Nothing

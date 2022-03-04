@@ -1,18 +1,19 @@
 
 module Pulp.Browserify where
 
-import Data.Foldable
-import Data.Function.Uncurried
-import Data.Maybe
 import Prelude
-import Pulp.Args
-import Pulp.Args.Get
-import Pulp.Files
-import Pulp.Outputter
-import Pulp.Project
-import Pulp.Sorcery
-import Pulp.System.FFI
-import Pulp.System.Files
+
+import Data.Foldable (fold)
+import Data.Function.Uncurried (Fn2, runFn2)
+import Data.Maybe (Maybe(..), isJust, maybe)
+import Pulp.Args (Action(..), Args, Options, runAction)
+import Pulp.Args.Get (getFlag, getOption, getOption')
+import Pulp.Files (defaultGlobs, outputModules)
+import Pulp.Outputter (getOutputter)
+import Pulp.Project (Project(..))
+import Pulp.Sorcery (sorcery)
+import Pulp.System.FFI (Callback, runNode)
+import Pulp.System.Files (openTemp)
 
 import Data.Argonaut (Json, caseJsonArray, caseJsonObject, caseJsonString, fromArray, fromObject, fromString, jsonEmptyObject, jsonNull, jsonParser)
 import Data.Argonaut.Core (stringify)
@@ -198,12 +199,12 @@ type BrowserifyOptions =
   , tmpFilePath:: String
   }
 
-foreign import browserifyBundle' :: Fn2 BrowserifyOptions
+foreign import browserifyBundleImpl :: Fn2 BrowserifyOptions
                                         (Callback Unit)
                                         Unit
 
 browserifyBundle :: BrowserifyOptions -> Aff Unit
-browserifyBundle opts = runNode $ runFn2 browserifyBundle' opts
+browserifyBundle opts = runNode $ runFn2 browserifyBundleImpl opts
 
 type BrowserifyIncOptions =
   { basedir    :: String
@@ -216,12 +217,12 @@ type BrowserifyIncOptions =
   , outDir     :: String
   }
 
-foreign import browserifyIncBundle' :: Fn2 BrowserifyIncOptions
+foreign import browserifyIncBundleImpl :: Fn2 BrowserifyIncOptions
                                           (Callback Unit)
                                           Unit
 
 browserifyIncBundle :: BrowserifyIncOptions -> Aff Unit
-browserifyIncBundle opts = runNode $ runFn2 browserifyIncBundle' opts
+browserifyIncBundle opts = runNode $ runFn2 browserifyIncBundleImpl opts
 
 updateSourceMapPaths :: String -> String -> Effect String
 updateSourceMapPaths basePath text =

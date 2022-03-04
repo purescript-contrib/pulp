@@ -1,10 +1,11 @@
 module Pulp.Args.Parser where
 
-import Control.Alt
-import Data.Either
-import Prelude hiding (when)
-import Pulp.Args
-import Text.Parsing.Parser
+import Prelude
+
+import Control.Alt ((<|>))
+import Data.Either (Either(..))
+import Pulp.Args (Args, Argument, Command, Help(..), OptParser, Option, Options)
+import Text.Parsing.Parser (ParseError, ParseState(..), ParserT, fail, runParserT)
 
 import Control.Monad.State.Class (get)
 import Control.Monad.Trans.Class (lift)
@@ -82,7 +83,7 @@ cmd :: Array Command -> OptParser Command
 cmd cmds = do
   o <- lookupCmd cmds <?> "command"
   case o of
-    (Tuple key option) -> pure option
+    (Tuple _ option) -> pure option
 
 extractDefault :: Option -> Options
 extractDefault o =

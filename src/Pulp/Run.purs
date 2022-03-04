@@ -1,10 +1,11 @@
 module Pulp.Run where
 
 import Prelude
-import Pulp.Args
-import Pulp.Args.Get
-import Pulp.Exec
-import Pulp.Outputter
+
+import Pulp.Args (Action(..))
+import Pulp.Args.Get (getOption')
+import Pulp.Exec (exec)
+import Pulp.Outputter (getOutputter)
 
 import Data.Map as Map
 import Data.Maybe (Maybe(..))

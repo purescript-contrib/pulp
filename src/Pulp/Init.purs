@@ -3,13 +3,15 @@ module Pulp.Init
   ) where
 
 import Prelude
-import Pulp.Args
-import Pulp.Outputter
+
+import Pulp.Args (Action(..))
+import Pulp.Outputter (Outputter, getOutputter)
 
 import Control.Monad.Error.Class (throwError)
 import Data.Array (cons)
 import Data.Foldable (for_)
-import Data.List (List(Nil), fromFoldable)
+import Data.List (List(..))
+import Data.List.NonEmpty as NEL
 import Data.String (joinWith)
 import Data.Version.Haskell as HVer
 import Effect.Aff (Aff)
@@ -175,7 +177,7 @@ action = Action \args -> do
 
   where
 
-  minEffectVersion = HVer.Version (fromFoldable [0, 12, 0]) Nil
+  minEffectVersion = HVer.Version (NEL.cons' 0 (Cons 12 (Cons 0 Nil))) Nil
 
   getEffOrEffect out withEff withEffect
     | withEff    = pure UseEff

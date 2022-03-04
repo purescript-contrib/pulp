@@ -4,11 +4,12 @@ import Prelude
 
 import Control.Monad.Error.Class (throwError)
 import Data.Either (Either(..))
+import Data.Foldable (lookup)
 import Data.Foldable as Foldable
 import Data.List (List(..))
 import Data.Maybe (Maybe(..), maybe)
 import Data.String as String
-import Data.Tuple (Tuple(..), lookup, snd)
+import Data.Tuple (Tuple(..), snd)
 import Data.Version (Version)
 import Data.Version as Version
 import Effect.Aff (Aff)

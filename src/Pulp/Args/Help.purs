@@ -3,10 +3,11 @@ module Pulp.Args.Help
        , printCommandHelp
        ) where
 
-import Partial.Unsafe
 import Prelude
-import Pulp.Args
-import Pulp.Outputter
+
+import Partial.Unsafe (unsafePartial)
+import Pulp.Args (Argument, Command, Option, option)
+import Pulp.Outputter (Outputter)
 
 import Control.Monad.Except (runExcept)
 import Data.Array (sort, (!!), null)

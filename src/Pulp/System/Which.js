@@ -2,4 +2,4 @@
 
 "use strict";
 
-exports["which'"] = require("which");
+exports.whichImpl = require("which");

@@ -1,13 +1,14 @@
 module Pulp.Repl where
 
 import Prelude
-import Data.Maybe
+
+import Data.Maybe (Maybe(..))
 import Data.Map as Map
 import Data.Set as Set
 
-import Pulp.Args
-import Pulp.Exec
-import Pulp.Files
+import Pulp.Args (Action(..))
+import Pulp.Exec (execInteractive)
+import Pulp.Files (defaultGlobs, sources, testGlobs)
 
 action :: Action
 action = Action \args -> do

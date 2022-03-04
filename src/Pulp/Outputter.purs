@@ -5,8 +5,9 @@ module Pulp.Outputter
   ) where
 
 import Prelude
-import Pulp.Args
-import Pulp.Args.Get
+
+import Pulp.Args (Args)
+import Pulp.Args.Get (getFlag)
 
 import Ansi.Codes (Color(..))
 import Ansi.Output (withGraphics, foreground, bold)

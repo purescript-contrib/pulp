@@ -6,7 +6,7 @@ import Data.Function.Uncurried (Fn2, runFn2)
 import Effect.Aff (Aff)
 import Pulp.System.FFI (Callback, runNode)
 
-foreign import which' :: Fn2 String (Callback String) Unit
+foreign import whichImpl :: Fn2 String (Callback String) Unit
 
 which :: String -> Aff String
-which cmd = runNode $ runFn2 which' cmd
+which cmd = runNode $ runFn2 whichImpl cmd

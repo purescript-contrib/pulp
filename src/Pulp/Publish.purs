@@ -8,7 +8,7 @@ import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (fold, or)
 import Data.List (List(..))
-import Data.List as List
+import Data.List.NonEmpty as NEL
 import Data.Maybe (Maybe(..), maybe)
 import Data.Options ((:=))
 import Data.String as String
@@ -195,7 +195,7 @@ resolutionsFile manifest args = do
   out <- getOutputter args
   ver <- getPursVersion out
   resolutionsData <-
-    if ver >= Haskell.Version (List.fromFoldable [0,12,4]) Nil
+    if ver >= Haskell.Version (NEL.cons' 0 (Cons 12 (Cons 4 Nil))) Nil
       then do
         let hasDependencies =
               maybe false (not <<< Object.isEmpty) manifest.dependencies

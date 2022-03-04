@@ -6,18 +6,20 @@ module Pulp.Build
   , withOutputStream
   ) where
 
-import Data.Maybe
 import Prelude
-import Pulp.Args
-import Pulp.Args.Get
-import Pulp.Files
-import Pulp.Outputter
+
+import Data.Maybe (Maybe(..), maybe)
+import Pulp.Args (Action(..), Args, Options, runAction)
+import Pulp.Args.Get (getFlag, getOption, getOption', hasOption)
+import Pulp.Files (defaultGlobs, outputModules, sources, testGlobs)
+import Pulp.Outputter (getOutputter)
 
 import Control.Monad.Error.Class (throwError)
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (fold)
-import Data.List (fromFoldable, List(..))
+import Data.List (List(..))
+import Data.List.NonEmpty as NEL
 import Data.Map (union)
 import Data.Set as Set
 import Data.String (Pattern(..), joinWith, split)
@@ -71,7 +73,7 @@ go buildType = Action \args -> do
   jobs :: Maybe Int <- getOption "jobs" args.commandOpts
   let jobsArgs = maybe [] (\j -> ["+RTS", "-N" <> show j, "-RTS"]) jobs
       sourceMapArg = case sourceMaps of
-        true | ver >= Version (fromFoldable [0, 12, 0]) Nil -> [ "--codegen", "sourcemaps" ]
+        true | ver >= Version (NEL.cons' 0 (Cons 12 (Cons 0 Nil))) Nil -> [ "--codegen", "sourcemaps" ]
         true -> ["--source-maps"]
         _ -> []
       sourceGlobs = sources globs
@@ -114,7 +116,7 @@ shouldUsePsa args = do
 
   where
   -- TODO this is actually semver
-  minimumPsaVersion = Version (fromFoldable [0,5,0]) Nil
+  minimumPsaVersion = Version (NEL.cons' 0 (Cons 5 (Cons 0 Nil))) Nil
 
 bundle :: Args -> Aff Unit
 bundle args = do

@@ -10,10 +10,11 @@ module Pulp.Exec
   , pursBundle
   ) where
 
-import Effect.Aff
 import Prelude
-import Pulp.System.Stream
-import Unsafe.Coerce
+
+import Effect.Aff (Aff, forkAff, makeAff, throwError)
+import Pulp.System.Stream (concatStream, stderr, write)
+import Unsafe.Coerce (unsafeCoerce)
 
 import Data.Either (Either(..), either)
 import Data.Foldable (for_)

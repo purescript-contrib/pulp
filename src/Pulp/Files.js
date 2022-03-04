@@ -2,6 +2,6 @@
 
 "use strict";
 
-exports["glob'"] = function glob$prime(pat, callback) {
+exports.globImpl = function glob$prime(pat, callback) {
   require("glob")(pat, {}, callback);
 };

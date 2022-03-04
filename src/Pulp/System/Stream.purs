@@ -49,9 +49,9 @@ concatStream stream = do
   liftEffect (Buffer.toString UTF8 buf)
 
 concatStreamToBuffer :: forall w. Node.Readable w -> Aff Buffer
-concatStreamToBuffer stream = runNode $ runFn2 concatStreamToBuffer' stream
+concatStreamToBuffer stream = runNode $ runFn2 concatStreamToBufferImpl stream
 
-foreign import concatStreamToBuffer' :: forall w. Fn2 (Node.Readable w) (Callback Buffer) Unit
+foreign import concatStreamToBufferImpl :: forall w. Fn2 (Node.Readable w) (Callback Buffer) Unit
 
 foreign import createGzip :: Effect (Node.Duplex)
 

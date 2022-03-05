@@ -5,6 +5,7 @@ import run from "./sh";
 import semver from "semver";
 import touch from "touch";
 import which from "which";
+import CP from "child_process";
 
 const hello = "Hello sailor!";
 const test = "You should add some tests.";
@@ -122,12 +123,27 @@ function* createModule(sh, temp, name) {
 
 const getPursVersion = co.wrap(function*(sh, assert) {
   const [out] = yield sh("purs --version");
-  const pursVer = semver.parse(out.split(/\s/)[0]);
+  // Drops pre-release identifiers
+  // 0.15.0-alpha-01 --> 0.15.0
+  const pursVerWithExtras = semver.coerce(out.split(/\s/)[0]);
+  const pursVer = pursVerWithExtras === null ? semver.parse(pursVerWithExtras) : pursVerWithExtras;
   if (pursVer == null) {
     assert.fail("Unable to parse output of purs --version");
   }
   return pursVer;
 });
+
+const psVersionUsed = CP.execSync("purs --version").toString("utf-8");
+
+const notEsModulesPsVersionIt = function(testName, cb) {
+  const pursVerWithExtras = semver.coerce(psVersionUsed.split(/\s/)[0]);
+  const pursVer = semver.parse(pursVerWithExtras);
+  if (semver.lt(pursVer, semver.parse('0.15.0'))) {
+    it(testName, cb);
+  } else {
+    it.skip(testName, cb);
+  }
+}
 
 describe("integration tests", function() {
   // This is, unfortunately, required, as CI is horrendously slow.

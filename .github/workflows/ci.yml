@@ -61,7 +61,7 @@ jobs:
     strategy:
       matrix:
         purs_test_version: [v0.11.0, v0.12.4, v0.12.5, v0.13.0, v0.14.0, v0.14.5]
-        fail-fast: false
+      fail-fast: false
     runs-on: windows-latest
     env:
       PURS_TEST_VERSION: ${{ matrix.purs_test_version }}

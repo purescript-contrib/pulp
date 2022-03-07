@@ -282,11 +282,16 @@ describe("integration tests", function() {
   }));
 
   it("pulp run -- program args", run(function*(sh, pulp, assert, temp) {
-    const srcDir = path.join(temp, "run_with_args");
     yield pulp("init");
+
+    const srcDir = path.join(temp, "run_with_args");
     yield fs.mkdir(srcDir);
-    yield fs.copy(path.resolve(__dirname, "resources/Main.purs"), path.join(srcDir, "Main.purs"));
-    yield fs.copy(path.resolve(__dirname, "resources/Main.js"), path.join(srcDir, "Main.js"));
+
+    const pursVer = yield getPursVersion(sh, assert);
+    const resourceDir = semver.gte(pursVer, semver.parse('0.15.0')) ? "es": "cjs";
+    yield fs.copy(path.resolve(__dirname, `${resourceDir}/Main.purs`), path.join(srcDir, "Main.purs"));
+    yield fs.copy(path.resolve(__dirname, `${resourceDir}/Main.js`), path.join(srcDir, "Main.js"));
+
     const [out] = yield pulp("run --src-path run_with_args -m Test.Main -- program args");
     assert.equal(out.trim(), "program\nargs");
   }));
@@ -357,11 +362,16 @@ describe("integration tests", function() {
   }));
 
   it("pulp test --test-path test2 -- --something-node-wouldnt-like", run(function*(sh, pulp, assert, temp) {
-    const newTest = path.join(temp, "test2");
     yield pulp("init");
+
+    const newTest = path.join(temp, "test2");
     yield fs.mkdir(newTest);
-    yield fs.copy(path.resolve(__dirname, "resources/Main.purs"), path.join(newTest, "Main.purs"));
-    yield fs.copy(path.resolve(__dirname, "resources/Main.js"), path.join(newTest, "Main.js"));
+
+    const pursVer = yield getPursVersion(sh, assert);
+    const resourceDir = semver.gte(pursVer, semver.parse('0.15.0')) ? "es": "cjs";
+    yield fs.copy(path.resolve(__dirname, `${resourceDir}/Main.purs`), path.join(newTest, "Main.purs"));
+    yield fs.copy(path.resolve(__dirname, `${resourceDir}/Main.js`), path.join(newTest, "Main.js"));
+
     const [out] = yield pulp("test --test-path test2 -- --something-node-wouldnt-like");
     assert.equal(out.trim(), "--something-node-wouldnt-like");
   }));

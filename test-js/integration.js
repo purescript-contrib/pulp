@@ -35,7 +35,7 @@ const testBowerJson = {
     "purescript-console": "^0.1.0"
   }
 };
-const testBowerJsonv0_15_0 = Object.merge({}, testBowerJson, {
+const testBowerJsonv0_15_0 = Object.assign({}, testBowerJson, {
   "dependencies": {
     "purescript-prelude": "^5.0.1",
     "purescript-console": "^5.0.0",

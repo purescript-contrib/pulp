@@ -139,7 +139,7 @@ init initStyle effOrEffect force out = do
 
   psVer <- getPursVersion out
 
-  install initStyle effOrEffect (getDepsVersions psVer)
+  install initStyle effOrEffect (getDepsVersions $ dropPreRelBuildMeta psVer)
 
   where
     install Bower UseEff p = do

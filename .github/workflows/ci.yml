@@ -55,14 +55,14 @@ jobs:
           echo "Using Purs with version:"
           PATH="$HOME/bin/purescript-$PURS_BUILD_VERSION:$PATH"
           purs --version
-          npm test:unit
+          npm run test:unit
 
       - name: Run NPM test (integration)
         run: |
           echo "Using Purs with version:"
           PATH="$HOME/bin/purescript-$PURS_TEST_VERSION:$PATH"
           purs --version
-          npm test:integration
+          npm run test:integration
 
   windowsBuild:
     strategy:
@@ -114,11 +114,11 @@ jobs:
           echo "Using Purs with version:"
           $env:Path="C:\tools\purescript-$env:PURS_BUILD_VERSION;$env:Path"
           purs.exe --version
-          npm test:unit
+          npm run test:unit
 
       - name: Run NPM test (integration)
         run: |
           echo "Using Purs with version:"
           $env:Path="C:\tools\purescript-$env:PURS_TEST_VERSION;$env:Path"
           purs.exe --version
-          npm test:integration
+          npm run test:integration

@@ -32,16 +32,11 @@ const testBowerJson = {
     "url": "git://github.com/not-real/not-real.git"
   },
   "dependencies": {
-    "purescript-console": "^0.1.0"
-  }
-};
-const testBowerJsonv0_15_0 = Object.assign({}, testBowerJson, {
-  "dependencies": {
     "purescript-prelude": "^5.0.1",
     "purescript-console": "^5.0.0",
     "purescript-effect": "^3.0.0"
   }
-});
+};
 
 function resolvePath(cmd) {
   return new Promise((resolve, reject) => {
@@ -660,12 +655,7 @@ describe("integration tests", function() {
       yield pulp("init");
       yield setupPackage(temp, sh);
 
-      const pursVer = yield getPursVersion(sh, assert);
-      const bowerContent =
-        semver.lt(pursVer, semver.parse('0.15.0'))
-        ? testBowerJson
-        : testBowerJsonv0_15_0;
-      yield fs.writeFile(path.join(temp, "bower.json"), JSON.stringify(bowerContent));
+      yield fs.writeFile(path.join(temp, "bower.json"), JSON.stringify(testBowerJson));
 
       // For tests to pass on the `v0.15.0-alpha-01` purs version,
       // we need to use a custom fork of a non-core repo

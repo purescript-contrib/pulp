@@ -191,17 +191,11 @@ init initStyle effOrEffect force out = do
           , effect: "purescript-effect@v2.0.1"
           , psciSupport: "purescript-psci-support@v4.0.0"
           }
-      | v >= psVersions.v0_12_0 =
+      | otherwise =
           { prelude: "purescript-prelude@v4.1.1"
           , console: "purescript-console@v4.4.0"
           , effect: "purescript-effect@v2.0.1"
           , psciSupport: "purescript-psci-support@v4.0.0"
-          }
-      | otherwise =
-          { prelude: "purescript-prelude@v3.3.0"
-          , console: "purescript-console@v3.0.0"
-          , effect: "purescript-effect@v1.1.0"
-          , psciSupport: "purescript-psci-support@v3.0.0"
           }
 
 action :: Action

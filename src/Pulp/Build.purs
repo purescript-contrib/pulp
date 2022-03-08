@@ -111,7 +111,7 @@ shouldUsePsa args = do
 
   where
   -- TODO this is actually semver
-  minimumPsaVersion = Version (NEL.cons' 0 (Cons 5 (Cons 0 Nil))) Nil
+  minimumPsaVersion = Version (NEL.cons' 0 (Cons 7 (Cons 0 Nil))) Nil
 
 bundle :: Args -> Aff Unit
 bundle args = do

@@ -554,7 +554,7 @@ describe("integration tests", function() {
 
   it("pulp uses purs when psa is not available", run(function*(sh, pulp, assert, temp) {
     const h = yield psaHelper(temp);
-    yield h.writeProg("purs", "0.11.4");
+    yield h.writeProg("purs", "0.12.0");
     yield pulp("init");
 
     const [out, err] = yield pulp("build", undefined, {path: h.binPath});
@@ -563,7 +563,7 @@ describe("integration tests", function() {
 
   it("pulp ignores psa when it is too old", run(function*(sh, pulp, assert, temp) {
     const h = yield psaHelper(temp);
-    yield h.writeProg("purs", "0.11.4");
+    yield h.writeProg("purs", "0.12.0");
     yield h.writeProg("psa", "0.4.0");
     yield pulp("init");
 
@@ -573,8 +573,8 @@ describe("integration tests", function() {
 
   it("pulp uses psa when it is available", run(function*(sh, pulp, assert, temp) {
     const h = yield psaHelper(temp);
-    yield h.writeProg("purs", "0.11.4");
-    yield h.writeProg("psa", "0.5.0");
+    yield h.writeProg("purs", "0.12.0");
+    yield h.writeProg("psa", "0.7.0");
     yield pulp("init");
 
     const [out, err] = yield pulp("build", undefined, {path: h.binPath});
@@ -583,8 +583,8 @@ describe("integration tests", function() {
 
   it("pulp ignores psa when --no-psa is passed", run(function*(sh, pulp, assert, temp) {
     const h = yield psaHelper(temp);
-    yield h.writeProg("purs", "0.11.4");
-    yield h.writeProg("psa", "0.5.0");
+    yield h.writeProg("purs", "0.12.0");
+    yield h.writeProg("psa", "0.7.0");
     yield pulp("init");
 
     const [out, err] = yield pulp("build --no-psa", undefined, {path: h.binPath});
@@ -593,8 +593,8 @@ describe("integration tests", function() {
 
   it("pulp passes arguments through to psa", run(function*(sh, pulp, assert, temp) {
     const h = yield psaHelper(temp);
-    yield h.writeProg("purs", "0.11.4");
-    yield h.writeProg("psa", "0.5.0");
+    yield h.writeProg("purs", "0.12.0");
+    yield h.writeProg("psa", "0.7.0");
     yield pulp("init");
 
     const [out, err] = yield pulp("build -- --monochrome", undefined, {path: h.binPath});

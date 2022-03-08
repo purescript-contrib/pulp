@@ -32,7 +32,7 @@ const testBowerJson = {
     "url": "git://github.com/not-real/not-real.git"
   },
   "dependencies": {
-    "purescript-console": "^0.1.0",
+    "purescript-console": "^0.1.0"
   }
 };
 

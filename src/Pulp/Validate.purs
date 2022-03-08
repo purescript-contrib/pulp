@@ -26,7 +26,7 @@ validate out = do
               <> showVersion minimumPursVersion <> " of the PureScript compiler "
               <> "or higher."
     out.err $ "Your installed version is " <> showVersion ver <> "."
-    out.err $ "Please either upgrade PureScript or downgrade Pulp to version 10.x."
+    out.err $ "Please either upgrade PureScript or downgrade Pulp to version 12.4.2."
     throwError $ error "Minimum purs version not satisfied"
   pure ver
 
@@ -34,7 +34,7 @@ getPursVersion :: Outputter -> Aff Version
 getPursVersion = getVersionFrom "purs"
 
 minimumPursVersion :: Version
-minimumPursVersion = Version (NEL.cons' 0 (Cons 11 (Cons 0 Nil))) Nil
+minimumPursVersion = Version (NEL.cons' 0 (Cons 12 (Cons 0 Nil))) Nil
 
 getPsaVersion :: Outputter -> Aff Version
 getPsaVersion = getVersionFrom "psa"

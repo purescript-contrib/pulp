@@ -35,6 +35,13 @@ const testBowerJson = {
     "purescript-console": "^0.1.0"
   }
 };
+const testBowerJsonv0_15_0 = Object.merge({}, testBowerJson, {
+  "dependencies": {
+    "purescript-prelude": "^5.0.1",
+    "purescript-console": "^5.0.0",
+    "purescript-effect": "^3.0.0"
+  }
+});
 
 function resolvePath(cmd) {
   return new Promise((resolve, reject) => {
@@ -653,7 +660,27 @@ describe("integration tests", function() {
       yield pulp("init");
       yield setupPackage(temp, sh);
 
-      yield fs.writeFile(path.join(temp, "bower.json"), JSON.stringify(testBowerJson));
+      const pursVer = yield getPursVersion(sh, assert);
+      const bowerContent =
+        semver.lt(pursVer, semver.parse('0.15.0'))
+        ? testBowerJson
+        : testBowerJsonv0_15_0;
+      yield fs.writeFile(path.join(temp, "bower.json"), JSON.stringify(bowerContent));
+
+      // For tests to pass on the `v0.15.0-alpha-01` purs version,
+      // we need to use a custom fork of a non-core repo
+      // (i.e. working-group-purescript-es/purescript-prelude#es-modules-libraries).
+      // Since those repos' `bower.json` files point to dependencies
+      // whose "versions" are branch names as well, the `bower.json` JSON parsing fails.
+      // So, we need to remove the `bower_components` folder that gets set up
+      // when `pulp init` is called, and re-install the bower deps
+      // using the `bower.json` file.
+      //
+      // Furthermore, we have to install all 3 deps used in a typical `pulp init`
+      // setup. Otherwise, `pulp version` fails due to other dependency-related reasons.
+      yield sh("rm -rf bower_components");
+      yield sh("bower install");
+
       yield sh("git commit -am \"updating bower.json\"");
       yield sh("git tag v2.0.0");
       yield sh("git commit --allow-empty -m \"an empty commit for the new tag\"");

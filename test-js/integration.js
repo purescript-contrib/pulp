@@ -133,7 +133,7 @@ const getPursVersion = co.wrap(function*(sh, assert) {
   // Drops pre-release identifiers
   // 0.15.0-alpha-01 --> 0.15.0
   const pursVerWithExtras = semver.coerce(out.split(/\s/)[0]);
-  const pursVer = pursVerWithExtras === null ? semver.parse(pursVerWithExtras) : pursVerWithExtras;
+  const pursVer = pursVerWithExtras === null ? pursVerWithExtras : semver.parse(pursVerWithExtras);
   if (pursVer == null) {
     assert.fail("Unable to parse output of purs --version");
   }

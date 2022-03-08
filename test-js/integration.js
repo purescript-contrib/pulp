@@ -164,7 +164,7 @@ describe("integration tests", function() {
     assert.equal(err.trim(), bowerMissing);
   }));
 
-  it("Bower has precedence over psc-package", run(function*(sh, pulp, assert) {
+  notEsModulesPsVersionIt("Bower has precedence over psc-package", run(function*(sh, pulp, assert) {
     yield pulp("init");
 
     // Create psc-package.json without installing any dependencies
@@ -229,7 +229,7 @@ describe("integration tests", function() {
     assert.exists(path.join("output", "Main", "index.js"));
   }));
 
-  it("pulp build with psc-package", run(function*(sh, pulp, assert, temp) {
+  notEsModulesPsVersionIt("pulp build with psc-package", run(function*(sh, pulp, assert, temp) {
     yield pulp("--psc-package init");
     yield pulp("build");
 
@@ -312,35 +312,35 @@ describe("integration tests", function() {
     assert.equal(out.trim(), "program\nargs");
   }));
 
-  it("pulp build --to", run(function*(sh, pulp, assert) {
+  notEsModulesPsVersionIt("pulp build --to", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("build --to out.js");
     const [out] = yield sh("node out.js");
     assert.equal(out.trim(), hello);
   }));
 
-  it("pulp build --to creates parent directories", run(function*(sh, pulp, assert) {
+  notEsModulesPsVersionIt("pulp build --to creates parent directories", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("build --to nonexistent/out.js");
     const [out] = yield sh("node nonexistent/out.js");
     assert.equal(out.trim(), hello);
   }));
 
-  it("pulp build --skip-entry-point --to", run(function*(sh, pulp, assert, temp) {
+  notEsModulesPsVersionIt("pulp build --skip-entry-point --to", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield pulp(`--then "echo module.exports = PS >> out.js" build --skip-entry-point --to out.js`);
     const [out] = yield sh(`node -e "var o = require('./out'); o.Main.main();"`);
     assert.equal(out.trim(), hello);
   }));
 
-  it("pulp build -O", run(function*(sh, pulp, assert) {
+  notEsModulesPsVersionIt("pulp build -O", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const [src] = yield pulp("build -O");
     const [out] = yield sh("node", src);
     assert.equal(out.trim(), hello);
   }));
 
-  it("pulp build -O --to", run(function*(sh, pulp, assert) {
+  notEsModulesPsVersionIt("pulp build -O --to", run(function*(sh, pulp, assert) {
     // Should be identical to `pulp build --to`.
     yield pulp("init");
     yield pulp("build -O --to out.js");
@@ -348,7 +348,7 @@ describe("integration tests", function() {
     assert.equal(out.trim(), hello);
   }));
 
-  it("pulp build --source-maps -O --to", run(function*(sh, pulp, assert) {
+  notEsModulesPsVersionIt("pulp build --source-maps -O --to", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("build --source-maps -O --to out.js");
     const [out] = yield sh("node out.js");
@@ -356,7 +356,7 @@ describe("integration tests", function() {
     assert.exists("out.js.map");
   }));
 
-  it("pulp build -O --src-path alt", run(function*(sh, pulp, assert, temp) {
+  notEsModulesPsVersionIt("pulp build -O --src-path alt", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield fs.rename(path.join(temp, "src"), path.join(temp, "alt"));
     const [src] = yield pulp("build -O --src-path alt");
@@ -392,21 +392,21 @@ describe("integration tests", function() {
     assert.equal(out.trim(), "--something-node-wouldnt-like");
   }));
 
-  it("pulp browserify", run(function*(sh, pulp, assert) {
+  notEsModulesPsVersionIt("pulp browserify", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const [src] = yield pulp("browserify");
     const [out] = yield sh("node", src);
     assert.equal(out.trim(), hello);
   }));
 
-  it("pulp browserify --to", run(function*(sh, pulp, assert) {
+  notEsModulesPsVersionIt("pulp browserify --to", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("browserify --to out.js");
     const [out] = yield sh("node out.js");
     assert.equal(out.trim(), hello);
   }));
 
-  it("pulp browserify --source-maps --to", run(function*(sh, pulp, assert) {
+  notEsModulesPsVersionIt("pulp browserify --source-maps --to", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("browserify --source-maps --to out.js");
     const [out] = yield sh("node out.js");
@@ -414,28 +414,28 @@ describe("integration tests", function() {
     assert.exists("out.js.map");
   }));
 
-  it("pulp browserify --source-maps --to subdir", run(function*(sh, pulp, assert, temp) {
+  notEsModulesPsVersionIt("pulp browserify --source-maps --to subdir", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield fs.mkdir(path.join(temp, "subdir"));
     yield pulp("browserify --source-maps --to subdir/out.js");
     assert.exists("subdir/out.js.map");
   }));
 
-  it("pulp browserify -O", run(function*(sh, pulp, assert) {
+  notEsModulesPsVersionIt("pulp browserify -O", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const [src] = yield pulp("browserify -O");
     const [out] = yield sh("node", src);
     assert.equal(out.trim(), hello);
   }));
 
-  it("pulp browserify -O --to", run(function*(sh, pulp, assert) {
+  notEsModulesPsVersionIt("pulp browserify -O --to", run(function*(sh, pulp, assert) {
     yield pulp("init");
     yield pulp("browserify -O --to out.js");
     const [out] = yield sh("node out.js");
     assert.equal(out.trim(), hello);
   }));
 
-  it("output of pulp browserify --standalone may be `require()`d", run(function*(sh, pulp, assert, temp) {
+  notEsModulesPsVersionIt("output of pulp browserify --standalone may be `require()`d", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield pulp("browserify --main Data.Function --standalone data-function --to data-function.js");
     const dataFunction = require(path.join(temp, "data-function.js"));
@@ -460,7 +460,7 @@ describe("integration tests", function() {
     assert.exists("subdir/out.js.map");
   }));
 
-  it("pulp browserify --skip-compile", run(function*(sh, pulp, assert, temp) {
+  notEsModulesPsVersionIt("pulp browserify --skip-compile", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     yield fs.rename(path.join(temp, "src"), path.join(temp, "alt"));
     yield pulp("build --src-path alt");
@@ -495,7 +495,7 @@ describe("integration tests", function() {
     assert.match(out, /hello, world/);
   }));
 
-  it("pulp psci includes dependencies with psc-package", run(function*(sh, pulp, assert) {
+  notEsModulesPsVersionIt("pulp psci includes dependencies with psc-package", run(function*(sh, pulp, assert) {
     yield pulp("--psc-package init");
     yield pulp("psci");
 
@@ -511,7 +511,7 @@ describe("integration tests", function() {
     assert.match(out, new RegExp(hello));
   }));
 
-  it("pulp --before something build", run(function*(sh, pulp, assert, temp) {
+  notEsModulesPsVersionIt("pulp --before something build", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
 
     // In reality, this is likely to be a "--before clear" or something, but
@@ -526,7 +526,7 @@ describe("integration tests", function() {
       "test file before.txt was not found as after.txt");
   }));
 
-  it("pulp --then something build", run(function*(sh, pulp, assert) {
+  notEsModulesPsVersionIt("pulp --then something build", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const mv = process.platform === "win32" ? "rename" : "mv";
     yield pulp(`--then "${mv} out.js out2.js" build --to out.js`);
@@ -555,14 +555,14 @@ describe("integration tests", function() {
     assert.exists(path.join(temp, "afterFailed.txt")); // --else has run
   }));
 
-  it("pulp --then something browserify", run(function*(sh, pulp, assert, temp) {
+  notEsModulesPsVersionIt("pulp --then something browserify", run(function*(sh, pulp, assert, temp) {
     yield pulp("init");
     const mv = process.platform === "win32" ? "rename" : "mv";
     yield pulp(`--then "echo lol > out.txt" browserify`);
     assert.equal((yield fs.readFile(path.join(temp, "out.txt"), "utf-8")).trim(), "lol");
   }));
 
-  it("pulp --then something browserify --to", run(function*(sh, pulp, assert) {
+  notEsModulesPsVersionIt("pulp --then something browserify --to", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const mv = process.platform === "win32" ? "rename" : "mv";
     yield pulp(`--then "${mv} out.js out2.js" browserify --to out.js`);
@@ -571,7 +571,7 @@ describe("integration tests", function() {
     assert.equal(out.trim(), hello);
   }));
 
-  it("pulp test --runtime", run(function*(sh, pulp, assert) {
+  notEsModulesPsVersionIt("pulp test --runtime", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const [out] = yield pulp("test --runtime cat");
     const [out2] = yield sh("node", out);

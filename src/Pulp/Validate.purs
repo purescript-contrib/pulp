@@ -45,8 +45,7 @@ getVersionFrom bin out = do
   case parseVersion verStr of
     Right v ->
       pure v
-    Left _err -> do
-      -- let msg = parseErrorMessage err
+    Left _ -> do
       out.err $ "Unable to parse the version from " <> bin <> ". (It was: " <> verStr <> ")"
       out.err $ "Please check that the right executable is on your PATH."
       throwError $ error ("Couldn't parse version from " <> bin)

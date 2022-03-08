@@ -23,7 +23,6 @@ import Pulp.System.Files (openTemp)
 action :: Action
 action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
-  -- out <- getOutputter args
 
   Build.runBuild args
 

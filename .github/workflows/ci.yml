@@ -9,12 +9,13 @@ env:
   PURS_BUILD_VERSION: v0.14.5
 
 jobs:
-  nonWindowsBuild:
+  build:
     strategy:
       matrix:
+        os: [ubuntu-latest, windows-latest]
         purs_test_version: [v0.12.0, v0.12.4, v0.12.5, v0.13.0, v0.14.0, v0.14.5]
       fail-fast: false
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     env:
       PURS_TEST_VERSION: ${{ matrix.purs_test_version }}
     steps:
@@ -24,8 +25,9 @@ jobs:
         with:
           node-version: "12"
 
-      - name: Download PureScript (Build version)
+      - name: "non-Windows - Download PureScript (Build version)"
         shell: bash
+        if: runner.os != 'Windows'
         run: |
           DIR=$HOME/bin/purescript-$PURS_BUILD_VERSION
           mkdir -p $DIR
@@ -33,8 +35,8 @@ jobs:
           tar -xvf $DIR/purescript.tar.gz -C $DIR --strip-components 1 purescript/purs
           chmod a+x $DIR/purs
 
-      - name: Download PureScript (Test version)
-        if: env.PURS_BUILD_VERSION != env.PURS_TEST_VERSION
+      - name: "non-Windows - Download PureScript (Test version)"
+        if: runner.os != 'Windows' && env.PURS_BUILD_VERSION != env.PURS_TEST_VERSION
         shell: bash
         run: |
           DIR=$HOME/bin/purescript-$PURS_TEST_VERSION
@@ -43,44 +45,34 @@ jobs:
           tar -xvf $DIR/purescript.tar.gz -C $DIR --strip-components 1 purescript/purs
           chmod a+x $DIR/purs
 
-      - name: Run NPM install
+      - name: "non-Windows - Run NPM install"
+        if: runner.os != 'Windows'
         run: |
           echo "Using Purs with version:"
           PATH="$HOME/bin/purescript-$PURS_BUILD_VERSION:$PATH"
           purs --version
           npm install
 
-      - name: Run NPM test (unit)
+      - name: "non-Windows - Run NPM test (unit)"
+        if: runner.os != 'Windows'
         run: |
           echo "Using Purs with version:"
           PATH="$HOME/bin/purescript-$PURS_BUILD_VERSION:$PATH"
           purs --version
           npm run test:unit
 
-      - name: Run NPM test (integration)
+      - name: "non-Windows - Run NPM test (integration)"
+        if: runner.os != 'Windows'
         run: |
           echo "Using Purs with version:"
           PATH="$HOME/bin/purescript-$PURS_TEST_VERSION:$PATH"
           purs --version
           npm run test:integration
 
-  windowsBuild:
-    strategy:
-      matrix:
-        purs_test_version: [v0.12.0, v0.12.4, v0.12.5, v0.13.0, v0.14.0, v0.14.5]
-      fail-fast: false
-    runs-on: windows-latest
-    env:
-      PURS_TEST_VERSION: ${{ matrix.purs_test_version }}
-    steps:
-      - uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v1
-        with:
-          node-version: "12"
-
-      - name: Download PureScript (Build version)
+      - name: "Windows - Download PureScript (Build version)"
         shell: bash
+        if: runner.os == 'Windows'
         run: |
           pushd C:\\tools
           DIR=purescript-$PURS_BUILD_VERSION
@@ -91,8 +83,8 @@ jobs:
           ls purescript-$PURS_BUILD_VERSION
           popd
 
-      - name: Download PureScript (Test version)
-        if: env.PURS_BUILD_VERSION != env.PURS_TEST_VERSION
+      - name: "Windows - Download PureScript (Test version)"
+        if: runner.os == 'Windows' && env.PURS_BUILD_VERSION != env.PURS_TEST_VERSION
         shell: bash
         run: |
           pushd C:\\tools
@@ -102,21 +94,24 @@ jobs:
           tar -xvzf purescript.tar.gz -C $DIR --strip-components 1 purescript/purs.exe
           popd
 
-      - name: Run NPM install
+      - name: "Windows - Run NPM install"
+        if: runner.os == 'Windows'
         run: |
           echo "Using Purs with version:"
           $env:Path="C:\tools\purescript-$env:PURS_BUILD_VERSION;$env:Path"
           purs.exe --version
           npm install
 
-      - name: Run NPM test (unit)
+      - name: "Windows - Run NPM test (unit)"
+        if: runner.os == 'Windows'
         run: |
           echo "Using Purs with version:"
           $env:Path="C:\tools\purescript-$env:PURS_BUILD_VERSION;$env:Path"
           purs.exe --version
           npm run test:unit
 
-      - name: Run NPM test (integration)
+      - name: "Windows - Run NPM test (integration)"
+        if: runner.os == 'Windows'
         run: |
           echo "Using Purs with version:"
           $env:Path="C:\tools\purescript-$env:PURS_TEST_VERSION;$env:Path"

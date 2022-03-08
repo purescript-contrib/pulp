@@ -31,7 +31,8 @@ import Pulp.Outputter (getOutputter)
 import Pulp.Sorcery (sorcery)
 import Pulp.System.Files as Files
 import Pulp.System.Stream (write, end, WritableStream, stdout)
-import Pulp.Validate (getPsaVersion, getPursVersion)
+import Pulp.Validate (dropPreRelBuildMeta, getPsaVersion, getPursVersion)
+import Pulp.Versions.PureScript (psVersions)
 
 data BuildType = NormalBuild | TestBuild | RunBuild
 
@@ -68,7 +69,7 @@ go buildType = Action \args -> do
   jobs :: Maybe Int <- getOption "jobs" args.commandOpts
   let jobsArgs = maybe [] (\j -> ["+RTS", "-N" <> show j, "-RTS"]) jobs
       sourceMapArg = case sourceMaps of
-        true | ver >= Version (NEL.cons' 0 (Cons 12 (Cons 0 Nil))) Nil -> [ "--codegen", "sourcemaps" ]
+        true | (dropPreRelBuildMeta ver) >= psVersions.v0_12_0 -> [ "--codegen", "sourcemaps" ]
         true -> ["--source-maps"]
         _ -> []
       sourceGlobs = sources globs

@@ -11,7 +11,6 @@ import Data.List (List(..), (:))
 import Data.List.NonEmpty as NEL
 import Data.String (joinWith)
 import Data.Version.Haskell (Version(..))
-import Data.Version.Haskell as HVer
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Exception (error)
@@ -25,7 +24,8 @@ import Pulp.Outputter (Outputter, getOutputter)
 import Pulp.PackageManager (launchBower, launchPscPackage)
 import Pulp.System.Files (mkdirIfNotExist)
 import Pulp.Utils (throw)
-import Pulp.Validate (getPursVersion)
+import Pulp.Validate (dropPreRelBuildMeta, getPursVersion)
+import Pulp.Versions.PureScript (psVersions)
 
 foreign import bowerFile :: String -> String
 
@@ -205,13 +205,13 @@ action = Action \args -> do
 
   where
 
-  minEffectVersion = HVer.Version (NEL.cons' 0 (Cons 12 (Cons 0 Nil))) Nil
+  minEffectVersion = psVersions.v0_12_0
 
   getEffOrEffect out withEff withEffect
     | withEff    = pure UseEff
     | withEffect = pure UseEffect
     | otherwise  = do
         ver <- getPursVersion out
-        if ver < minEffectVersion
+        if (dropPreRelBuildMeta ver) < minEffectVersion
           then pure UseEff
           else pure UseEffect

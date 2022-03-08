@@ -2,6 +2,7 @@ module Pulp.Validate
   ( validate
   , getPursVersion
   , getPsaVersion
+  , dropPreRelBuildMeta
   ) where
 
 import Prelude
@@ -9,7 +10,6 @@ import Prelude
 import Control.Monad.Error.Class (throwError)
 import Data.Either (Either(..))
 import Data.List (List(..))
-import Data.List.NonEmpty as NEL
 import Data.Maybe (Maybe(..))
 import Data.String (codePointFromChar, takeWhile, trim)
 import Data.Version.Haskell (Version(..), parseVersion, showVersion)
@@ -17,6 +17,7 @@ import Effect.Aff (Aff)
 import Effect.Exception (error)
 import Pulp.Exec (execQuiet)
 import Pulp.Outputter (Outputter)
+import Pulp.Versions.PureScript (psVersions)
 
 validate :: Outputter -> Aff Version
 validate out = do
@@ -34,7 +35,7 @@ getPursVersion :: Outputter -> Aff Version
 getPursVersion = getVersionFrom "purs"
 
 minimumPursVersion :: Version
-minimumPursVersion = Version (NEL.cons' 0 (Cons 12 (Cons 0 Nil))) Nil
+minimumPursVersion = psVersions.v0_12_0
 
 getPsaVersion :: Outputter -> Aff Version
 getPsaVersion = getVersionFrom "psa"
@@ -49,3 +50,6 @@ getVersionFrom bin out = do
       out.err $ "Unable to parse the version from " <> bin <> ". (It was: " <> verStr <> ")"
       out.err $ "Please check that the right executable is on your PATH."
       throwError $ error ("Couldn't parse version from " <> bin)
+
+dropPreRelBuildMeta :: Version -> Version
+dropPreRelBuildMeta (Version mmp _) = Version mmp Nil

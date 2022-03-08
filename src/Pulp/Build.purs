@@ -6,30 +6,28 @@ module Pulp.Build
   , withOutputStream
   ) where
 
-import Data.Maybe
 import Prelude
-import Pulp.Args
-import Pulp.Args.Get
-import Pulp.Files
-import Pulp.Outputter
 
 import Control.Monad.Error.Class (throwError)
-import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (fold)
-import Data.List (fromFoldable, List(..))
+import Data.List (List(..))
+import Data.List.NonEmpty as NEL
 import Data.Map (union)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Set as Set
-import Data.String (Pattern(..), joinWith, split)
+import Data.String (Pattern(..), split)
 import Data.Version.Haskell (Version(..))
 import Effect.Aff (Aff, apathize, attempt)
 import Effect.Class (liftEffect)
-import Effect.Exception as Exception
-import Effect.Unsafe (unsafePerformEffect)
 import Node.FS.Aff as FS
 import Node.Path as Path
 import Node.Process as Process
+import Pulp.Args (Action(..), Args, Options, runAction)
+import Pulp.Args.Get (getFlag, getOption, getOption', hasOption)
 import Pulp.Exec (psa, pursBuild, pursBundle)
+import Pulp.Files (defaultGlobs, outputModules, sources, testGlobs)
+import Pulp.Outputter (getOutputter)
 import Pulp.Sorcery (sorcery)
 import Pulp.System.Files as Files
 import Pulp.System.Stream (write, end, WritableStream, stdout)
@@ -65,13 +63,12 @@ go buildType = Action \args -> do
                             else pure Set.empty)
 
   buildPath <- getOption' "buildPath" args.commandOpts
-  noPsa <- getFlag "noPsa" args.commandOpts
   sourceMaps <- getFlag "sourceMaps" args.commandOpts
   ver <- getPursVersion out
   jobs :: Maybe Int <- getOption "jobs" args.commandOpts
   let jobsArgs = maybe [] (\j -> ["+RTS", "-N" <> show j, "-RTS"]) jobs
       sourceMapArg = case sourceMaps of
-        true | ver >= Version (fromFoldable [0, 12, 0]) Nil -> [ "--codegen", "sourcemaps" ]
+        true | ver >= Version (NEL.cons' 0 (Cons 12 (Cons 0 Nil))) Nil -> [ "--codegen", "sourcemaps" ]
         true -> ["--source-maps"]
         _ -> []
       sourceGlobs = sources globs
@@ -114,7 +111,7 @@ shouldUsePsa args = do
 
   where
   -- TODO this is actually semver
-  minimumPsaVersion = Version (fromFoldable [0,5,0]) Nil
+  minimumPsaVersion = Version (NEL.cons' 0 (Cons 7 (Cons 0 Nil))) Nil
 
 bundle :: Args -> Aff Unit
 bundle args = do
@@ -174,17 +171,3 @@ withOutputStream opts aff = do
             throwError err
     Nothing ->
       aff stdout
-
--- | Render a list of strings using commas.
-commaList :: Array String -> String
-commaList arr =
-  case Array.unsnoc arr of
-    Just { init: [init'], last } ->
-      init' <> " and " <> last
-    Just { init, last } ->
-      joinWith ", " init <> ", and " <> last
-    Nothing ->
-      ""
-
-internalError :: forall a. String -> a
-internalError = unsafePerformEffect <<< Exception.throw <<< ("internal error: " <> _)

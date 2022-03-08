@@ -1,10 +1,6 @@
 module Pulp.Run where
 
 import Prelude
-import Pulp.Args
-import Pulp.Args.Get
-import Pulp.Exec
-import Pulp.Outputter
 
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
@@ -18,13 +14,15 @@ import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff as FS
 import Node.Path as Path
 import Node.Process as Process
+import Pulp.Args (Action(..))
+import Pulp.Args.Get (getOption')
 import Pulp.Build as Build
+import Pulp.Exec (exec)
 import Pulp.System.Files (openTemp)
 
 action :: Action
 action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
-  out <- getOutputter args
 
   Build.runBuild args
 

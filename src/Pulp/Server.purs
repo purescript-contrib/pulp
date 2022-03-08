@@ -3,14 +3,11 @@ module Pulp.Server
   ( action
   ) where
 
-import Data.Either
-import Data.Maybe
 import Prelude
-import Pulp.Args
-import Pulp.Args.Get
-import Pulp.Outputter
 
+import Data.Either (Either(..))
 import Data.Map as Map
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff, attempt, launchAff, makeAff)
 import Effect.Aff.AVar as AVar
@@ -20,7 +17,10 @@ import Node.Encoding (Encoding(..))
 import Node.HTTP as HTTP
 import Node.Path as Path
 import Node.Stream as Stream
+import Pulp.Args (Action(..), Args, Options)
+import Pulp.Args.Get (getFlag, getOption')
 import Pulp.Build as Build
+import Pulp.Outputter (getOutputter)
 import Pulp.System.StaticServer as StaticServer
 import Pulp.Utils (orErr)
 import Pulp.Watch (watchAff, watchDirectories)

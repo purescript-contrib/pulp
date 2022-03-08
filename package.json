@@ -68,6 +68,7 @@
     "jshint": "^2.9.7",
     "mkdirp": "^0.5.1",
     "mocha": "^5.2.0",
+    "psc-package": "^4.0.1",
     "purescript-psa": "^0.7.3",
     "semver": "^5.6.0",
     "touch": "^3.1.0"

@@ -4,19 +4,19 @@ module Pulp.Test
   ) where
 
 import Prelude
-import Effect.Class (liftEffect)
-import Data.Maybe
+
 import Data.Map as Map
+import Data.Maybe (Maybe(..))
+import Effect.Class (liftEffect)
 import Foreign (unsafeToForeign)
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff as FS
-
-import Pulp.Outputter
-import Pulp.Args
-import Pulp.Args.Get
-import Pulp.Exec (exec)
+import Pulp.Args (Action(..), Options)
+import Pulp.Args.Get (getOption')
 import Pulp.Build as Build
+import Pulp.Exec (exec)
+import Pulp.Outputter (getOutputter)
 import Pulp.Run (setupEnv, makeEntry)
 import Pulp.System.Files (openTemp)
 

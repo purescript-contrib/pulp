@@ -3,34 +3,34 @@ module Pulp.Login
   , tokenFilePath
   ) where
 
-import Control.Monad.Error.Class
-import Data.Either
-import Data.Maybe
-import Data.Tuple.Nested
-import Effect.Class
-import Effect.Exception
-import Node.FS.Perms
 import Prelude
-import Pulp.Args
-import Pulp.Outputter
-import Pulp.System.HTTP
 
+import Control.Monad.Error.Class (throwError)
 import Control.Monad.Except (runExcept)
+import Data.Either (Either(..))
 import Data.Foldable (fold)
+import Data.Maybe (Maybe(..))
 import Data.Options ((:=))
 import Data.String as String
+import Data.Tuple.Nested ((/\))
 import Effect.Aff (Aff)
+import Effect.Class (liftEffect)
+import Effect.Exception (error)
 import Foreign (readString)
 import Foreign.Index (readProp)
 import Foreign.JSON (parseJSON)
 import Foreign.Object as Object
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff as FS
+import Node.FS.Perms (mkPerms, none, read, write)
 import Node.HTTP.Client as HTTP
 import Node.Path as Path
 import Node.Platform (Platform(Win32))
 import Node.Process as Process
+import Pulp.Args (Action(..))
+import Pulp.Outputter (Outputter, getOutputter)
 import Pulp.System.Files (mkdirIfNotExist)
+import Pulp.System.HTTP (httpRequest)
 import Pulp.System.Read as Read
 import Pulp.System.Stream (concatStream)
 import Pulp.Version as PulpVersion

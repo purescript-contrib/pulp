@@ -7,12 +7,12 @@ exports.isEEXIST = function isEEXIST(err) {
 };
 
 var temp = require('temp').track();
-exports["openTemp'"] = function openTemp$prime(opts, callback) {
+exports.openTempImpl = function openTemp$prime(opts, callback) {
   temp.open(opts, callback);
 };
 
 
-exports["tempDir'"] = function tempDir$prime(opts, callback) {
+exports.tempDirImpl = function tempDir$prime(opts, callback) {
   temp.mkdir(opts, callback);
 };
 
@@ -26,6 +26,6 @@ exports.isENOENT = function isENOENT(error) {
   return error.code === "ENOENT";
 };
 
-exports["touch'"] = function touch$prime(path, callback) {
+exports.touchImpl = function touch$prime(path, callback) {
   require("touch")(path, callback);
 };

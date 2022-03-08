@@ -1,14 +1,12 @@
 module Pulp.Args.Parser where
 
-import Control.Alt
-import Data.Either
 import Prelude hiding (when)
-import Pulp.Args
-import Text.Parsing.Parser
 
+import Control.Alt ((<|>))
 import Control.Monad.State.Class (get)
 import Control.Monad.Trans.Class (lift)
 import Data.Array (many)
+import Data.Either (Either(..))
 import Data.Foldable (find, elem)
 import Data.List (List)
 import Data.List as List
@@ -19,7 +17,9 @@ import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
 import Foreign (unsafeToForeign)
+import Pulp.Args (Args, Argument, Command, Help(..), OptParser, Option, Options)
 import Pulp.Utils (throw)
+import Text.Parsing.Parser (ParseError, ParseState(..), ParserT, fail, runParserT)
 import Text.Parsing.Parser.Combinators ((<?>), try, optionMaybe)
 import Text.Parsing.Parser.Pos as Pos
 import Text.Parsing.Parser.Token as Token
@@ -82,7 +82,7 @@ cmd :: Array Command -> OptParser Command
 cmd cmds = do
   o <- lookupCmd cmds <?> "command"
   case o of
-    (Tuple key option) -> pure option
+    (Tuple _ option) -> pure option
 
 extractDefault :: Option -> Options
 extractDefault o =
@@ -118,7 +118,7 @@ parseArgv globals commands = do
       commandArgs: Map.unions commandArgs,
       remainder
       }
-
+ 
   helpForCommand command =
     matchHelp *> pure (Left (Help command))
 

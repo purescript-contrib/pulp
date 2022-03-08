@@ -11,13 +11,10 @@ module Pulp.Files
   , glob
   ) where
 
-import Data.Function.Uncurried
 import Prelude
-import Pulp.Args
-import Pulp.Args.Get
-import Pulp.System.FFI
 
 import Data.Array (concat, mapMaybe)
+import Data.Function.Uncurried (Fn2, runFn2)
 import Data.List as List
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Set (Set)
@@ -27,8 +24,11 @@ import Data.Traversable (sequence, traverse)
 import Effect.Aff (Aff)
 import Foreign.Class (class Decode)
 import Node.Path as Path
+import Pulp.Args (Options)
+import Pulp.Args.Get (getOption, getOption')
 import Pulp.Exec (execQuiet)
 import Pulp.Project (usingPscPackage)
+import Pulp.System.FFI (Callback, runNode)
 
 recursiveGlobWithExtension :: String -> Set String -> Array String
 recursiveGlobWithExtension ext =
@@ -95,7 +95,7 @@ outputModules buildPath =
 resolveGlobs :: Array String -> Aff (Array String)
 resolveGlobs patterns = concat <$> traverse glob patterns
 
-foreign import glob' :: Fn2 String (Callback (Array String)) Unit
+foreign import globImpl :: Fn2 String (Callback (Array String)) Unit
 
 glob :: String -> Aff (Array String)
-glob pattern = runNode $ runFn2 glob' pattern
+glob pattern = runNode $ runFn2 globImpl pattern

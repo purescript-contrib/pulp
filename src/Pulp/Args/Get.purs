@@ -8,19 +8,18 @@ module Pulp.Args.Get
 
 import Prelude
 
+import Control.Monad.Error.Class (throwError)
+import Control.Monad.Except (runExcept)
 import Data.Either (Either(..))
+import Data.Map (lookup)
 import Data.Maybe (Maybe(..), isJust)
+import Data.String (joinWith)
+import Effect.Aff (Aff)
+import Effect.Exception (error)
 import Foreign (Foreign)
 import Foreign.Class (class Decode, decode)
 import Pulp.Args (Options)
 import Pulp.System.FFI (unsafeInspect)
-
-import Control.Monad.Error.Class (throwError)
-import Control.Monad.Except (runExcept)
-import Data.Map (lookup)
-import Data.String (joinWith)
-import Effect.Aff (Aff)
-import Effect.Exception (error)
 
 -- | Get an option out of the `Options` value. If the option has no default and
 -- | was not specified at the command line, the result will be `Nothing`. For

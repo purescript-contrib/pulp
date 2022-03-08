@@ -1,7 +1,7 @@
 // module Pulp.System.Stream
 "use strict";
 
-exports["concatStreamToBuffer'"] = function concatStream$prime(stream, callback) {
+exports.concatStreamToBufferImpl = function concatStream$prime(stream, callback) {
   var concat = require("concat-stream");
 
   var onSuccess = function(buf) {

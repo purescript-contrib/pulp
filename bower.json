@@ -10,25 +10,24 @@
     "output"
   ],
   "dependencies": {
-    "purescript-ansi": "^5.0.0",
-    "purescript-avar": "^3.0.0",
-    "purescript-effect": "^2.0.1",
-    "purescript-foreign-generic": "^10.0.0",
-    "purescript-foreign-object": "^2.0.2",
-    "purescript-globals": "^4.0.0",
-    "purescript-node-child-process": "^6.0.0",
-    "purescript-node-fs-aff": "^6.0.0",
-    "purescript-node-http": "^5.0.1",
-    "purescript-node-process": "^7.0.0",
-    "purescript-now": "^4.0.0",
-    "purescript-ordered-collections": "^1.6.1",
-    "purescript-prelude": "^4.1.1",
-    "purescript-simple-json": "^7.0.0",
-    "purescript-versions": "^5.0.0",
-    "purescript-argonaut-codecs": "^6.0.2",
-    "purescript-argonaut": "^6.0.0"
+    "purescript-ansi": "^6.1.0",
+    "purescript-avar": "^4.0.0",
+    "purescript-effect": "^3.0.0",
+    "purescript-foreign-generic": "^11.0.0",
+    "purescript-foreign-object": "^3.0.0",
+    "purescript-node-child-process": "^7.0.0",
+    "purescript-node-fs-aff": "^7.0.0",
+    "purescript-node-http": "^6.0.0",
+    "purescript-node-process": "^8.1.0",
+    "purescript-now": "^5.0.0",
+    "purescript-ordered-collections": "^2.0.0",
+    "purescript-prelude": "^5.0.0",
+    "purescript-simple-json": "^8.0.0",
+    "purescript-versions": "^6.0.0",
+    "purescript-argonaut-codecs": "^8.1.0",
+    "purescript-argonaut": "^8.0.0"
   },
   "devDependencies": {
-    "purescript-assert": "^4.0.0"
+    "purescript-assert": "^5.0.0"
   }
 }

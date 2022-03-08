@@ -10,16 +10,14 @@ module Pulp.Exec
   , pursBundle
   ) where
 
-import Effect.Aff
 import Prelude
-import Pulp.System.Stream
-import Unsafe.Coerce
 
 import Data.Either (Either(..), either)
 import Data.Foldable (for_)
 import Data.Maybe (Maybe(..))
 import Data.Posix.Signal (Signal(SIGTERM, SIGINT))
 import Data.String (stripSuffix, Pattern(..))
+import Effect.Aff (Aff, forkAff, makeAff, throwError)
 import Effect.Aff.AVar as Avar
 import Effect.Class (liftEffect)
 import Effect.Exception (error)
@@ -27,6 +25,8 @@ import Foreign.Object (Object)
 import Node.ChildProcess as CP
 import Node.Platform (Platform(Win32))
 import Node.Process as Process
+import Pulp.System.Stream (concatStream, stderr, write)
+import Unsafe.Coerce (unsafeCoerce)
 
 psa :: Array String -> Array String -> Maybe (Object String) -> Aff Unit
 psa = compiler "psa"

@@ -1,5 +1,21 @@
 # Pulp Release History
 
+## 16.0.0
+
+Breaking:
+* Increased minimum `purs` version to `v0.12.0` and dropped support for all
+  compiler versions earlier than that. (#399 by @JordanMartinez)
+* Increased minimum `psa` version to `v0.7.0` and dropped support for all
+  versions earlier than that. (#399 by @JordanMartinez)
+
+Internal:
+* Update project and its dependencies to use PureScript `v0.14.5` and
+  `v0.14.0`-compatible libraries. (#399 by @JordanMartinez)
+* Migrated from Travis CI to GitHub Actions. (#399 by @JordanMartinez)
+* Updated CI integration tests to verify `pulp` works when
+  the compiler version used is `v0.12.x`, `v0.13.x`, and `v0.14.x`.
+  (#399 by @JordanMartinez)
+
 ## 15.0.0
 
 * Remove the check for `main` being an appropriate entry point when generating

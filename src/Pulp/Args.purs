@@ -2,13 +2,12 @@ module Pulp.Args where
 
 import Prelude
 
-import Data.Map (Map())
+import Data.List (List)
+import Data.Map (Map)
 import Data.Maybe (Maybe(..))
-import Data.List (List())
 import Effect.Aff (Aff)
-import Foreign (Foreign(), unsafeToForeign)
-
-import Text.Parsing.Parser (ParserT())
+import Foreign (Foreign, unsafeToForeign)
+import Text.Parsing.Parser (ParserT)
 
 type Options = Map String (Maybe Foreign)
 

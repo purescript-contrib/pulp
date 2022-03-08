@@ -5,12 +5,12 @@ module Pulp.Outputter
   ) where
 
 import Prelude
-import Pulp.Args
-import Pulp.Args.Get
 
 import Ansi.Codes (Color(..))
 import Ansi.Output (withGraphics, foreground, bold)
 import Effect.Aff (Aff)
+import Pulp.Args (Args)
+import Pulp.Args.Get (getFlag)
 import Pulp.System.Stream (write, WritableStream, stderr)
 import Pulp.System.SupportsColor as Color
 

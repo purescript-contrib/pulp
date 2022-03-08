@@ -10,23 +10,21 @@ module Pulp.Args.Types
 
 import Prelude
 
-import Control.Alt
+import Control.Alt ((<|>))
 import Control.Monad.Trans.Class (lift)
 import Data.Array (filter)
-import Data.String (null, split, Pattern(..))
-import Data.Maybe (Maybe(..))
-import Data.Int (fromString)
 import Data.Foldable (for_)
+import Data.Int (fromString)
+import Data.Maybe (Maybe(..))
+import Data.String (null, split, Pattern(..))
 import Foreign (unsafeToForeign)
-import Text.Parsing.Parser (fail)
-
-import Node.FS.Stats (Stats(), isFile, isDirectory)
 import Node.FS.Aff (stat)
+import Node.FS.Stats (Stats, isFile, isDirectory)
 import Node.Path as Path
-
-import Pulp.Args
-import Pulp.Args.Parser
-import Pulp.VersionBump
+import Pulp.Args (ArgumentParser, OptParser, OptionParser)
+import Pulp.Args.Parser (halt, token)
+import Pulp.VersionBump (parseBump)
+import Text.Parsing.Parser (fail)
 
 argErr :: forall a. String -> String -> OptParser a
 argErr arg msg =

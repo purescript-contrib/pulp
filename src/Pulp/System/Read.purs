@@ -8,7 +8,7 @@ import Pulp.System.FFI (Callback, runNode)
 
 type ReadOptions = { prompt :: String, silent :: Boolean }
 
-foreign import read' :: Fn2 ReadOptions (Callback String) Unit
+foreign import readImpl :: Fn2 ReadOptions (Callback String) Unit
 
 read :: ReadOptions -> Aff String
-read opts = runNode $ runFn2 read' opts
+read opts = runNode $ runFn2 readImpl opts

@@ -252,7 +252,7 @@ main = void $ runAff (either failed succeeded) do
                   Right (Right args') ->
                     runWithArgs args'
   where
-  handleParseError (Just x) err
+  handleParseError (Just x) _
     -- TODO: this is kind of gross, especially that --version and --help are
     -- repeated
     | x `elem` ["--version", "-v"] = printVersion
@@ -281,7 +281,7 @@ runWithArgs args = do
         Left e  -> do
           runShellForOption "else" args'.globalOpts out
           liftEffect $ throwException e
-        Right r ->
+        Right _ ->
           runShellForOption "then" args'.globalOpts out
   where
   noProject = ["init", "login"]

@@ -9,7 +9,7 @@ function write(input, output, callback) {
   pipe.on("end", callback);
 }
 
-exports["browserifyBundle'"] = function browserifyBundle$prime(opts, callback) {
+exports.browserifyBundleImpl = function browserifyBundle$prime(opts, callback) {
   var stream = new require("stream").Readable();
   var browserify = require("browserify");
   var mold = require("mold-source-map");
@@ -40,7 +40,7 @@ exports["browserifyBundle'"] = function browserifyBundle$prime(opts, callback) {
   write(bundle, opts.out, callback);
 };
 
-exports["browserifyIncBundle'"] = function browserifyIncBundle$prime(opts, callback) {
+exports.browserifyIncBundleImpl = function browserifyIncBundle$prime(opts, callback) {
   var browserifyInc = require("browserify-incremental");
   var mold = require("mold-source-map");
   var path = require('path');

@@ -3,14 +3,14 @@ module Pulp.Init
   ) where
 
 import Prelude
-import Pulp.Args
-import Pulp.Outputter
 
 import Control.Monad.Error.Class (throwError)
 import Data.Array (cons)
 import Data.Foldable (for_)
-import Data.List (List(Nil), fromFoldable)
+import Data.List (List(..), (:))
+import Data.List.NonEmpty as NEL
 import Data.String (joinWith)
+import Data.Version.Haskell (Version(..))
 import Data.Version.Haskell as HVer
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
@@ -19,7 +19,9 @@ import Node.Encoding (Encoding(UTF8))
 import Node.FS.Aff (writeTextFile, exists)
 import Node.Path as Path
 import Node.Process as Process
+import Pulp.Args (Action(..))
 import Pulp.Args.Get (getFlag)
+import Pulp.Outputter (Outputter, getOutputter)
 import Pulp.PackageManager (launchBower, launchPscPackage)
 import Pulp.System.Files (mkdirIfNotExist)
 import Pulp.Utils (throw)
@@ -137,28 +139,56 @@ init initStyle effOrEffect force out = do
     when (dir /= cwd) (mkdirIfNotExist dir)
     writeTextFile UTF8 f.path f.content
 
-  install initStyle effOrEffect
+  psVer <- getPursVersion out
+
+  install initStyle effOrEffect (getDepsVersions psVer)
 
   where
-    install Bower UseEff = do
-      launchBower ["install", "--save", "purescript-prelude@3.3.0", "purescript-console@3.0.0"]
-      launchBower ["install", "--save-dev", "purescript-psci-support@3.0.0"]
+    install Bower UseEff p = do
+      launchBower ["install", "--save", p.prelude, p.console]
+      launchBower ["install", "--save-dev", p.psciSupport]
 
-    install Bower UseEffect = do
-      launchBower ["install", "--save", "purescript-prelude", "purescript-console", "purescript-effect"]
-      launchBower ["install", "--save-dev", "purescript-psci-support"]
+    install Bower UseEffect p = do
+      launchBower ["install", "--save", p.prelude, p.console, p.effect ]
+      launchBower ["install", "--save-dev", p.psciSupport ]
 
-    install PscPackage UseEff = do
+    install PscPackage UseEff _ = do
       launchPscPackage ["init"]
       launchPscPackage ["install", "eff"]
       launchPscPackage ["install", "console"]
       launchPscPackage ["install", "psci-support"]
 
-    install PscPackage UseEffect = do
+    install PscPackage UseEffect _ = do
       launchPscPackage ["init"]
       launchPscPackage ["install", "effect"]
       launchPscPackage ["install", "console"]
       launchPscPackage ["install", "psci-support"]
+
+    getDepsVersions v
+      | v >= Version (NEL.cons' 0 (14 : 0 : Nil)) Nil =
+          { prelude: "purescript-prelude@v5.0.1"
+          , console: "purescript-console@v5.0.0"
+          , effect: "purescript-effect@v3.0.0"
+          , psciSupport: "purescript-psci-support@v5.0.0"
+          }
+      | v >= Version (NEL.cons' 0 (13 : 0 : Nil)) Nil =
+          { prelude: "purescript-prelude@v4.1.1"
+          , console: "purescript-console@v4.4.0"
+          , effect: "purescript-effect@v2.0.1"
+          , psciSupport: "purescript-psci-support@v4.0.0"
+          }
+      | v >= Version (NEL.cons' 0 (12 : 0 : Nil)) Nil =
+          { prelude: "purescript-prelude@v4.1.1"
+          , console: "purescript-console@v4.4.0"
+          , effect: "purescript-effect@v2.0.1"
+          , psciSupport: "purescript-psci-support@v4.0.0"
+          }
+      | otherwise =
+          { prelude: "purescript-prelude@v3.3.0"
+          , console: "purescript-console@v3.0.0"
+          , effect: "purescript-effect@v1.1.0"
+          , psciSupport: "purescript-psci-support@v3.0.0"
+          }
 
 action :: Action
 action = Action \args -> do
@@ -175,7 +205,7 @@ action = Action \args -> do
 
   where
 
-  minEffectVersion = HVer.Version (fromFoldable [0, 12, 0]) Nil
+  minEffectVersion = HVer.Version (NEL.cons' 0 (Cons 12 (Cons 0 Nil))) Nil
 
   getEffOrEffect out withEff withEffect
     | withEff    = pure UseEff

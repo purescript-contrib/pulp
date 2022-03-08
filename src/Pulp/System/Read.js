@@ -2,4 +2,4 @@
 
 "use strict";
 
-exports["read'"] = require("read");
+exports.readImpl = require("read");

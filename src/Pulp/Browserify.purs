@@ -27,7 +27,7 @@ import Pulp.Exec (pursBundle)
 import Pulp.Files (outputModules)
 import Pulp.Outputter (getOutputter)
 import Pulp.Project (Project(..))
-import Pulp.Run (makeEntry, jsEscape)
+import Pulp.Run (jsEscape, makeCjsEntry)
 import Pulp.Sorcery (sorcery)
 import Pulp.System.FFI (Callback, runNode)
 import Pulp.System.Files (openTemp)
@@ -56,7 +56,7 @@ makeExport :: String -> Boolean -> String
 makeExport main export =
   if export
   then "module.exports = require(\"" <> jsEscape main <> "\");\n"
-  else makeEntry main
+  else makeCjsEntry main
 
 makeOptExport :: String -> String
 makeOptExport main = "module.exports = PS[\"" <> jsEscape main <> "\"];\n"

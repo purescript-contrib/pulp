@@ -61,8 +61,8 @@ failIfUsingEsModulesPsVersion out mbMsg = do
   psVer <- getPursVersion out
   unless ((dropPreRelBuildMeta psVer) < psVersions.v0_15_0) do
     out.err $ fold
-      [ "This code path implicitly uses `purs bundle` or CommonsJS modules, both of which are no longer supported in PureScript v0.15.0."
-      , "You are using PureScript " <> Version.showVersion psVer
+      [ "This code path implicitly uses `purs bundle` or CommonsJS modules, both of which are no longer supported in PureScript v0.15.0. "
+      , "You are using PureScript " <> Version.showVersion psVer <> ". "
       , "See https://github.com/purescript/documentation/blob/master/migration-guides/0.15-Migration-Guide.md"
       ]
     for_ mbMsg out.err

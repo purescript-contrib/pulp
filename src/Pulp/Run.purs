@@ -67,14 +67,14 @@ makeRunnableScript { out, buildPath, prefix, moduleName } = do
   fullPath' <- liftEffect $ Path.resolve [] buildPath
   let
     fullPath = replaceAll (Pattern "\\") (Replacement "/") fullPath'
-    makeEntry =
+    { makeEntry, suffix } =
       if (dropPreRelBuildMeta psVer) < psVersions.v0_15_0 then
-        makeCjsEntry
+        { makeEntry: makeCjsEntry, suffix: ".js" }
       else
-        makeEsEntry fullPath
+        { makeEntry: makeEsEntry fullPath, suffix: ".mjs" }
   src <- liftEffect $ Buffer.fromString (makeEntry moduleName) UTF8
 
-  info <- openTemp { prefix, suffix: ".js" }
+  info <- openTemp { prefix, suffix }
   _ <- FS.fdAppend info.fd src
   _ <- FS.fdClose info.fd
   pure info.path

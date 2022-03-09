@@ -292,9 +292,12 @@ describe("integration tests", function() {
     assert.exists(extras);
   }));
 
-  it("pulp run", run(function*(sh, pulp, assert) {
+  it.only("pulp run", run(function*(sh, pulp, assert) {
     yield pulp("init");
     const [out] = yield pulp("run");
+    const [o,e] = yield sh("cat output/package.json");
+    console.log(o);
+    console.log(e);
     assert.equal(out.trim(), hello);
   }));
 

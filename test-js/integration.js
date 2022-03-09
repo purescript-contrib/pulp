@@ -294,10 +294,11 @@ describe("integration tests", function() {
 
   it.only("pulp run", run(function*(sh, pulp, assert) {
     yield pulp("init");
-    const [out] = yield pulp("run");
+    yield pulp("build");
     const [o,e] = yield sh("cat output/package.json");
     console.log(o);
     console.log(e);
+    const [out] = yield pulp("run");
     assert.equal(out.trim(), hello);
   }));
 

@@ -3,9 +3,11 @@ module Pulp.Run where
 import Prelude
 
 import Data.Array (fold)
+import Data.List (List(..))
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), Replacement(..), replace, replaceAll)
+import Data.Version (version)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Foreign.Object (Object)
@@ -21,7 +23,7 @@ import Pulp.Build as Build
 import Pulp.Exec (exec)
 import Pulp.Outputter (Outputter, getOutputter)
 import Pulp.System.Files (openTemp)
-import Pulp.Validate (dropPreRelBuildMeta, getPursVersion)
+import Pulp.Validate (dropPreRelBuildMeta, getNodeVersion, getPursVersion)
 import Pulp.Versions.PureScript (psVersions)
 
 action :: Action
@@ -37,7 +39,8 @@ action = Action \args -> do
   runtime <- getOption' "runtime" opts
   scriptFilePath <- makeRunnableScript { out, buildPath, prefix: "pulp-run", moduleName: main }
   env <- setupEnv buildPath
-  exec runtime ([scriptFilePath] <> args.remainder) (Just env)
+  nodeFlags <- getNodeFlags out runtime
+  exec runtime (nodeFlags <> [scriptFilePath] <> args.remainder) (Just env)
 
 -- | Given a build path, create an environment that is just like this process'
 -- | environment, except with NODE_PATH set up for commands like `pulp run`.
@@ -60,6 +63,20 @@ jsEscape :: String -> String
 jsEscape =
   replace (Pattern "'") (Replacement "\\'") <<<
   replace (Pattern "\\") (Replacement "\\\\")
+
+-- | Returns an empty array or `[ "--experimental-modules" ]`
+-- | if using a version of PureScript that outputs ES modules
+-- | on a Node runtime with a version < `13.0.0`.
+getNodeFlags :: Outputter -> String -> Aff (Array String)
+getNodeFlags out runtime
+  | runtime == "node" = do
+      nodeVer <- getNodeVersion
+      psVer <- getPursVersion out
+      let
+        usingEsModules = (dropPreRelBuildMeta psVer) >= psVersions.v0_15_0
+        nodeNeedsFlag = nodeVer < (version 13 0 0 Nil Nil)
+      pure if usingEsModules && nodeNeedsFlag then [ "--experimental-modules" ] else []
+  | otherwise = pure []
 
 makeRunnableScript :: { out :: Outputter, buildPath :: String, prefix :: String, moduleName :: String } -> Aff String
 makeRunnableScript { out, buildPath, prefix, moduleName } = do

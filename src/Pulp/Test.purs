@@ -13,7 +13,7 @@ import Pulp.Args.Get (getOption')
 import Pulp.Build as Build
 import Pulp.Exec (exec)
 import Pulp.Outputter (getOutputter)
-import Pulp.Run (makeRunnableScript, setupEnv)
+import Pulp.Run (getNodeFlags, makeRunnableScript, setupEnv)
 
 action :: Action
 action = Action \args -> do
@@ -38,8 +38,9 @@ action = Action \args -> do
       buildPath <- getOption' "buildPath" opts
       env <- setupEnv buildPath
       scriptFilePath <- makeRunnableScript { out, buildPath, prefix: "pulp-test", moduleName: main }
+      nodeFlags <- getNodeFlags out runtime
       exec runtime
-           ([scriptFilePath] <> args.remainder)
+           (nodeFlags <> [scriptFilePath] <> args.remainder)
            (Just env)
     else do
       to <- getOption' "to" buildArgs.commandOpts

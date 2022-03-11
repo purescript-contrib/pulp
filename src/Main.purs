@@ -241,7 +241,7 @@ succeeded = const (pure unit)
 
 main :: Effect Unit
 main = void $ runAff (either failed succeeded) do
-                requireNodeAtLeast (version 4 0 0 Nil Nil)
+                requireNodeAtLeast (version 12 0 0 Nil Nil)
                 argv <- drop 2 <$> liftEffect Process.argv
                 args <- parse globals commands argv
                 case args of

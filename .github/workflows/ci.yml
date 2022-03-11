@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        purs_test_version: [v0.12.0, v0.12.4, v0.12.5, v0.13.0, v0.14.0, v0.14.5]
+        purs_test_version: [v0.12.0, v0.12.4, v0.12.5, v0.13.0, v0.14.0, v0.14.5, v0.15.0-alpha-01]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     env:

@@ -7,8 +7,6 @@ import Control.Parallel (parTraverse)
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (fold, or)
-import Data.List (List(..))
-import Data.List.NonEmpty as NEL
 import Data.Maybe (Maybe(..), maybe)
 import Data.Options ((:=))
 import Data.String as String
@@ -16,7 +14,6 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Data.Version (Version)
 import Data.Version as Version
-import Data.Version.Haskell (Version(..)) as Haskell
 import Effect.Aff (Aff, attempt, throwError)
 import Effect.Class (liftEffect)
 import Foreign (renderForeignError)
@@ -39,7 +36,8 @@ import Pulp.System.HTTP (httpRequest)
 import Pulp.System.Read as Read
 import Pulp.System.Stream (concatStream, concatStreamToBuffer, createGzip, end, write)
 import Pulp.Utils (orErr, throw)
-import Pulp.Validate (getPursVersion)
+import Pulp.Validate (dropPreRelBuildMeta, getPursVersion)
+import Pulp.Versions.PureScript (psVersions)
 import Simple.JSON as SimpleJSON
 
 -- TODO:
@@ -195,7 +193,7 @@ resolutionsFile manifest args = do
   out <- getOutputter args
   ver <- getPursVersion out
   resolutionsData <-
-    if ver >= Haskell.Version (NEL.cons' 0 (Cons 12 (Cons 4 Nil))) Nil
+    if (dropPreRelBuildMeta ver) >= psVersions.v0_12_4
       then do
         let hasDependencies =
               maybe false (not <<< Object.isEmpty) manifest.dependencies

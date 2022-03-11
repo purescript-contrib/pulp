@@ -23,6 +23,7 @@ import Pulp.Build as Build
 import Pulp.Outputter (getOutputter)
 import Pulp.System.StaticServer as StaticServer
 import Pulp.Utils (orErr)
+import Pulp.Validate (failIfUsingEsModulesPsVersion)
 import Pulp.Watch (watchAff, watchDirectories)
 
 data BuildResult
@@ -37,6 +38,10 @@ action :: Action
 action = Action \args -> do
   let opts = Map.union args.globalOpts args.commandOpts
   out <- getOutputter args
+
+  whenM (Build.shouldBundle args) do
+    failIfUsingEsModulesPsVersion out $ Just
+      "Code path reason: `pulp server` uses `purs bundle` implicitly."
 
   bundleFileName <- getBundleFileName opts
   hostname <- getOption' "host" opts

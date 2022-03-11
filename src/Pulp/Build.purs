@@ -4,6 +4,7 @@ module Pulp.Build
   , testBuild
   , runBuild
   , withOutputStream
+  , shouldBundle
   ) where
 
 import Prelude
@@ -31,7 +32,8 @@ import Pulp.Outputter (getOutputter)
 import Pulp.Sorcery (sorcery)
 import Pulp.System.Files as Files
 import Pulp.System.Stream (write, end, WritableStream, stdout)
-import Pulp.Validate (getPsaVersion, getPursVersion)
+import Pulp.Validate (dropPreRelBuildMeta, failIfUsingEsModulesPsVersion, getPsaVersion, getPursVersion)
+import Pulp.Versions.PureScript (psVersions)
 
 data BuildType = NormalBuild | TestBuild | RunBuild
 
@@ -68,7 +70,7 @@ go buildType = Action \args -> do
   jobs :: Maybe Int <- getOption "jobs" args.commandOpts
   let jobsArgs = maybe [] (\j -> ["+RTS", "-N" <> show j, "-RTS"]) jobs
       sourceMapArg = case sourceMaps of
-        true | ver >= Version (NEL.cons' 0 (Cons 12 (Cons 0 Nil))) Nil -> [ "--codegen", "sourcemaps" ]
+        true | (dropPreRelBuildMeta ver) >= psVersions.v0_12_0 -> [ "--codegen", "sourcemaps" ]
         true -> ["--source-maps"]
         _ -> []
       sourceGlobs = sources globs
@@ -90,8 +92,16 @@ go buildType = Action \args -> do
 
   out.log "Build successful."
 
-  shouldBundle <- (||) <$> getFlag "optimise" opts <*> hasOption "to" opts
-  when shouldBundle (bundle args)
+  shouldBundle' <- shouldBundle args
+  when shouldBundle' do
+    failIfUsingEsModulesPsVersion out $ Just
+      "Code path reason: you used the --optimize and/or --to flag(s)"
+    bundle args
+
+shouldBundle :: Args -> Aff Boolean
+shouldBundle args = do
+  let opts = union args.globalOpts args.commandOpts
+  (||) <$> getFlag "optimise" opts <*> hasOption "to" opts
 
 shouldUsePsa :: Args -> Aff Boolean
 shouldUsePsa args = do

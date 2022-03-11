@@ -7,11 +7,8 @@ import Prelude
 import Control.Monad.Error.Class (throwError)
 import Data.Array (cons)
 import Data.Foldable (for_)
-import Data.List (List(..), (:))
-import Data.List.NonEmpty as NEL
+import Data.Maybe (Maybe(..))
 import Data.String (joinWith)
-import Data.Version.Haskell (Version(..))
-import Data.Version.Haskell as HVer
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Exception (error)
@@ -25,7 +22,8 @@ import Pulp.Outputter (Outputter, getOutputter)
 import Pulp.PackageManager (launchBower, launchPscPackage)
 import Pulp.System.Files (mkdirIfNotExist)
 import Pulp.Utils (throw)
-import Pulp.Validate (getPursVersion)
+import Pulp.Validate (dropPreRelBuildMeta, failIfUsingEsModulesPsVersion, getPursVersion)
+import Pulp.Versions.PureScript (psVersions)
 
 foreign import bowerFile :: String -> String
 
@@ -141,10 +139,12 @@ init initStyle effOrEffect force out = do
 
   psVer <- getPursVersion out
 
-  install initStyle effOrEffect (getDepsVersions psVer)
+  install initStyle effOrEffect (getDepsVersions $ dropPreRelBuildMeta psVer)
 
   where
     install Bower UseEff p = do
+      failIfUsingEsModulesPsVersion out $ Just
+        "'purescript-eff' has been archived, so the FFI's CJS modules cannot be migrated to ES modules."
       launchBower ["install", "--save", p.prelude, p.console]
       launchBower ["install", "--save-dev", p.psciSupport]
 
@@ -153,41 +153,49 @@ init initStyle effOrEffect force out = do
       launchBower ["install", "--save-dev", p.psciSupport ]
 
     install PscPackage UseEff _ = do
+      failIfUsingPscPackageAndEsModules
+
       launchPscPackage ["init"]
       launchPscPackage ["install", "eff"]
       launchPscPackage ["install", "console"]
       launchPscPackage ["install", "psci-support"]
 
     install PscPackage UseEffect _ = do
+      failIfUsingPscPackageAndEsModules
+
       launchPscPackage ["init"]
       launchPscPackage ["install", "effect"]
       launchPscPackage ["install", "console"]
       launchPscPackage ["install", "psci-support"]
 
+    failIfUsingPscPackageAndEsModules = do
+      failIfUsingEsModulesPsVersion out $ Just
+        "'psc-package' not yet supported on a `purs` version that compiles to ES modules."
+
     getDepsVersions v
-      | v >= Version (NEL.cons' 0 (14 : 0 : Nil)) Nil =
+      | v >= psVersions.v0_15_0 =
+          { prelude: "purescript-prelude=working-group-purescript-es/purescript-prelude#es-modules-libraries"
+          , console: "purescript-console=working-group-purescript-es/purescript-console#es-modules-libraries"
+          , effect: "purescript-effect=working-group-purescript-es/purescript-effect#es-modules-libraries"
+          , psciSupport: "purescript-psci-support=purescript/purescript-psci-support#update-to-0.15"
+          }
+      | v >= psVersions.v0_14_0 =
           { prelude: "purescript-prelude@v5.0.1"
           , console: "purescript-console@v5.0.0"
           , effect: "purescript-effect@v3.0.0"
           , psciSupport: "purescript-psci-support@v5.0.0"
           }
-      | v >= Version (NEL.cons' 0 (13 : 0 : Nil)) Nil =
-          { prelude: "purescript-prelude@v4.1.1"
-          , console: "purescript-console@v4.4.0"
-          , effect: "purescript-effect@v2.0.1"
-          , psciSupport: "purescript-psci-support@v4.0.0"
-          }
-      | v >= Version (NEL.cons' 0 (12 : 0 : Nil)) Nil =
+      | v >= psVersions.v0_13_0 =
           { prelude: "purescript-prelude@v4.1.1"
           , console: "purescript-console@v4.4.0"
           , effect: "purescript-effect@v2.0.1"
           , psciSupport: "purescript-psci-support@v4.0.0"
           }
       | otherwise =
-          { prelude: "purescript-prelude@v3.3.0"
-          , console: "purescript-console@v3.0.0"
-          , effect: "purescript-effect@v1.1.0"
-          , psciSupport: "purescript-psci-support@v3.0.0"
+          { prelude: "purescript-prelude@v4.1.1"
+          , console: "purescript-console@v4.4.0"
+          , effect: "purescript-effect@v2.0.1"
+          , psciSupport: "purescript-psci-support@v4.0.0"
           }
 
 action :: Action
@@ -205,13 +213,13 @@ action = Action \args -> do
 
   where
 
-  minEffectVersion = HVer.Version (NEL.cons' 0 (Cons 12 (Cons 0 Nil))) Nil
+  minEffectVersion = psVersions.v0_12_0
 
   getEffOrEffect out withEff withEffect
     | withEff    = pure UseEff
     | withEffect = pure UseEffect
     | otherwise  = do
         ver <- getPursVersion out
-        if ver < minEffectVersion
+        if (dropPreRelBuildMeta ver) < minEffectVersion
           then pure UseEff
           else pure UseEffect

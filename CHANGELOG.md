@@ -7,7 +7,7 @@ Breaking:
   compiler versions earlier than that. (#399 by @JordanMartinez)
 * Increased minimum `psa` version to `v0.7.0` and dropped support for all
   versions earlier than that. (#399 by @JordanMartinez)
-* Increase minimum `node` versino to `v12.0.0` and dropped support for all
+* Increased minimum `node` version to `v12.0.0` and dropped support for all
   versions earlier than that. (#401 by @JordanMartinez)
 
 Internal:

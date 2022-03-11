@@ -8,9 +8,8 @@ import Data.Either (Either(..), either)
 import Data.Foldable (elem)
 import Data.List (List(Nil))
 import Data.Map (insert)
-import Data.Maybe (Maybe(..), fromMaybe)
-import Data.String (stripPrefix, Pattern(..))
-import Data.Version (Version, version, showVersion, parseVersion)
+import Data.Maybe (Maybe(..))
+import Data.Version (Version, showVersion, version)
 import Effect (Effect)
 import Effect.Aff (Aff, attempt, runAff, throwError)
 import Effect.Class (liftEffect)
@@ -44,7 +43,7 @@ import Pulp.Server as Server
 import Pulp.Shell as Shell
 import Pulp.System.FFI (unsafeInspect)
 import Pulp.Test as Test
-import Pulp.Validate (validate)
+import Pulp.Validate (getNodeVersion, validate)
 import Pulp.Version (printVersion)
 import Pulp.Watch as Watch
 import Text.Parsing.Parser (parseErrorMessage)
@@ -304,20 +303,12 @@ runWithArgs args = do
 
 requireNodeAtLeast :: Version -> Aff Unit
 requireNodeAtLeast minimum = do
-  case parseVersion (stripV Process.version) of
-    Left err ->
-      let message = parseErrorMessage err
-      in throwError (error ("Failed to parse node.js version: " <> message))
-    Right actual ->
-      when (actual < minimum)
-        (throwError (error
-          ("Your node.js version is too old " <>
-           "(required: " <> showVersion minimum <>
-           ", actual: " <> showVersion actual <> ")")))
-
-  where
-  stripV str =
-    fromMaybe str (stripPrefix (Pattern "v") str)
+  actual <- getNodeVersion
+  when (actual < minimum) do
+    throwError $ error $
+      "Your node.js version is too old " <>
+        "(required: " <> showVersion minimum <>
+        ", actual: " <> showVersion actual <> ")"
 
 argsParserDiagnostics :: Args.Args -> Aff Unit
 argsParserDiagnostics opts = do

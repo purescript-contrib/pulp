@@ -14,7 +14,7 @@ import Foreign.Object (Object)
 import Foreign.Object as Object
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(UTF8))
-import Node.FS.Aff as FS
+import Node.FS.Aff as FSA
 import Node.Path as Path
 import Node.Process as Process
 import Pulp.Args (Action(..))
@@ -22,7 +22,7 @@ import Pulp.Args.Get (getOption')
 import Pulp.Build as Build
 import Pulp.Exec (exec)
 import Pulp.Outputter (Outputter, getOutputter)
-import Pulp.System.Files (openTemp)
+import Pulp.System.Files (tempDir)
 import Pulp.Validate (dropPreRelBuildMeta, getNodeVersion, getPursVersion)
 import Pulp.Versions.PureScript (psVersions)
 
@@ -84,17 +84,21 @@ makeRunnableScript { out, buildPath, prefix, moduleName } = do
   fullPath' <- liftEffect $ Path.resolve [] buildPath
   let
     fullPath = replaceAll (Pattern "\\") (Replacement "/") fullPath'
-    makeEntry =
+    { makeEntry, writePackageJsonFile } =
       if (dropPreRelBuildMeta psVer) < psVersions.v0_15_0 then
-        makeCjsEntry
+        { makeEntry: makeCjsEntry, writePackageJsonFile: false }
       else
-        makeEsEntry fullPath
+        { makeEntry: makeEsEntry fullPath, writePackageJsonFile: true }
   src <- liftEffect $ Buffer.fromString (makeEntry moduleName) UTF8
 
-  info <- openTemp { prefix, suffix: ".js" }
-  _ <- FS.fdAppend info.fd src
-  _ <- FS.fdClose info.fd
-  pure info.path
+  parentDir <- tempDir { prefix, suffix: ".js" }
+  let
+    scriptFile = Path.concat [ parentDir, "index.js" ]
+    packageJson = Path.concat [ parentDir, "package.json" ]
+  FSA.writeFile scriptFile src
+  when writePackageJsonFile do
+    FSA.writeTextFile UTF8 packageJson """{"type": "module"}"""
+  pure scriptFile
 
 -- | Construct a JS string to be used as an entry point from a module name.
 makeCjsEntry :: String -> String

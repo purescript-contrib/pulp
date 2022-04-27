@@ -54,6 +54,8 @@ globals = [
     "Read this bower.json file instead of autodetecting it.",
   Args.option "pscPackage" ["--psc-package"] Type.flag
     "Use psc-package for package management.",
+  Args.option "debug" ["--debug"] Type.flag
+    "Enable debug logging",
   Args.option "watch" ["--watch", "-w"] Type.flag
     "Watch source directories and re-run command if something changes.",
   Args.option "monochrome" ["--monochrome"] Type.flag
@@ -262,7 +264,7 @@ main = void $ runAff (either failed succeeded) do
     printHelp out globals commands
     liftEffect $ Process.exit 1
 
-  out = makeOutputter false
+  out = makeOutputter false false
 
 runWithArgs :: Args.Args -> Aff Unit
 runWithArgs args = do
@@ -312,7 +314,7 @@ requireNodeAtLeast minimum = do
 
 argsParserDiagnostics :: Args.Args -> Aff Unit
 argsParserDiagnostics opts = do
-  let out = makeOutputter false
+  let out = makeOutputter false true
   out.log $ "Globals: " <> show ((map <<< map) showForeign opts.globalOpts)
   out.log $ "Command: " <> opts.command.name
   out.log $ "Locals: " <> show ((map <<< map) showForeign opts.commandOpts)

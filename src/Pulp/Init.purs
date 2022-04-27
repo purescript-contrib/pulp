@@ -174,10 +174,10 @@ init initStyle effOrEffect force out = do
 
     getDepsVersions v
       | v >= psVersions.v0_15_0 =
-          { prelude: "purescript-prelude@master"
-          , console: "purescript-console@master"
-          , effect: "purescript-effect@master"
-          , psciSupport: "purescript-psci-support@master"
+          { prelude: "purescript-prelude@v6.0.0"
+          , console: "purescript-console@v6.0.0"
+          , effect: "purescript-effect@v4.0.0"
+          , psciSupport: "purescript-psci-support@v6.0.0"
           }
       | v >= psVersions.v0_14_0 =
           { prelude: "purescript-prelude@v5.0.1"

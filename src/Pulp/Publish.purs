@@ -62,10 +62,9 @@ action = Action \args -> do
 
   out.debug "Getting resolutions file..."
   resolutionsPath <- resolutionsFile manifest args
-  out.debug =<< readTextFile UTF8 resolutionsPath
-  out.debug "Calling purs publish..."
-  res <- pursPublish resolutionsPath
-  gzippedJson <- gzip res
+  content <- readTextFile UTF8 resolutionsPath
+  out.debug $ "Resolutions file:\n" <> content
+  gzippedJson <- pursPublish resolutionsPath >>= gzip
 
   out.debug "Getting repo url"
   repoUrl <- map _.url manifest.repository # orErr "'repository' key not present in bower.json"

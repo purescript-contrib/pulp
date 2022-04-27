@@ -22,6 +22,7 @@ import Foreign.Object as Object
 import Node.Buffer (Buffer)
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
+import Node.FS.Aff (readTextFile)
 import Node.FS.Aff as FS
 import Node.HTTP.Client as HTTP
 import Node.Path as Path
@@ -47,20 +48,33 @@ import Simple.JSON as SimpleJSON
 
 action :: Action
 action = Action \args -> do
+  out <- getOutputter args
+  out.debug "Checking bower project"
   checkBowerProject
 
-  out <- getOutputter args
-
+  out.debug "Checking clean git working tree"
   requireCleanGitWorkingTree
+  out.debug "getting auth token"
   authToken <- readTokenFile
+  out.debug "parsing bower.json file"
   manifest :: BowerJson <- parseJsonFile "bower.json"
+  out.debug $ show manifest
 
+  out.debug "getting resolutions file"
   resolutionsPath <- resolutionsFile manifest args
-  gzippedJson <- pursPublish resolutionsPath >>= gzip
+  out.debug "pursPublish >>= gzip"
+  out.debug =<< readTextFile UTF8 resolutionsPath
+  out.debug "pursPublish"
+  res <- pursPublish resolutionsPath
+  out.debug "gzip"
+  gzippedJson <- gzip res
 
+  out.debug "Getting repo url"
   repoUrl <- map _.url manifest.repository # orErr "'repository' key not present in bower.json"
+  out.debug "Verifying that repo is registered under url"
   checkRegistered out manifest.name repoUrl
 
+  out.debug "Getting version"
   Tuple tagStr tagVersion <- getVersion
   confirm ("Publishing " <> manifest.name <> " at v" <> Version.showVersion tagVersion <> ". Is this ok?")
 
@@ -167,6 +181,7 @@ gzip str = do
 type BowerJson =
   { name :: String
   , dependencies :: Maybe (Object String)
+  , devDependencies :: Maybe (Object String)
   , repository ::
       Maybe { url :: String
             , type :: String
@@ -196,7 +211,8 @@ resolutionsFile manifest args = do
     if (dropPreRelBuildMeta ver) >= psVersions.v0_12_4
       then do
         let hasDependencies =
-              maybe false (not <<< Object.isEmpty) manifest.dependencies
+              (maybe false (not <<< Object.isEmpty) $ manifest.dependencies)
+              || (maybe false (not <<< Object.isEmpty) $ manifest.devDependencies)
         dependencyPath <- getOption' "dependencyPath" args.commandOpts
         getResolutions hasDependencies dependencyPath
       else

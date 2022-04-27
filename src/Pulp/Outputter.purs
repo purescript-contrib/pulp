@@ -16,6 +16,7 @@ import Pulp.System.SupportsColor as Color
 
 type Outputter =
   { log :: String -> Aff Unit
+  , debug :: String -> Aff Unit
   , err :: String -> Aff Unit
   , write  :: String -> Aff Unit
   , bolded :: String -> Aff Unit
@@ -29,22 +30,23 @@ getOutputter args = do
   q <- getFlag "_silenced" args.commandOpts
   if q
     then pure nullOutputter
-    else makeOutputter <$> getFlag "monochrome" args.globalOpts
+    else makeOutputter <$> getFlag "monochrome" args.globalOpts <*> getFlag "debug" args.globalOpts
 
 -- | Get an outputter. The argument represents "monochrome"; if true is
 -- | supplied, the returned logger will never use color. Otherwise, whether or
 -- | not colour is used depends on the "supports-color" module. Note that the
 -- | `monochrome` attribute of the returned outputter might not necessarily
 -- | be the same as the argument supplied.
-makeOutputter :: Boolean -> Outputter
-makeOutputter monochrome =
+makeOutputter :: Boolean -> Boolean -> Outputter
+makeOutputter monochrome enableDebug =
   if not monochrome && Color.hasBasic
-    then ansiOutputter
-    else monochromeOutputter
+    then ansiOutputter enableDebug
+    else monochromeOutputter enableDebug
 
-monochromeOutputter :: Outputter
-monochromeOutputter =
+monochromeOutputter :: Boolean -> Outputter
+monochromeOutputter enableDebug =
   { log: monobullet
+  , debug: if enableDebug then monobullet else dud
   , err: monobullet
   , write: write stderr
   , bolded: write stderr
@@ -53,9 +55,10 @@ monochromeOutputter =
   where
   monobullet text = write stderr ("* " <> text <> "\n")
 
-ansiOutputter :: Outputter
-ansiOutputter =
+ansiOutputter :: Boolean -> Outputter
+ansiOutputter enableDebug =
   { log: bullet stderr Green
+  , debug: if enableDebug then bullet stderr Yellow else dud
   , err: bullet stderr Red
   , write: write stderr
   , bolded: write stderr <<< withGraphics bold
@@ -71,10 +74,12 @@ bullet stream color text = do
 nullOutputter :: Outputter
 nullOutputter =
   { log: dud
+  , debug: dud
   , err: dud
   , write: dud
   , bolded: dud
   , monochrome: false
   }
-  where
-  dud = const (pure unit)
+
+dud :: String -> Aff Unit
+dud = const (pure unit)

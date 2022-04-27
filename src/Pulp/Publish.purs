@@ -330,6 +330,7 @@ uploadPursuitDocs out authToken gzippedJson = do
       pure unit
     other -> do
       out.err =<< concatStream (HTTP.responseAsStream res)
+      out.err $ HTTP.statusMessage res
       throw ("Expected an HTTP 201 response from Pursuit, got: " <> show other)
 
   where

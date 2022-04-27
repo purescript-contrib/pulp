@@ -54,19 +54,17 @@ action = Action \args -> do
 
   out.debug "Checking clean git working tree"
   requireCleanGitWorkingTree
-  out.debug "getting auth token"
+  out.debug "Getting auth token"
   authToken <- readTokenFile
-  out.debug "parsing bower.json file"
+  out.debug "Parsing bower.json file"
   manifest :: BowerJson <- parseJsonFile "bower.json"
-  out.debug $ show manifest
+  out.debug $ "Parsed manifest:\n" <> show manifest
 
-  out.debug "getting resolutions file"
+  out.debug "Getting resolutions file..."
   resolutionsPath <- resolutionsFile manifest args
-  out.debug "pursPublish >>= gzip"
   out.debug =<< readTextFile UTF8 resolutionsPath
-  out.debug "pursPublish"
+  out.debug "Calling purs publish..."
   res <- pursPublish resolutionsPath
-  out.debug "gzip"
   gzippedJson <- gzip res
 
   out.debug "Getting repo url"

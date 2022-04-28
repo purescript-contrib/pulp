@@ -4,11 +4,34 @@
 
 Breaking:
 * Increased minimum `purs` version to `v0.12.0` and dropped support for all
-  compiler versions earlier than that. (#399 by @JordanMartinez)
+  compiler versions earlier than that. (#399 and #405 by @JordanMartinez)
 * Increased minimum `psa` version to `v0.7.0` and dropped support for all
   versions earlier than that. (#399 by @JordanMartinez)
 * Increased minimum `node` version to `v12.0.0` and dropped support for all
   versions earlier than that. (#401 by @JordanMartinez)
+* Include `bower.json`'s `devDependencies` field when publishing (#405 by @JordanMartinez)
+
+  Note: `pulp publish` will fail if a dependency (e.g. `purescript-numbers`)
+  exists in both the `bower.json` file's `dependencies` and `devDependencies` field.
+  When this occurs, you will see a message like the following:
+
+  ```
+  There is a problem with your package, which meant that it could not be published.
+  Details:
+    The following dependency does not appear to be installed:
+      * purescript-numbers
+  ```
+
+Other improvements:
+- Added a `debug` flag that enables debugger output for the `pulp publish` command (#405 by @JordanMartinez)
+- Improve error message due to `pulp publish` needing to be run twice (#406 by @JordanMartinez)
+
+  Whenever one runs `pulp publish` for the first time, the command will almost always fail with
+  an HTTP 400 error due to invalid JSON. Running the command a second time will succeed and finish
+  what was started in the first one. However, this fact is never communicated to users, so
+  one can only handle this situation if they already know about it (e.g. aren't new users).
+
+  The error message now suggests the user try running it a second time to get around this issue.
 
 Internal:
 * Added support for the `v0.15.0` compiler version (#401 by @JordanMartinez)

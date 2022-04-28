@@ -331,6 +331,7 @@ uploadPursuitDocs out authToken gzippedJson = do
     other -> do
       out.err =<< concatStream (HTTP.responseAsStream res)
       out.err $ HTTP.statusMessage res
+      out.bolded $ "If you are publishing a package and running this command for the first time, you will almost always need to run this same command a second time before your package gets published."
       throw ("Expected an HTTP 201 response from Pursuit, got: " <> show other)
 
   where

@@ -331,6 +331,7 @@ uploadPursuitDocs out authToken gzippedJson = do
     other -> do
       out.err =<< concatStream (HTTP.responseAsStream res)
       out.err $ HTTP.statusMessage res
+      out.bolded $ "This command may fail with a 400 error from Pursuit on the first run. Try running it a second time before debugging further."
       throw ("Expected an HTTP 201 response from Pursuit, got: " <> show other)
 
   where

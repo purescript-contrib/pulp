@@ -616,7 +616,9 @@ package submissions. Older packages are still registered in Bower but new packag
 registered in the [PureScript Registry](https://github.com/purescript/registry).
 The upshot is that you will usually use a `spago` workflow to 
 prepare the ground for publication and then use `pulp` for the actual publication step itself.
-For this reason you should read [spago: Publish my library](https://github.com/purescript/spago#publish-my-library) before proceding.
+For this reason you should read [spago: Publish my library](https://github.com/purescript/spago#publish-my-library) before proceding. You may also find it useful to read the notes on
+[How to submit packages](https://pursuit.purescript.org/help/authors#submitting-packages) in the 
+Pursuit package authors guide.
 
 The `pulp` publication commands are:
 

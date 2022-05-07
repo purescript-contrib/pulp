@@ -34,6 +34,7 @@ A build tool for PureScript.
     - [Installing Dependencies](#installing-dependencies)
     - [Housekeeping](#housekeeping)
   - [Releasing Packages](#releasing-packages)
+    - [Publishing Packages](#publishing-packages)
 - [Development](#development)
 - [Licence](#licence)
 
@@ -602,11 +603,29 @@ $ pulp version 0.1.0
 This runs a few checks to ensure that your package is properly set up for
 publishing, and if they pass, creates a Git tag `v0.1.0`.
 
+#### Publishing Packages
+
 Bower packages are installed directly from Git repositories, and versioning
 follows Git tags. This means that once you've tagged a version, all you need to
-do to make a new release is push that tag to GitHub, register your package in
-the Bower registry, and upload your package's documentation to Pursuit. Pulp is
-able to do all of this for you:
+do to make a new release is push that tag to GitHub, register your package
+and upload your package's documentation to Pursuit. 
+
+Originally, `pulp` was designed to work exclusively with the Bower registry but 
+things became complicated after it no longer accepted new PureScript
+package submissions. Older packages are still registered in Bower but new packages need to be 
+registered in the [PureScript Registry](https://github.com/purescript/registry).
+The upshot is that you will usually use a `spago` workflow to 
+prepare the ground for publication and then use `pulp` for the actual publication step itself.
+For this reason you should read [spago: Publish my library](https://github.com/purescript/spago#publish-my-library) before proceding. You may also find it useful to read the notes on
+[How to submit packages](https://pursuit.purescript.org/help/authors#submitting-packages) in the 
+Pursuit package authors guide.
+
+The `pulp` publication commands are:
+
+```sh
+$ pulp login
+```
+followed by
 
 ```sh
 $ pulp publish

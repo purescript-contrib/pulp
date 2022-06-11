@@ -16,7 +16,6 @@ import Data.Version (Version)
 import Data.Version as Version
 import Effect.Aff (Aff, attempt, throwError)
 import Effect.Class (liftEffect)
-import Effect.Class.Console (log)
 import Foreign (renderForeignError)
 import Foreign.Object (Object)
 import Foreign.Object as Object

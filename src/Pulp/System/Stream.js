@@ -1,5 +1,6 @@
 // module Pulp.System.Stream
 "use strict";
+const { Readable } = require('stream');
 
 exports.concatStreamToBufferImpl = function concatStream$prime(stream, callback) {
   var concat = require("concat-stream");
@@ -17,3 +18,9 @@ exports.concatStreamToBufferImpl = function concatStream$prime(stream, callback)
 };
 
 exports.createGzip = require("zlib").createGzip;
+
+exports.streamFromString = function(str) {
+  return function() {
+    return Readable.from(str);
+  }
+}

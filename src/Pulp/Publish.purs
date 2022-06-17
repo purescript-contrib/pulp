@@ -26,6 +26,7 @@ import Node.FS.Aff (readTextFile)
 import Node.FS.Aff as FS
 import Node.HTTP.Client as HTTP
 import Node.Path as Path
+import Node.Stream (pipe)
 import Pulp.Args (Action(..), Args)
 import Pulp.Args.Get (getFlag, getOption')
 import Pulp.Exec (exec, execQuiet)
@@ -35,7 +36,7 @@ import Pulp.Outputter (Outputter, getOutputter)
 import Pulp.System.Files (isENOENT, openTemp)
 import Pulp.System.HTTP (httpRequest)
 import Pulp.System.Read as Read
-import Pulp.System.Stream (concatStream, concatStreamToBuffer, createGzip, end, write)
+import Pulp.System.Stream (concatStream, concatStreamToBuffer, createGzip, streamFromString)
 import Pulp.Utils (orErr, throw)
 import Pulp.Validate (dropPreRelBuildMeta, getPursVersion)
 import Pulp.Versions.PureScript (psVersions)
@@ -168,9 +169,9 @@ packageUrlIsEqual a b =
 
 gzip :: String -> Aff Buffer
 gzip str = do
+  inputStream <- liftEffect $ streamFromString str
   gzipStream <- liftEffect createGzip
-  write gzipStream str
-  end gzipStream
+  _ <- liftEffect $ inputStream `pipe` gzipStream
   concatStreamToBuffer gzipStream
 
 -- Format for actual bower.json files, written by project maintainers. This

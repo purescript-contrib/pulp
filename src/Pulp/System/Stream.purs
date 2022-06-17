@@ -1,16 +1,18 @@
 module Pulp.System.Stream
-  ( ReadableStream()
-  , WritableStream()
-  , AnyStream()
-  , end
-  , forget
-  , write
-  , stdout
-  , stderr
+  ( AnyStream(..)
+  , ReadableStream(..)
+  , WritableStream(..)
   , concatStream
   , concatStreamToBuffer
   , createGzip
-  ) where
+  , end
+  , forget
+  , stderr
+  , stdout
+  , streamFromString
+  , write
+  )
+  where
 
 import Prelude
 
@@ -60,3 +62,5 @@ stdout = unsafeCoerce Process.stdout
 
 stderr :: WritableStream
 stderr = unsafeCoerce Process.stderr
+
+foreign import streamFromString :: forall w. String -> Effect (Node.Readable w)
